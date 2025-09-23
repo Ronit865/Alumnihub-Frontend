@@ -9,7 +9,7 @@ import Alumni from "./pages/Alumni";
 import Events from "./pages/Events";
 import Jobs from "./pages/Jobs";
 import Donations from "./pages/Donations";
-import Analytics from "./pages/Analytics";
+import PersonalMessages from "./pages/PersonalMessages";
 import Communications from "./pages/Communications";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
@@ -29,7 +29,7 @@ const App = () => (
             <Route path="/events" element={<Events />} />
             <Route path="/jobs" element={<Jobs />} />
             <Route path="/donations" element={<Donations />} />
-            <Route path="/analytics" element={<Analytics />} />
+            <Route path="/messages" element={<PersonalMessages />} />
             <Route path="/communications" element={<Communications />} />
             <Route path="/settings" element={<Settings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

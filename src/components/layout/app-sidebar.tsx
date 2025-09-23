@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -6,7 +6,7 @@ import {
   Calendar,
   Briefcase,
   DollarSign,
-  BarChart3,
+  MessageCircle,
   MessageSquare,
   Settings,
   Sun,
@@ -33,7 +33,7 @@ const navigation = [
   { title: "Events", url: "/events", icon: Calendar },
   { title: "Jobs & Mentorship", url: "/jobs", icon: Briefcase },
   { title: "Donations", url: "/donations", icon: DollarSign },
-  { title: "Analytics", url: "/analytics", icon: BarChart3 },
+  { title: "Personal Messages", url: "/messages", icon: MessageCircle },
   { title: "Communications", url: "/communications", icon: MessageSquare },
 ];
 
@@ -44,11 +44,23 @@ const bottomNavigation = [
 export function AppSidebar() {
   const { open } = useSidebar();
   const location = useLocation();
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window !== "undefined") {
+      return document.documentElement.classList.contains("dark");
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    const isDarkMode = document.documentElement.classList.contains("dark");
+    setIsDark(isDarkMode);
+  }, []);
 
   const toggleTheme = () => {
-    setIsDark(!isDark);
-    document.documentElement.classList.toggle("dark");
+    const newTheme = !isDark;
+    setIsDark(newTheme);
+    document.documentElement.classList.toggle("dark", newTheme);
+    localStorage.setItem("theme", newTheme ? "dark" : "light");
   };
 
   const isActive = (path: string) => {
@@ -67,22 +79,22 @@ export function AppSidebar() {
     <Sidebar className="border-r" collapsible="icon">
       <SidebarContent className="p-0">
         {/* Logo Section */}
-        <div className="p-6 border-b">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center">
+        <div className={`border-b ${open ? "p-6" : "p-3"}`}>
+          <div className={`flex items-center ${open ? "gap-3" : "justify-center"}`}>
+            <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center shrink-0">
               <GraduationCap className="w-4 h-4 text-primary-foreground" />
             </div>
             {open && (
-              <div>
-                <h1 className="font-bold text-lg gradient-text">AlumniHub</h1>
-                <p className="text-sm text-muted-foreground">Management System</p>
+              <div className="min-w-0">
+                <h1 className="font-bold text-lg gradient-text truncate">AlumniHub</h1>
+                <p className="text-sm text-muted-foreground truncate">Management System</p>
               </div>
             )}
           </div>
         </div>
 
         {/* Main Navigation */}
-        <SidebarGroup className="px-3">
+        <SidebarGroup className={open ? "px-3" : "px-2"}>
           <SidebarGroupLabel className={!open ? "sr-only" : ""}>
             Main Menu
           </SidebarGroupLabel>
@@ -93,7 +105,7 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} className={getNavClasses(item.url)}>
                       <item.icon className="w-5 h-5 shrink-0" />
-                      {open && <span>{item.title}</span>}
+                      {open && <span className="truncate">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -103,14 +115,14 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {/* Bottom Section */}
-        <div className="mt-auto p-3 border-t">
+        <div className={`mt-auto border-t ${open ? "p-3" : "p-2"}`}>
           <SidebarMenu className="space-y-1">
             {bottomNavigation.map((item) => (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton asChild>
                   <NavLink to={item.url} className={getNavClasses(item.url)}>
                     <item.icon className="w-5 h-5 shrink-0" />
-                    {open && <span>{item.title}</span>}
+                    {open && <span className="truncate">{item.title}</span>}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -122,10 +134,10 @@ export function AppSidebar() {
                 variant="ghost"
                 size={!open ? "icon" : "default"}
                 onClick={toggleTheme}
-                className={`${!open ? "w-11 h-11" : "w-full justify-start gap-3 h-11"} text-muted-foreground hover:text-foreground hover:bg-accent`}
+                className={`${!open ? "w-11 h-11 justify-center" : "w-full justify-start gap-3 h-11"} text-muted-foreground hover:text-foreground hover:bg-accent`}
               >
-                {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-                {open && <span>{isDark ? "Light Mode" : "Dark Mode"}</span>}
+                {isDark ? <Sun className="w-5 h-5 shrink-0" /> : <Moon className="w-5 h-5 shrink-0" />}
+                {open && <span className="truncate">{isDark ? "Light Mode" : "Dark Mode"}</span>}
               </Button>
             </SidebarMenuItem>
           </SidebarMenu>
