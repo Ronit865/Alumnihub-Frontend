@@ -148,10 +148,10 @@ export default function Jobs() {
             Discover career opportunities and connect with alumni mentors
           </p>
         </div>
-        <Button className="gap-2">
+        {/* <Button className="gap-2">
           <Plus className="w-4 h-4" />
           Post Job
-        </Button>
+        </Button> */}
       </div>
 
       <Tabs defaultValue="jobs" className="space-y-6">

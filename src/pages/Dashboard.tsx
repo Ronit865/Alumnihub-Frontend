@@ -288,7 +288,7 @@ export default function Dashboard() {
               <h4 className="font-medium text-sm">Data Scientist</h4>
               <p className="text-xs text-muted-foreground">Microsoft • ₹140k-180k</p>
             </div>
-            <Button variant="outline" size="sm" className="w-full mt-2">
+            <Button onClick={() => navigate('/jobs')} variant="outline" size="sm" className="w-full mt-2">
               View All Jobs
             </Button>
           </div>
@@ -383,7 +383,7 @@ export default function Dashboard() {
                 <p className="text-sm">Anyone attending tech conference?</p>
               </div>
             </div>
-            <Button variant="outline" size="sm" className="w-full">
+            <Button onClick={() => navigate('/communications')} variant="outline" size="sm" className="w-full">
               Join Conversation
             </Button>
           </div>
