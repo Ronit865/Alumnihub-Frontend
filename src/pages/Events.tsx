@@ -162,139 +162,145 @@ export default function Events() {
                 />
             </div>
 
-            {/* Events List */}
-            <Card className="bento-card gradient-surface border-card-border/50">
-                <CardHeader>
-                    <CardTitle>
-                        Upcoming Events ({filteredEvents.length})
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-4">
-                        {filteredEvents.length === 0 ? (
-                            <div className="text-center py-12">
-                                <CalendarDays className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                                <p className="text-muted-foreground">
-                                    {searchQuery
-                                        ? "No events found matching your search."
-                                        : "No active events available."}
+            {/* Events Count */}
+            <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold">
+                    Upcoming Events ({filteredEvents.length})
+                </h2>
+            </div>
+
+            {/* Events Grid */}
+            {filteredEvents.length === 0 ? (
+                <div className="text-center py-12">
+                    <Card className="border-card-border/50">
+                        <CardContent className="pt-12 pb-12">
+                            <CalendarDays className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                            <p className="text-muted-foreground">
+                                {searchQuery
+                                    ? "No events found matching your search."
+                                    : "No active events available."}
+                            </p>
+                        </CardContent>
+                    </Card>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredEvents.map((event, index) => (
+                        <Card 
+                            key={event._id} 
+                            className="bento-card hover:shadow-md border-card-border/50 animate-fade-in hover-lift group"
+                            style={{ animationDelay: `${index * 100}ms` }}
+                        >
+                            <CardHeader className="pb-3">
+                                <div className="flex items-start justify-between mb-2">
+                                    <CardTitle className="text-lg font-semibold group-hover:text-primary transition-colors line-clamp-2">
+                                        {event.title}
+                                    </CardTitle>
+                                </div>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    {getStatusBadge(event.isactive)}
+                                    {event.category && (
+                                        <Badge variant="secondary" className="text-xs">
+                                            {event.category}
+                                        </Badge>
+                                    )}
+                                </div>
+                            </CardHeader>
+
+                            <CardContent className="space-y-4">
+                                <p className="text-muted-foreground text-sm line-clamp-3">
+                                    {event.description}
                                 </p>
-                            </div>
-                        ) : (
-                            filteredEvents.map((event, index) => (
-                                <Card 
-                                    key={event._id} 
-                                    className="bento-card hover:shadow-md border-card-border/50 animate-fade-in hover-lift"
-                                    style={{ animationDelay: `${index * 100}ms` }}
-                                >
-                                    <CardContent className="p-6">
-                                        <div className="flex items-start justify-between">
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-3 mb-2">
-                                                    <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
-                                                        {event.title}
-                                                    </h3>
-                                                    {getStatusBadge(event.isactive)}
-                                                    {event.category && (
-                                                        <Badge variant="secondary">{event.category}</Badge>
-                                                    )}
-                                                </div>
-                                                <p className="text-muted-foreground mb-4 line-clamp-2">
-                                                    {event.description}
-                                                </p>
-                                                
-                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mb-4">
-                                                    <div className="flex items-center gap-2">
-                                                        <CalendarDays className="h-4 w-4 text-primary" />
-                                                        <span>{formatDate(event.date)}</span>
-                                                    </div>
-                                                    {event.time && (
-                                                        <div className="flex items-center gap-2">
-                                                            <Clock className="h-4 w-4 text-primary" />
-                                                            <span>{event.time}</span>
-                                                        </div>
-                                                    )}
-                                                    {event.location && (
-                                                        <div className="flex items-center gap-2">
-                                                            <MapPin className="h-4 w-4 text-primary" />
-                                                            <span className="truncate">{event.location}</span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                
-                                                <div className="flex items-center gap-4 mb-4">
-                                                    <div className="flex items-center gap-2">
-                                                        <Users className="h-4 w-4 text-primary" />
-                                                        <span className="text-sm">
-                                                            {event.participants.length} 
-                                                            {event.maxAttendees && `/${event.maxAttendees}`} participants
-                                                        </span>
-                                                    </div>
-                                                </div>
-
-                                                {/* Registration Progress Bar (if maxAttendees is available) */}
-                                                {event.maxAttendees && (
-                                                    <div className="space-y-2 mb-4">
-                                                        <div className="flex justify-between text-xs text-muted-foreground">
-                                                            <span>Registration</span>
-                                                            <span>
-                                                                {Math.round(
-                                                                    (event.participants.length / event.maxAttendees) * 100
-                                                                )}
-                                                                % full
-                                                            </span>
-                                                        </div>
-                                                        <div className="w-full bg-muted rounded-full h-2">
-                                                            <div
-                                                                className="bg-primary h-2 rounded-full transition-all duration-300"
-                                                                style={{
-                                                                    width: `${
-                                                                        (event.participants.length / event.maxAttendees) * 100
-                                                                    }%`,
-                                                                }}
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                )}
-
-                                                {/* Action Buttons */}
-                                                <div className="flex gap-2 pt-2">
-                                                    <Button
-                                                        size="sm"
-                                                        className="gradient-primary text-primary-foreground hover:shadow-purple"
-                                                        onClick={() => handleJoinEvent(event._id)}
-                                                        disabled={
-                                                            joiningEvent === event._id ||
-                                                            (event.maxAttendees && event.participants.length >= event.maxAttendees)
-                                                        }
-                                                    >
-                                                        {joiningEvent === event._id ? (
-                                                            <>
-                                                                <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                                                                Joining...
-                                                            </>
-                                                        ) : (event.maxAttendees && event.participants.length >= event.maxAttendees) ? (
-                                                            "Event Full"
-                                                        ) : (
-                                                            "Register"
-                                                        )}
-                                                    </Button>
-                                                    <Button size="sm" variant="outline" className="border-card-border/50">
-                                                        Learn More
-                                                    </Button>
-                                                </div>
-                                            </div>
+                                
+                                <div className="space-y-2 text-sm">
+                                    <div className="flex items-center gap-2 text-muted-foreground">
+                                        <CalendarDays className="h-4 w-4 text-primary flex-shrink-0" />
+                                        <span className="truncate">{formatDate(event.date)}</span>
+                                    </div>
+                                    {event.time && (
+                                        <div className="flex items-center gap-2 text-muted-foreground">
+                                            <Clock className="h-4 w-4 text-primary flex-shrink-0" />
+                                            <span className="truncate">{event.time}</span>
                                         </div>
-                                    </CardContent>
-                                </Card>
-                            ))
-                        )}
-                    </div>
-                </CardContent>
-            </Card>
+                                    )}
+                                    {event.location && (
+                                        <div className="flex items-center gap-2 text-muted-foreground">
+                                            <MapPin className="h-4 w-4 text-primary flex-shrink-0" />
+                                            <span className="truncate">{event.location}</span>
+                                        </div>
+                                    )}
+                                    <div className="flex items-center gap-2 text-muted-foreground">
+                                        <Users className="h-4 w-4 text-primary flex-shrink-0" />
+                                        <span className="truncate">
+                                            {event.participants.length} 
+                                            {event.maxAttendees && `/${event.maxAttendees}`} participants
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Registration Progress Bar (if maxAttendees is available) */}
+                                {event.maxAttendees && (
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between text-xs text-muted-foreground">
+                                            <span>Registration</span>
+                                            <span>
+                                                {Math.round(
+                                                    (event.participants.length / event.maxAttendees) * 100
+                                                )}
+                                                % full
+                                            </span>
+                                        </div>
+                                        <div className="w-full bg-muted rounded-full h-2">
+                                            <div
+                                                className="bg-primary h-2 rounded-full transition-all duration-300"
+                                                style={{
+                                                    width: `${
+                                                        (event.participants.length / event.maxAttendees) * 100
+                                                    }%`,
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Action Buttons */}
+                                <div className="flex flex-col gap-2 pt-2">
+                                    <Button
+                                        size="sm"
+                                        className="w-full gradient-primary text-primary-foreground hover:shadow-purple"
+                                        onClick={() => handleJoinEvent(event._id)}
+                                        disabled={
+                                            joiningEvent === event._id ||
+                                            (event.maxAttendees && event.participants.length >= event.maxAttendees)
+                                        }
+                                    >
+                                        {joiningEvent === event._id ? (
+                                            <>
+                                                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                                                Joining...
+                                            </>
+                                        ) : (event.maxAttendees && event.participants.length >= event.maxAttendees) ? (
+                                            "Event Full"
+                                        ) : (
+                                            "Register"
+                                        )}
+                                    </Button>
+                                    <Button 
+                                        size="sm" 
+                                        variant="outline" 
+                                        className="w-full border-card-border/50"
+                                    >
+                                        Learn More
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
+            )}
 
             {/* Load More */}
-            {filteredEvents.length > 6 && (
+            {filteredEvents.length > 9 && (
                 <div className="text-center pt-6">
                     <Button variant="outline" size="lg" className="border-card-border/50">
                         Load More Events
