@@ -7,6 +7,7 @@ import {
   Building,
   Plus,
   Filter,
+  Check,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -126,6 +127,16 @@ const mentorships = [
 export default function Jobs() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [appliedJobs, setAppliedJobs] = useState<Set<number>>(new Set());
+  const [requestedMentorships, setRequestedMentorships] = useState<Set<number>>(new Set());
+
+  const handleApply = (jobId: number) => {
+    setAppliedJobs((prev) => new Set(prev).add(jobId));
+  };
+
+  const handleMentorshipRequest = (mentorId: number) => {
+    setRequestedMentorships((prev) => new Set(prev).add(mentorId));
+  };
 
   const filteredJobs = jobs.filter((job) => {
     const matchesSearch =
@@ -244,12 +255,22 @@ export default function Jobs() {
                         {job.alumni}
                       </span>
                     </div>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline">
-                        Save
-                      </Button>
-                      <Button size="sm">Apply Now</Button>
-                    </div>
+                    <Button
+                      size="sm"
+                      onClick={() => handleApply(job.id)}
+                      disabled={appliedJobs.has(job.id)}
+                      variant={appliedJobs.has(job.id) ? "secondary" : "default"}
+                      className={appliedJobs.has(job.id) ? "gap-2" : ""}
+                    >
+                      {appliedJobs.has(job.id) ? (
+                        <>
+                          <Check className="w-4 h-4" />
+                          Applied
+                        </>
+                      ) : (
+                        "Apply Now"
+                      )}
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -323,8 +344,21 @@ export default function Jobs() {
                   </div>
 
                   <div className="flex gap-2 pt-2">
-                    <Button size="sm" className="flex-1">
-                      Request Mentorship
+                    <Button 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={() => handleMentorshipRequest(mentor.id)}
+                      disabled={requestedMentorships.has(mentor.id)}
+                      variant={requestedMentorships.has(mentor.id) ? "secondary" : "default"}
+                    >
+                      {requestedMentorships.has(mentor.id) ? (
+                        <>
+                          <Check className="w-4 h-4 mr-1" />
+                          Requested
+                        </>
+                      ) : (
+                        "Request Mentorship"
+                      )}
                     </Button>
                     <Button size="sm" variant="outline" className="flex-1">
                       View Profile
