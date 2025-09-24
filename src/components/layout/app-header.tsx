@@ -20,14 +20,6 @@ export function AppHeader() {
         {/* Left side - Sidebar trigger and search */}
         <div className="flex items-center gap-4 flex-1">
           <SidebarTrigger className="p-2" />
-          
-          <div className="relative max-w-md flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <Input
-              placeholder="Search alumni, events, or content..."
-              className="pl-10 bg-muted/50 border-muted focus:bg-background transition-colors"
-            />
-          </div>
         </div>
 
         {/* Right side - notifications and profile */}

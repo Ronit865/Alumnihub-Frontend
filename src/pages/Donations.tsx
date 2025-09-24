@@ -93,7 +93,10 @@ export default function Donations() {
   }, []);
 
   const totalRaised = campaigns.reduce((sum, campaign) => sum + (campaign.raised || 0), 0);
-  const totalDonors = campaigns.reduce((sum, campaign) => sum + (campaign.donors || 0), 0);
+  const totalDonors = campaigns.reduce((sum, campaign) => {
+    const donors = typeof campaign.donors === 'number' ? campaign.donors : 0;
+    return sum + donors;
+  }, 0);
   const totalGoal = campaigns.reduce((sum, campaign) => sum + campaign.goal, 0);
   const completedCampaigns = campaigns.filter(c => (c.raised || 0) >= c.goal).length;
 
