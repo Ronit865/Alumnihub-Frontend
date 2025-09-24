@@ -1,180 +1,204 @@
-// API Services for admin functionality
-export interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  message?: string;
-  error?: string;
-}
+import api from './api';
 
-export interface ApiError {
+// Type definitions matching your backend response format
+interface ApiResponse<T = any> {
+  statusCode: number;
+  data: T;
   message: string;
-  status?: number;
-  code?: string;
+  success: boolean;
 }
 
-// Admin service
+interface ApiError {
+  statusCode: number;
+  message: string;
+  errors: string[];
+  success: false;
+} 
+
+// Auth Services
+export const authService = {
+  login: async (credentials: { email: string; password: string }): Promise<ApiResponse> => {
+    return await api.post('/login', credentials);
+  },
+  
+  logout: async (): Promise<ApiResponse> => {
+    return await api.post('/logout');
+  },
+  
+  forgotPassword: async (email: string): Promise<ApiResponse> => {
+    return await api.post('/forgot-password', { email });
+  },
+  
+  verifyOTP: async (email: string, otp: string): Promise<ApiResponse> => {
+    return await api.post('/verify-otp', { email, otp });
+  },
+
+  refreshAccessToken: async (refreshToken: string): Promise<ApiResponse> => {
+    return await api.post('/refresh-token', { token: refreshToken });
+  },
+  
+  resetPassword: async (email: string, newPassword: string, otp: string): Promise<ApiResponse> => {
+    return await api.post('/reset-password', { 
+      email, 
+      newPassword, 
+      otp 
+    });
+  }
+};
+
+// User Services
+export const userService = {
+  getCurrentUser: async (): Promise<ApiResponse> => {
+    return await api.get('/users/user');
+  },
+  
+  updateProfile: async (data: any): Promise<ApiResponse> => {
+    return await api.patch('/users/update-user', data);
+  },
+  
+  updateAvatar: async (formData: FormData): Promise<ApiResponse> => {
+    return await api.post('/users/update-avatar', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  },
+  
+  changePassword: async (data: { 
+    oldPassword: string; 
+    newPassword: string; 
+  }): Promise<ApiResponse> => {
+    return await api.post('/users/change-password', data);
+  }
+};
+
+// Admin Services
 export const adminService = {
-  async getUsers(): Promise<ApiResponse> {
-    // Mock implementation - replace with actual API calls
-    return {
-      success: true,
-      data: [],
-      message: "Users fetched successfully"
-    };
+  getCurrentAdmin: async (): Promise<ApiResponse> => {
+    return await api.get('/admin/current-admin');
+  },
+  
+  uploadCSV: async (formData: FormData): Promise<ApiResponse> => {
+    return await api.post('/admin/addcsv', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  },
+  
+  getAllUsers: async (): Promise<ApiResponse> => {
+    const response = await api.get('/admin/user');
+    return response.data;
+  },
+  
+  updateAdminProfile: async (data: { name: string; email: string }): Promise<ApiResponse> => {
+    return await api.patch('/admin/update-profile', data);
   },
 
-  async getAllUsers(): Promise<ApiResponse> {
-    return this.getUsers();
+  updateAdminAvatar: async (formData: FormData): Promise<ApiResponse> => {
+    return await api.patch('/admin/update-avatar', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
   },
 
-  async updateAdminProfile(data: any): Promise<ApiResponse> {
-    // Mock implementation
-    return {
-      success: true,
-      data: data,
-      message: "Profile updated successfully"
-    };
+  editUserDetails: async (userId: string, data: any): Promise<ApiResponse> => {
+    return await api.patch(`/admin/editdetails/${userId}`, data);
   },
-
-  async changePassword(data: any): Promise<ApiResponse> {
-    // Mock implementation
-    return {
-      success: true,
-      message: "Password changed successfully"
-    };
+  
+  deleteUser: async (userId: string): Promise<ApiResponse> => {
+    return await api.delete(`/admin/deleteuser/${userId}`);
   },
-
-  async changeAdminPassword(data: any): Promise<ApiResponse> {
-    return this.changePassword(data);
+  
+  changeAdminPassword: async (data: {
+    oldPassword: string;
+    newPassword: string;
+  }): Promise<ApiResponse> => {
+    return await api.post('/admin/change-password', data);
   },
-
-  async updateAdminAvatar(formData: FormData): Promise<ApiResponse> {
-    // Mock implementation
-    const file = formData.get('avatar') as File;
-    if (file) {
-      return {
-        success: true,
-        data: { avatar: URL.createObjectURL(file) },
-        message: "Avatar updated successfully"
-      };
-    }
-    return {
-      success: false,
-      message: "No file provided"
-    };
+  
+  forgotPassword: async (email: string): Promise<ApiResponse> => {
+    return await api.post('/admin/change-password', { email });
   },
-
-  async uploadCSV(formData: FormData): Promise<ApiResponse> {
-    // Mock implementation
-    const file = formData.get('csvFile') as File;
-    if (file) {
-      return {
-        success: true,
-        data: { processed: 0 },
-        message: "CSV uploaded successfully"
-      };
-    }
-    return {
-      success: false,
-      message: "No file provided"
-    };
+  
+  verifyOTP: async (email: string, otp: string): Promise<ApiResponse> => {
+    return await api.post('/admin/verify-otp', { email, otp });
   },
-
-  async editUserDetails(id: string, data: any): Promise<ApiResponse> {
-    // Mock implementation
-    return {
-      success: true,
-      data: { _id: id, ...data },
-      message: "User updated successfully"
-    };
-  },
-
-  async deleteUser(id: string): Promise<ApiResponse> {
-    // Mock implementation
-    return {
-      success: true,
-      message: "User deleted successfully"
-    };
+  
+  resetPassword: async (email: string, newPassword: string, otp: string): Promise<ApiResponse> => {
+    return await api.post('/admin/reset-password', { 
+      email, 
+      newPassword, 
+      otp 
+    });
   }
 };
 
-// Event service
+// Events Services
 export const eventService = {
-  async getEvents(): Promise<ApiResponse> {
-    // Mock implementation
-    return {
-      success: true,
-      data: [],
-      message: "Events fetched successfully"
-    };
+  getEvents: async (): Promise<ApiResponse> => {
+    return await api.get('/events/getEvents');
   },
-
-  async createEvent(data: any): Promise<ApiResponse> {
-    // Mock implementation
-    return {
-      success: true,
-      data: { _id: Date.now().toString(), ...data },
-      message: "Event created successfully"
-    };
+  
+  createEvent: async (eventData: any): Promise<ApiResponse> => {
+    return await api.post('/events/addEvent', eventData);
   },
-
-  async deleteEvent(id: string): Promise<ApiResponse> {
-    // Mock implementation
-    return {
-      success: true,
-      message: "Event deleted successfully"
-    };
+  
+  updateEvent: async (id: string, eventData: any): Promise<ApiResponse> => {
+    return await api.patch(`/events/editEvent/${id}`, eventData);
+  },
+  
+  deleteEvent: async (id: string): Promise<ApiResponse> => {
+    return await api.delete(`/events/deleteEvent/${id}`);
+  },
+  
+  joinEvent: async (eventId: string): Promise<ApiResponse> => {
+    return await api.post(`/events/addUserToEvent/${eventId}`);
+  },
+  
+  leaveEvent: async (eventId: string): Promise<ApiResponse> => {
+    return await api.post(`/events/removeUserFromEvent/${eventId}`);
   }
 };
 
-// Donation service
+// Donation Services
 export const donationService = {
-  async getDonations(): Promise<ApiResponse> {
-    // Mock implementation
-    return {
-      success: true,
-      data: [],
-      message: "Donations fetched successfully"
-    };
+  getCampaigns: async (): Promise<ApiResponse> => {
+    return await api.get('/donations/getDonations');
   },
-
-  async getCampaigns(): Promise<ApiResponse> {
-    // Mock implementation
-    return {
-      success: true,
-      data: [],
-      message: "Campaigns fetched successfully"
-    };
+  
+  createCampaign: async (campaignData: {
+    name: string;
+    description: string;
+    goal: number;
+  }): Promise<ApiResponse> => {
+    return await api.post('/donations/addDonation', campaignData);
   },
-
-  async createCampaign(data: any): Promise<ApiResponse> {
-    // Mock implementation
-    return {
-      success: true,
-      data: { _id: Date.now().toString(), ...data },
-      message: "Campaign created successfully"
-    };
+  
+  updateCampaign: async (id: string, campaignData: {
+    name: string;
+    description: string;
+    goal: number;
+  }): Promise<ApiResponse> => {
+    return await api.patch(`/donations/editDonation/${id}`, campaignData);
+  },
+  
+  deleteCampaign: async (id: string): Promise<ApiResponse> => {
+    return await api.delete(`/donations/deleteDonation/${id}`);
   }
 };
 
-// Error handling utilities
-export const handleApiError = (error: any): ApiError => {
-  if (error.response) {
-    return {
-      message: error.response.data?.message || "API Error",
-      status: error.response.status,
-      code: error.response.data?.code
-    };
-  }
+// Error handler utility
+export const handleApiError = (error: ApiError) => {
+  console.error('API Error:', error);
   
   return {
-    message: error.message || "Network Error"
+    message: error.message || 'An unexpected error occurred',
+    errors: error.errors || [],
+    statusCode: error.statusCode || 500
   };
 };
 
+// Success handler utility
 export const handleApiSuccess = (response: ApiResponse) => {
   return {
-    message: response.message || "Operation successful",
-    data: response.data
+    data: response.data,
+    message: response.message,
+    statusCode: response.statusCode
   };
 };

@@ -17,6 +17,12 @@ import Communications from "./pages/Communications";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
+// Auth pages
+import { Login } from "./pages/auth/Login";
+import { ForgotPassword } from "./pages/auth/ForgotPassword";
+import { OTPVerification } from "./pages/auth/OTPVerification";
+import { ResetPassword } from "./pages/auth/ResetPassword";
+
 // Admin pages
 import { Dashboard as AdminDashboard } from "./pages/admin/Dashboard";
 import { Alumni as AdminAlumni } from "./pages/admin/Alumni";
@@ -47,6 +53,12 @@ const App = () => (
               <Route path="/messages" element={<PersonalMessages />} />
               <Route path="/communications" element={<Communications />} />
               <Route path="/settings" element={<Settings />} />
+              
+              {/* Auth Routes */}
+              <Route path="/auth/login" element={<Login />} />
+              <Route path="/auth/forgot-password" element={<ForgotPassword />} />
+              <Route path="/auth/otp-verification" element={<OTPVerification />} />
+              <Route path="/auth/reset-password" element={<ResetPassword />} />
               
               {/* Admin Routes */}
               <Route path="/admin" element={<AdminDashboard />} />
