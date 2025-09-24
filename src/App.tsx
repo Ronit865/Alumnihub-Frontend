@@ -32,6 +32,7 @@ import { Donations as AdminDonations } from "./pages/admin/Donations";
 import { Communications as AdminCommunications } from "./pages/admin/Communications";
 import { Analytics as AdminAnalytics } from "./pages/admin/Analytics";
 import { Settings as AdminSettings } from "./pages/admin/Settings";
+import { AuthLayout } from "./components/layout/AuthLayout";
 
 const queryClient = new QueryClient();
 
@@ -42,39 +43,42 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <MainLayout>
-            <Routes>
+          <Routes>
+            {/* Auth Routes - No Sidebar */}
+            <Route path="/auth" element={<AuthLayout />}>
+              <Route path="login" element={<Login />} />
+              <Route path="forgot-password" element={<ForgotPassword />} />
+              <Route path="otp-verification" element={<OTPVerification />} />
+              <Route path="reset-password" element={<ResetPassword />} />
+            </Route>
+            
+            {/* Protected Routes - With Sidebar */}
+            <Route path="/" element={<MainLayout />}>
               {/* User Routes */}
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/alumni" element={<Alumni />} />
-              <Route path="/events" element={<Events />} />
-              <Route path="/jobs" element={<Jobs />} />
-              <Route path="/donations" element={<Donations />} />
-              <Route path="/messages" element={<PersonalMessages />} />
-              <Route path="/communications" element={<Communications />} />
-              <Route path="/settings" element={<Settings />} />
-              
-              {/* Auth Routes */}
-              <Route path="/auth/login" element={<Login />} />
-              <Route path="/auth/forgot-password" element={<ForgotPassword />} />
-              <Route path="/auth/otp-verification" element={<OTPVerification />} />
-              <Route path="/auth/reset-password" element={<ResetPassword />} />
+              <Route index element={<Dashboard />} />
+              <Route path="alumni" element={<Alumni />} />
+              <Route path="events" element={<Events />} />
+              <Route path="jobs" element={<Jobs />} />
+              <Route path="donations" element={<Donations />} />
+              <Route path="messages" element={<PersonalMessages />} />
+              <Route path="communications" element={<Communications />} />
+              <Route path="settings" element={<Settings />} />
               
               {/* Admin Routes */}
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/admin/dashboard" element={<AdminDashboard />} />
-              <Route path="/admin/alumni" element={<AdminAlumni />} />
-              <Route path="/admin/events" element={<AdminEvents />} />
-              <Route path="/admin/jobs" element={<AdminJobs />} />
-              <Route path="/admin/donations" element={<AdminDonations />} />
-              <Route path="/admin/communications" element={<AdminCommunications />} />
-              <Route path="/admin/analytics" element={<AdminAnalytics />} />
-              <Route path="/admin/settings" element={<AdminSettings />} />
-              
-              {/* Catch-all route */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </MainLayout>
+              <Route path="admin" element={<AdminDashboard />} />
+              <Route path="admin/dashboard" element={<AdminDashboard />} />
+              <Route path="admin/alumni" element={<AdminAlumni />} />
+              <Route path="admin/events" element={<AdminEvents />} />
+              <Route path="admin/jobs" element={<AdminJobs />} />
+              <Route path="admin/donations" element={<AdminDonations />} />
+              <Route path="admin/communications" element={<AdminCommunications />} />
+              <Route path="admin/analytics" element={<AdminAnalytics />} />
+              <Route path="admin/settings" element={<AdminSettings />} />
+            </Route>
+            
+            {/* Catch-all route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>

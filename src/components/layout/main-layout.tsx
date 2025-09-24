@@ -1,12 +1,9 @@
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { AppHeader } from "@/components/layout/app-header";
+import { Outlet } from "react-router-dom";
 
-interface MainLayoutProps {
-  children: React.ReactNode;
-}
-
-export function MainLayout({ children }: MainLayoutProps) {
+export function MainLayout() {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
@@ -14,7 +11,7 @@ export function MainLayout({ children }: MainLayoutProps) {
         <div className="flex-1 flex flex-col">
           <AppHeader />
           <main className="flex-1 p-6 overflow-auto">
-            {children}
+            <Outlet />
           </main>
         </div>
       </div>

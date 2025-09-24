@@ -83,9 +83,8 @@ export const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-subtle flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <Card className="shadow-lg border-0 bg-card/95 backdrop-blur">
+     <div className="w-full max-w-md">
+      <Card className="shadow-lg border-0 bg-card/95 backdrop-blur">
           <CardHeader className="space-y-1 text-center">
             <CardTitle className="text-2xl font-bold text-gradient">
               Welcome Back
@@ -174,6 +173,5 @@ export const Login = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
   );
 };
