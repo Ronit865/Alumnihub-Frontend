@@ -5,13 +5,15 @@ import {
   Users,
   Calendar,
   Briefcase,
-  DollarSign,
+  Heart,
   MessageCircle,
   MessageSquare,
   Settings,
   Sun,
   Moon,
-  GraduationCap
+  GraduationCap,
+  BarChart3,
+  Mail
 } from "lucide-react";
 
 import {
@@ -32,9 +34,19 @@ const navigation = [
   { title: "Alumni Directory", url: "/alumni", icon: Users },
   { title: "Events", url: "/events", icon: Calendar },
   { title: "Jobs & Mentorship", url: "/jobs", icon: Briefcase },
-  { title: "Donations", url: "/donations", icon: DollarSign },
+  { title: "Donations", url: "/donations", icon: Heart },
   { title: "Personal Messages", url: "/messages", icon: MessageCircle },
   { title: "Communications", url: "/communications", icon: MessageSquare },
+];
+
+const adminNavigation = [
+  { title: "Admin Dashboard", url: "/admin", icon: LayoutDashboard },
+  { title: "Manage Alumni", url: "/admin/alumni", icon: Users },
+  { title: "Manage Events", url: "/admin/events", icon: Calendar },
+  { title: "Manage Jobs", url: "/admin/jobs", icon: Briefcase },
+  { title: "Manage Donations", url: "/admin/donations", icon: Heart },
+  { title: "Communications", url: "/admin/communications", icon: Mail },
+  { title: "Analytics", url: "/admin/analytics", icon: BarChart3 },
 ];
 
 const bottomNavigation = [
@@ -50,6 +62,9 @@ export function AppSidebar() {
     }
     return false;
   });
+  
+  // Determine if we're in admin mode
+  const isAdminMode = location.pathname.startsWith('/admin');
 
   useEffect(() => {
     const isDarkMode = document.documentElement.classList.contains("dark");
@@ -100,7 +115,7 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1">
-              {navigation.map((item) => (
+              {(isAdminMode ? adminNavigation : navigation).map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} className={getNavClasses(item.url)}>
@@ -117,16 +132,14 @@ export function AppSidebar() {
         {/* Bottom Section */}
         <div className={`mt-auto border-t ${open ? "p-3" : "p-2"}`}>
           <SidebarMenu className="space-y-1">
-            {bottomNavigation.map((item) => (
-              <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton asChild>
-                  <NavLink to={item.url} className={getNavClasses(item.url)}>
-                    <item.icon className="w-5 h-5 shrink-0" />
-                    {open && <span className="truncate">{item.title}</span>}
-                  </NavLink>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <NavLink to={isAdminMode ? "/admin/settings" : "/settings"} className={getNavClasses(isAdminMode ? "/admin/settings" : "/settings")}>
+                  <Settings className="w-5 h-5 shrink-0" />
+                  {open && <span className="truncate">Settings</span>}
+                </NavLink>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
             
             {/* Theme Toggle */}
             <SidebarMenuItem>

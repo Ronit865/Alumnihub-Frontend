@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { AdminToggle } from "./admin-toggle";
 
 export function AppHeader() {
   return (
@@ -31,6 +32,8 @@ export function AppHeader() {
 
         {/* Right side - notifications and profile */}
         <div className="flex items-center gap-3">
+          <AdminToggle />
+          
           {/* Notifications */}
           <Button variant="ghost" size="icon" className="relative">
             <Bell className="w-5 h-5" />
