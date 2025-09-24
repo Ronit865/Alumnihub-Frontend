@@ -1,8 +1,22 @@
 import { useState } from "react";
-import { Search, MapPin, Clock, DollarSign, Building, Plus, Filter } from "lucide-react";
+import {
+  Search,
+  MapPin,
+  Clock,
+  DollarSign,
+  Building,
+  Plus,
+  Filter,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -17,98 +31,108 @@ const jobs = [
   {
     id: 1,
     title: "Senior Software Engineer",
-    company: "Google",
-    location: "Mountain View, CA",
+    company: "Infosys",
+    location: "Bengaluru, Karnataka",
     type: "Full-time",
-    salary: "$180,000 - $220,000",
+    salary: "₹22,00,000 - ₹28,00,000",
     posted: "2 days ago",
     category: "Technology",
     experience: "5+ years",
-    description: "Join our team building next-generation cloud infrastructure solutions.",
-    alumni: "Sarah Johnson '18"
+    description:
+      "Work on large-scale enterprise cloud solutions and cutting-edge AI tools.",
+    alumni: "Rahul Sharma '18",
   },
   {
     id: 2,
     title: "Product Manager",
-    company: "Meta",
-    location: "Menlo Park, CA",
+    company: "Flipkart",
+    location: "Bengaluru, Karnataka",
     type: "Full-time",
-    salary: "$160,000 - $200,000",
+    salary: "₹18,00,000 - ₹25,00,000",
     posted: "1 week ago",
     category: "Product",
     experience: "3+ years",
-    description: "Lead product strategy for our emerging social commerce platform.",
-    alumni: "Michael Chen '15"
+    description:
+      "Lead product strategy and innovation for India’s top e-commerce platform.",
+    alumni: "Priya Mehta '15",
   },
   {
     id: 3,
     title: "Data Scientist",
-    company: "Netflix",
-    location: "Los Gatos, CA",
+    company: "Zomato",
+    location: "Gurugram, Haryana",
     type: "Full-time",
-    salary: "$150,000 - $190,000",
+    salary: "₹15,00,000 - ₹20,00,000",
     posted: "3 days ago",
     category: "Data",
     experience: "4+ years",
-    description: "Build ML models to personalize content recommendations for millions of users.",
-    alumni: "Emily Rodriguez '20"
+    description:
+      "Develop advanced ML models to improve food delivery recommendations and customer insights.",
+    alumni: "Amit Verma '20",
   },
   {
     id: 4,
     title: "Marketing Director",
-    company: "Airbnb",
-    location: "San Francisco, CA",
+    company: "Ola",
+    location: "Mumbai, Maharashtra",
     type: "Full-time",
-    salary: "$170,000 - $210,000",
+    salary: "₹20,00,000 - ₹27,00,000",
     posted: "5 days ago",
     category: "Marketing",
     experience: "7+ years",
-    description: "Drive global marketing strategy and brand growth initiatives.",
-    alumni: "David Kim '16"
-  }
+    description:
+      "Drive national-level marketing campaigns and brand growth strategies.",
+    alumni: "Sneha Iyer '16",
+  },
 ];
 
 const mentorships = [
   {
     id: 1,
-    mentor: "Sarah Johnson '18",
-    title: "Senior Software Engineer at Google",
-    expertise: ["Software Engineering", "Career Growth", "Tech Leadership"],
+    mentor: "Rahul Sharma '18",
+    title: "Senior Software Engineer at Infosys",
+    expertise: ["Software Engineering", "Career Growth", "System Design"],
     experience: "6 years",
     availability: "2 hours/week",
     rating: 4.9,
-    sessions: 45
+    sessions: 45,
   },
   {
     id: 2,
-    mentor: "Michael Chen '15",
-    title: "VP at Goldman Sachs",
-    expertise: ["Finance", "Investment Banking", "Career Transition"],
+    mentor: "Priya Mehta '15",
+    title: "VP at HDFC Bank",
+    expertise: ["Finance", "Banking", "Career Transition"],
     experience: "9 years",
     availability: "1 hour/week",
     rating: 4.8,
-    sessions: 32
+    sessions: 32,
   },
   {
     id: 3,
-    mentor: "Emily Rodriguez '20",
-    title: "Research Scientist at J&J",
-    expertise: ["Biomedical Research", "PhD Guidance", "Industry Transition"],
+    mentor: "Amit Verma '20",
+    title: "Research Scientist at Dr. Reddy's Laboratories",
+    expertise: [
+      "Pharmaceutical Research",
+      "PhD Guidance",
+      "Industry Transition",
+    ],
     experience: "4 years",
     availability: "3 hours/week",
     rating: 4.9,
-    sessions: 28
-  }
+    sessions: 28,
+  },
 ];
 
 export default function Jobs() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
 
-  const filteredJobs = jobs.filter(job => {
-    const matchesSearch = job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         job.company.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === "all" || job.category === selectedCategory;
+  const filteredJobs = jobs.filter((job) => {
+    const matchesSearch =
+      job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      job.company.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory =
+      selectedCategory === "all" || job.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -117,7 +141,9 @@ export default function Jobs() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold gradient-text mb-2">Jobs & Mentorship</h1>
+          <h1 className="text-3xl font-bold gradient-text mb-2">
+            Jobs & Mentorship
+          </h1>
           <p className="text-muted-foreground">
             Discover career opportunities and connect with alumni mentors
           </p>
@@ -146,9 +172,12 @@ export default function Jobs() {
                 className="pl-10"
               />
             </div>
-            
+
             <div className="flex gap-3">
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <Select
+                value={selectedCategory}
+                onValueChange={setSelectedCategory}
+              >
                 <SelectTrigger className="w-[150px]">
                   <SelectValue placeholder="Category" />
                 </SelectTrigger>
@@ -195,10 +224,10 @@ export default function Jobs() {
                     <Badge variant="secondary">{job.category}</Badge>
                   </div>
                 </CardHeader>
-                
+
                 <CardContent className="space-y-4">
                   <p className="text-muted-foreground">{job.description}</p>
-                  
+
                   <div className="flex flex-wrap gap-4 text-sm">
                     <div className="flex items-center gap-1">
                       <DollarSign className="w-4 h-4 text-muted-foreground" />
@@ -210,15 +239,16 @@ export default function Jobs() {
 
                   <div className="flex items-center justify-between pt-4 border-t">
                     <div className="text-sm text-muted-foreground">
-                      Posted by <span className="font-medium text-primary">{job.alumni}</span>
+                      Posted by{" "}
+                      <span className="font-medium text-primary">
+                        {job.alumni}
+                      </span>
                     </div>
                     <div className="flex gap-2">
                       <Button size="sm" variant="outline">
                         Save
                       </Button>
-                      <Button size="sm">
-                        Apply Now
-                      </Button>
+                      <Button size="sm">Apply Now</Button>
                     </div>
                   </div>
                 </CardContent>
@@ -236,7 +266,10 @@ export default function Jobs() {
                   <div className="flex items-start gap-4">
                     <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center">
                       <span className="font-medium text-primary">
-                        {mentor.mentor.split(' ').map(n => n[0]).join('')}
+                        {mentor.mentor
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
                       </span>
                     </div>
                     <div className="flex-1">
@@ -249,19 +282,23 @@ export default function Jobs() {
                     </div>
                   </div>
                 </CardHeader>
-                
+
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <p className="text-sm font-medium">Expertise</p>
                     <div className="flex flex-wrap gap-1">
                       {mentor.expertise.map((skill) => (
-                        <Badge key={skill} variant="outline" className="text-xs">
+                        <Badge
+                          key={skill}
+                          variant="outline"
+                          className="text-xs"
+                        >
                           {skill}
                         </Badge>
                       ))}
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <p className="text-muted-foreground">Experience</p>
@@ -279,7 +316,9 @@ export default function Jobs() {
                       <span className="font-medium">{mentor.rating}/5.0</span>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">{mentor.sessions} sessions</span>
+                      <span className="text-muted-foreground">
+                        {mentor.sessions} sessions
+                      </span>
                     </div>
                   </div>
 
