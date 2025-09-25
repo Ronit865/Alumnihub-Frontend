@@ -79,8 +79,10 @@ export function AppSidebar() {
   };
 
   const isActive = (path: string) => {
-    if (path === "/") return location.pathname === "/";
-    return location.pathname.startsWith(path);
+    if (path === "/" || path === "/admin") {
+      return location.pathname === path;
+    }
+    return location.pathname === path;
   };
 
   const getNavClasses = (path: string) => {
