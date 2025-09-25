@@ -62,7 +62,7 @@ export const Login = () => {
             color: '#ffffff',
             border: '1px solid #059669',
           },
-          duration: 4000,
+          duration: 1000,
           description: successData.message || "Welcome back to AlumniHub!",
           descriptionClassName: "text-white",
         });
