@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar } from "@/components/ui/calendar";
+// import { Calendar } from "@/components/ui/calendar";
 import { CalendarDays, Clock, MapPin, Users, Plus, Eye, Edit, Trash2, Loader2, X } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -472,9 +472,9 @@ export function Events() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      {/* <div className="grid grid-cols-1 lg:grid-cols-4 gap-6"> */}
         {/* Calendar */}
-        <Card className="lg:col-span-1 bento-card gradient-surface border-card-border/50 h-fit">
+        {/* <Card className="lg:col-span-1 bento-card gradient-surface border-card-border/50 h-fit">
           <CardHeader>
             <CardTitle className="text-lg">Event Calendar</CardTitle>
             <CardDescription>
@@ -529,7 +529,6 @@ export function Events() {
               }}
             />
             
-            {/* Calendar Legend */}
             <div className="mt-4 space-y-2 text-xs">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-primary"></div>
@@ -541,10 +540,10 @@ export function Events() {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
 
         {/* Events List */}
-        <Card className="lg:col-span-3 bento-card gradient-surface border-card-border/50">
+        <Card className="bento-card gradient-surface border-card-border/50">
           <CardHeader>
             <div className="flex justify-between items-center">
               <div>
@@ -594,62 +593,38 @@ export function Events() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {eventsToDisplay.length === 0 ? (
-                <div className="text-center py-8">
-                  <CalendarDays className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">
-                    {date ? 'No events found for selected date' : 'No events found'}
-                  </p>
-                </div>
-              ) : (
-                eventsToDisplay.map((event, index) => (
+            {eventsToDisplay.length === 0 ? (
+              <div className="text-center py-8">
+                <CalendarDays className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">
+                  {date ? 'No events found for selected date' : 'No events found'}
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {eventsToDisplay.map((event, index) => (
                   <Card 
                     key={event._id} 
-                    className="bento-card hover:shadow-md border-card-border/50 animate-fade-in"
+                    className="bento-card hover:shadow-md border-card-border/50 animate-fade-in relative group"
                     style={{ animationDelay: `${index * 100}ms` }}
                   >
                     <CardContent className="p-6">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-lg font-semibold text-foreground">{event.title}</h3>
-                            {getStatusBadge(event.isactive)}
-                          </div>
-                          <p className="text-muted-foreground mb-4">{event.description}</p>
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                            <div className="flex items-center gap-2">
-                              <CalendarDays className="h-4 w-4 text-primary" />
-                              <span>{new Date(event.date).toLocaleDateString()}</span>
-                            </div>
-                            {event.time && (
-                              <div className="flex items-center gap-2">
-                                <Clock className="h-4 w-4 text-primary" />
-                                <span>{event.time}</span>
-                              </div>
-                            )}
-                            {event.location && (
-                              <div className="flex items-center gap-2">
-                                <MapPin className="h-4 w-4 text-primary" />
-                                <span className="truncate">{event.location}</span>
-                              </div>
-                            )}
-                          </div>
-                          
-                          <div className="flex items-center gap-4 mt-4">
-                            <div className="flex items-center gap-2">
-                              <Users className="h-4 w-4 text-primary" />
-                              <span className="text-sm">
-                                {event.participants.length} participants
-                              </span>
-                            </div>
-                          </div>
+                      {/* Event Header with Status and Actions */}
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-lg font-semibold text-foreground truncate mb-2">
+                            {event.title}
+                          </h3>
+                          {getStatusBadge(event.isactive)}
                         </div>
                         
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="ml-4">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
                               <Eye className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -678,14 +653,60 @@ export function Events() {
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
+
+                      {/* Event Description */}
+                      <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
+                        {event.description}
+                      </p>
+                      
+                      {/* Event Details */}
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2 text-sm">
+                          <CalendarDays className="h-4 w-4 text-primary flex-shrink-0" />
+                          <span className="truncate">{new Date(event.date).toLocaleDateString()}</span>
+                        </div>
+                        
+                        {event.time && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <Clock className="h-4 w-4 text-primary flex-shrink-0" />
+                            <span className="truncate">{event.time}</span>
+                          </div>
+                        )}
+                        
+                        {event.location && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <MapPin className="h-4 w-4 text-primary flex-shrink-0" />
+                            <span className="truncate" title={event.location}>
+                              {event.location}
+                            </span>
+                          </div>
+                        )}
+                        
+                        <div className="flex items-center gap-2 text-sm">
+                          <Users className="h-4 w-4 text-primary flex-shrink-0" />
+                          <span className="truncate">
+                            {event.participants.length} participant{event.participants.length !== 1 ? 's' : ''}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Event Footer */}
+                      <div className="mt-4 pt-3 border-t border-card-border/20">
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <span>Created: {new Date(event.createdAt).toLocaleDateString()}</span>
+                          {event.updatedAt !== event.createdAt && (
+                            <span>Updated: {new Date(event.updatedAt).toLocaleDateString()}</span>
+                          )}
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
-                ))
-              )}
-            </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
-      </div>
+      {/* </div> */}
     </div>
   );
 }
