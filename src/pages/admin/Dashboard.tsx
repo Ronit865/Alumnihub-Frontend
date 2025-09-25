@@ -239,34 +239,36 @@ export function Dashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <Button onClick={() => navigate('/Alumni')} variant="outline" className="h-20 flex-col gap-2 hover:bg-accent/50 transition-smooth">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 justify-items-center">
+              <Button onClick={() => navigate('/Alumni')} variant="outline" className="h-20 w-full flex-col gap-2 hover:bg-accent/50 transition-smooth">
                 <Users className="h-6 w-6 text-primary" />
                 <span className="text-sm">Add Alumni</span>
               </Button>
-              <Button onClick={() => navigate('/Events')} variant="outline" className="h-20 flex-col gap-2 hover:bg-accent/50 transition-smooth">
+              <Button onClick={() => navigate('/Events')} variant="outline" className="h-20 w-full flex-col gap-2 hover:bg-accent/50 transition-smooth">
                 <Calendar className="h-6 w-6 text-primary" />
                 <span className="text-sm">Create Event</span>
               </Button>
-              <Button onClick={() => navigate('/communications')} variant="outline" className="h-20 flex-col gap-2 hover:bg-accent/50 transition-smooth">
+              <Button onClick={() => navigate('/communications')} variant="outline" className="h-20 w-full flex-col gap-2 hover:bg-accent/50 transition-smooth">
                 <Mail className="h-6 w-6 text-primary" />
                 <span className="text-sm">Send Newsletter</span>
               </Button>
-              <Button onClick={() => navigate('/donations')} variant="outline" className="h-20 flex-col gap-2 hover:bg-accent/50 transition-smooth">
+              <Button onClick={() => navigate('/donations')} variant="outline" className="h-20 w-full flex-col gap-2 hover:bg-accent/50 transition-smooth">
                 <DollarSign className="h-6 w-6 text-primary" />
                 <span className="text-sm">View Donations</span>
               </Button>
-              <Button onClick={() => navigate('/analytics')} variant="outline" className="h-20 flex-col gap-2 hover:bg-accent/50 transition-smooth">
+              <Button onClick={() => navigate('/analytics')} variant="outline" className="h-20 w-full flex-col gap-2 hover:bg-accent/50 transition-smooth">
                 <TrendingUp className="h-6 w-6 text-primary" />
                 <span className="text-sm">Analytics</span>
               </Button>
-              <Button onClick={() => navigate('/jobs')} variant="outline" className="h-20 flex-col gap-2 hover:bg-accent/50 transition-smooth">
+              <Button onClick={() => navigate('/jobs')} variant="outline" className="h-20 w-full flex-col gap-2 hover:bg-accent/50 transition-smooth">
                 <Award className="h-6 w-6 text-primary" />
                 <span className="text-sm">Jobs</span>
               </Button>
             </div>
           </CardContent>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        </Card>
+
+        {/* Department Statistics */}
         <Card className="bento-card gradient-surface border-card-border/50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -310,8 +312,10 @@ export function Dashboard() {
             )}
           </CardContent>
         </Card>
+      </div>
 
-        {/* Department Statistics */}
+      {/* Department Statistics Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="bento-card gradient-surface border-card-border/50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -361,8 +365,6 @@ export function Dashboard() {
               </div>
             )}
           </CardContent>
-        </Card>
-      </div>
         </Card>
 
         {/* Recent Activity */}
