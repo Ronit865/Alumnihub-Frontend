@@ -277,7 +277,7 @@ export function Events() {
               Create Event
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px] bento-card gradient-surface border-card-border/50">
+          <DialogContent className="sm:max-w-[500px] bento-card gradient-surface border-card-border/50" style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
             <DialogHeader>
               <DialogTitle className="text-xl font-semibold text-foreground">Create New Event</DialogTitle>
               <DialogDescription className="text-muted-foreground">
