@@ -154,40 +154,40 @@ export default function Dashboard() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-card rounded-xl p-6 border hover-lift">
+        <div className="stats-card-orange">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Total Alumni</p>
-              <p className="text-2xl font-bold">{stats.totalAlumni.toLocaleString()}</p>
+              <p className="stats-card-label">Total Alumni</p>
+              <p className="stats-card-number">{stats.totalAlumni.toLocaleString()}</p>
             </div>
-            <Users className="w-8 h-8 text-primary" />
+            <Users className="stats-card-icon" />
           </div>
         </div>
-        <div className="bg-card rounded-xl p-6 border hover-lift">
+        <div className="stats-card-blue">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Active Events</p>
-              <p className="text-2xl font-bold">{stats.activeEvents}</p>
+              <p className="stats-card-label">Active Events</p>
+              <p className="stats-card-number">{stats.activeEvents}</p>
             </div>
-            <Calendar className="w-8 h-8 text-primary" />
+            <Calendar className="stats-card-icon" />
           </div>
         </div>
-        <div className="bg-card rounded-xl p-6 border hover-lift">
+        <div className="stats-card-teal">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Total Events</p>
-              <p className="text-2xl font-bold">{stats.totalEvents}</p>
+              <p className="stats-card-label">Total Events</p>
+              <p className="stats-card-number">{stats.totalEvents}</p>
             </div>
-            <Briefcase className="w-8 h-8 text-primary" />
+            <Briefcase className="stats-card-icon" />
           </div>
         </div>
-        <div className="bg-card rounded-xl p-6 border hover-lift">
+        <div className="stats-card-pink">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Donations</p>
-              <p className="text-2xl font-bold">{stats.totalDonations}</p>
+              <p className="stats-card-label">Donations</p>
+              <p className="stats-card-number">{stats.totalDonations}</p>
             </div>
-            <Heart className="w-8 h-8 text-primary" />
+            <Heart className="stats-card-icon" />
           </div>
         </div>
       </div>

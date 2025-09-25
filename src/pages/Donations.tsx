@@ -182,55 +182,47 @@ export default function Donations() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-4 gap-4">
-        <Card className="hover-lift">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Total Raised</p>
-                <p className="text-2xl font-bold">
-                  {totalRaised > 0 ? formatCurrency(totalRaised) : "₹0"}
-                </p>
-              </div>
-              <TrendingUp className="w-8 h-8 text-primary" />
+        <div className="stats-card-pink">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="stats-card-label">Total Raised</p>
+              <p className="stats-card-number">
+                {totalRaised > 0 ? formatCurrency(totalRaised) : "₹0"}
+              </p>
             </div>
-          </CardContent>
-        </Card>
+            <TrendingUp className="stats-card-icon" />
+          </div>
+        </div>
 
-        <Card className="hover-lift">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Active Donors</p>
-                <p className="text-2xl font-bold">{totalDonors}</p>
-              </div>
-              <Users className="w-8 h-8 text-primary" />
+        <div className="stats-card-blue">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="stats-card-label">Active Donors</p>
+              <p className="stats-card-number">{totalDonors}</p>
             </div>
-          </CardContent>
-        </Card>
+            <Users className="stats-card-icon" />
+          </div>
+        </div>
 
-        <Card className="hover-lift">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Active Campaigns</p>
-                <p className="text-2xl font-bold">{campaigns.length}</p>
-              </div>
-              <Target className="w-8 h-8 text-primary" />
+        <div className="stats-card-teal">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="stats-card-label">Active Campaigns</p>
+              <p className="stats-card-number">{campaigns.length}</p>
             </div>
-          </CardContent>
-        </Card>
+            <Target className="stats-card-icon" />
+          </div>
+        </div>
 
-        <Card className="hover-lift">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Completed Goals</p>
-                <p className="text-2xl font-bold">{completedCampaigns}</p>
-              </div>
-              <Heart className="w-8 h-8 text-primary" />
+        <div className="stats-card-orange">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="stats-card-label">Completed Goals</p>
+              <p className="stats-card-number">{completedCampaigns}</p>
             </div>
-          </CardContent>
-        </Card>
+            <Heart className="stats-card-icon" />
+          </div>
+        </div>
       </div>
 
       {/* Featured Campaign */}

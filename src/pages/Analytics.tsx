@@ -15,69 +15,61 @@ export default function Analytics() {
 
       {/* Key Metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="hover-lift">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Total Alumni</p>
-                <p className="text-2xl font-bold">12,847</p>
-                <p className="text-xs text-green-600 flex items-center gap-1 mt-1">
-                  <TrendingUp className="w-3 h-3" />
-                  +5.2% this month
-                </p>
-              </div>
-              <Users className="w-8 h-8 text-primary" />
+        <div className="stats-card-blue">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="stats-card-label">Total Alumni</p>
+              <p className="stats-card-number">12,847</p>
+              <p className="text-xs text-white/80 flex items-center gap-1 mt-1">
+                <TrendingUp className="w-3 h-3" />
+                +5.2% this month
+              </p>
             </div>
-          </CardContent>
-        </Card>
+            <Users className="stats-card-icon" />
+          </div>
+        </div>
         
-        <Card className="hover-lift">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Active Users</p>
-                <p className="text-2xl font-bold">3,421</p>
-                <p className="text-xs text-green-600 flex items-center gap-1 mt-1">
-                  <TrendingUp className="w-3 h-3" />
-                  +12.1% this month
-                </p>
-              </div>
-              <Activity className="w-8 h-8 text-primary" />
+        <div className="stats-card-teal">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="stats-card-label">Active Users</p>
+              <p className="stats-card-number">3,421</p>
+              <p className="text-xs text-white/80 flex items-center gap-1 mt-1">
+                <TrendingUp className="w-3 h-3" />
+                +12.1% this month
+              </p>
             </div>
-          </CardContent>
-        </Card>
+            <Activity className="stats-card-icon" />
+          </div>
+        </div>
         
-        <Card className="hover-lift">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Events This Month</p>
-                <p className="text-2xl font-bold">23</p>
-                <p className="text-xs text-blue-600 flex items-center gap-1 mt-1">
-                  <Calendar className="w-3 h-3" />
-                  6 upcoming
-                </p>
-              </div>
-              <Calendar className="w-8 h-8 text-primary" />
+        <div className="stats-card-orange">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="stats-card-label">Events This Month</p>
+              <p className="stats-card-number">23</p>
+              <p className="text-xs text-white/80 flex items-center gap-1 mt-1">
+                <Calendar className="w-3 h-3" />
+                6 upcoming
+              </p>
             </div>
-          </CardContent>
-        </Card>
+            <Calendar className="stats-card-icon" />
+          </div>
+        </div>
         
-        <Card className="hover-lift">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Monthly Donations</p>
-                <p className="text-2xl font-bold">$284K</p>
-                <p className="text-xs text-green-600 flex items-center gap-1 mt-1">
-                  <TrendingUp className="w-3 h-3" />
-                  +18.3% this month
-                </p>
-              </div>
-              <DollarSign className="w-8 h-8 text-primary" />
+        <div className="stats-card-pink">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="stats-card-label">Monthly Donations</p>
+              <p className="stats-card-number">₹284K</p>
+              <p className="text-xs text-white/80 flex items-center gap-1 mt-1">
+                <TrendingUp className="w-3 h-3" />
+                +18.3% this month
+              </p>
             </div>
-          </CardContent>
-        </Card>
+            <DollarSign className="stats-card-icon" />
+          </div>
+        </div>
       </div>
 
       {/* Charts Section */}
