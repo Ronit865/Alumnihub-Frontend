@@ -53,7 +53,7 @@ const recentDonations = [
         "campaign": "Scholarship Fund",
         "date": "2024-01-20",
         "status": "completed",
-        "avatar": "/placeholder.svg",
+        "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Rohit+Sharma",
         "class": "2019"
     },
     {
@@ -64,7 +64,7 @@ const recentDonations = [
         "campaign": "Research Grant",
         "date": "2024-01-18",
         "status": "completed",
-        "avatar": "/placeholder.svg",
+        "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Ananya+Mehta",
         "class": "2018"
     },
     {
@@ -75,7 +75,7 @@ const recentDonations = [
         "campaign": "Campus Infrastructure",
         "date": "2024-01-15",
         "status": "completed",
-        "avatar": "/placeholder.svg",
+        "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Anonymous",
         "class": "Unknown"
     },
     {
@@ -86,7 +86,7 @@ const recentDonations = [
         "campaign": "Technology Lab",
         "date": "2024-01-12",
         "status": "pending",
-        "avatar": "/placeholder.svg",
+        "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Priya+Nair",
         "class": "2020"
     },
     {
@@ -97,7 +97,7 @@ const recentDonations = [
         "campaign": "Student Welfare Fund",
         "date": "2024-01-10",
         "status": "completed",
-        "avatar": "/placeholder.svg",
+        "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Karan+Patel",
         "class": "2017"
     }
 ];
