@@ -18,10 +18,10 @@
     --popover: 0 0% 100%;
     --popover-foreground: 224 15% 20%;
 
-    /* Primary purple theme */
-    --primary: 266 70% 55%;
+    /* Primary purple theme - Updated to #5227FF */
+    --primary: 252 100% 58%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 266 70% 65%;
+    --primary-glow: 252 100% 68%;
 
     /* Secondary warm grays */
     --secondary: 220 15% 96%;
@@ -31,9 +31,9 @@
     --muted: 220 15% 95%;
     --muted-foreground: 224 10% 55%;
 
-    /* Accent colors */
-    --accent: 266 70% 95%;
-    --accent-foreground: 266 70% 45%;
+    /* Accent colors - Updated to complement #5227FF */
+    --accent: 252 100% 95%;
+    --accent-foreground: 252 100% 45%;
 
     /* Destructive */
     --destructive: 0 70% 55%;
@@ -42,40 +42,33 @@
     /* Borders and inputs */
     --border: 220 15% 90%;
     --input: 220 15% 90%;
-    --ring: 266 70% 55%;
+    --ring: 252 100% 58%;
 
     /* Design tokens */
     --radius: 0.75rem;
 
-    /* Gradients */
+    /* Gradients - Updated with #5227FF */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
-    --gradient-hero: linear-gradient(135deg, hsl(266 70% 55%) 0%, hsl(280 70% 60%) 50%, hsl(300 60% 65%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(252 100% 58%) 0%, hsl(260 100% 65%) 50%, hsl(270 90% 70%) 100%);
     --gradient-card: linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(220 15% 98%) 100%);
 
-    /* Shadows */
-    --shadow-card: 0 2px 20px -5px hsl(266 70% 55% / 0.1);
-    --shadow-hover: 0 8px 30px -8px hsl(266 70% 55% / 0.2);
-    --shadow-glow: 0 0 30px hsl(266 70% 55% / 0.3);
+    /* Shadows - Updated with #5227FF glow */
+    --shadow-card: 0 2px 20px -5px hsl(252 100% 58% / 0.1);
+    --shadow-hover: 0 8px 30px -8px hsl(252 100% 58% / 0.2);
+    --shadow-glow: 0 0 30px hsl(252 100% 58% / 0.3);
 
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
+    --sidebar-primary: 252 100% 58%;
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 252 100% 58%;
   }
 
   .dark {
@@ -91,10 +84,10 @@
     --popover: 224 20% 12%;
     --popover-foreground: 220 15% 95%;
 
-    /* Primary purple theme (brighter in dark) */
-    --primary: 266 70% 65%;
+    /* Primary purple theme - Updated for dark mode with #5227FF */
+    --primary: 252 100% 58%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 266 70% 75%;
+    --primary-glow: 252 100% 68%;
 
     /* Secondary in dark */
     --secondary: 224 20% 18%;
@@ -104,9 +97,9 @@
     --muted: 224 20% 16%;
     --muted-foreground: 224 10% 65%;
 
-    /* Accent colors */
-    --accent: 266 70% 20%;
-    --accent-foreground: 266 70% 85%;
+    /* Accent colors - Updated for dark mode */
+    --accent: 252 100% 15%;
+    --accent-foreground: 252 100% 85%;
 
     /* Destructive */
     --destructive: 0 70% 60%;
@@ -115,22 +108,25 @@
     /* Borders and inputs */
     --border: 224 20% 22%;
     --input: 224 20% 22%;
-    --ring: 266 70% 65%;
+    --ring: 252 100% 58%;
 
-    /* Gradients for dark mode */
+    /* Gradients for dark mode - Updated with #5227FF */
+    --gradient-primary: linear-gradient(135deg, hsl(252 100% 58%), hsl(252 100% 68%));
+    --gradient-hero: linear-gradient(135deg, hsl(252 100% 58%) 0%, hsl(260 100% 65%) 50%, hsl(270 90% 70%) 100%);
     --gradient-card: linear-gradient(145deg, hsl(224 20% 12%) 0%, hsl(224 20% 15%) 100%);
     --shadow-card: 0 2px 20px -5px hsl(0 0% 0% / 0.5);
-    --shadow-hover: 0 8px 30px -8px hsl(266 70% 65% / 0.3);
+    --shadow-hover: 0 8px 30px -8px hsl(252 100% 58% / 0.3);
+    --shadow-glow: 0 0 30px hsl(252 100% 58% / 0.4);
 
-    /* Sidebar dark mode variables */
+    /* Sidebar dark mode variables - Updated with #5227FF */
     --sidebar-background: 224 20% 10%;
     --sidebar-foreground: 220 15% 90%;
-    --sidebar-primary: 266 70% 65%;
+    --sidebar-primary: 252 100% 58%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 224 20% 18%;
     --sidebar-accent-foreground: 220 15% 90%;
     --sidebar-border: 224 20% 20%;
-    --sidebar-ring: 266 70% 65%;
+    --sidebar-ring: 252 100% 58%;
   }
 }
 
@@ -224,5 +220,88 @@
   .sidebar-nav-item.active {
     background: hsl(var(--primary));
     color: hsl(var(--primary-foreground));
+  }
+
+  /* Button components using #5227FF - Works in both light and dark mode */
+  .btn-primary {
+    background: #5227FF;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius);
+    transition: var(--transition-smooth);
+    font-weight: 500;
+  }
+  
+  .btn-primary:hover {
+    background: #4318E6;
+    box-shadow: 0 4px 20px -4px #5227FF80;
+    transform: translateY(-1px);
+  }
+  
+  .btn-secondary {
+    background: transparent;
+    color: #5227FF;
+    border: 1px solid #5227FF;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius);
+    transition: var(--transition-smooth);
+    font-weight: 500;
+  }
+  
+  .btn-secondary:hover {
+    background: #5227FF;
+    color: white;
+    box-shadow: 0 4px 20px -4px #5227FF80;
+  }
+
+  /* Highlight classes using #5227FF - Works in both light and dark mode */
+  .highlight-bg {
+    background: #5227FF15;
+    border-left: 3px solid #5227FF;
+  }
+  
+  .highlight-text {
+    color: #5227FF;
+  }
+  
+  .highlight-border {
+    border-color: #5227FF;
+  }
+
+  /* Dark mode specific button variants */
+  .dark .btn-primary {
+    background: #5227FF;
+    box-shadow: 0 2px 10px -2px #5227FF40;
+  }
+  
+  .dark .btn-primary:hover {
+    background: #6B39FF;
+    box-shadow: 0 6px 25px -6px #5227FF60;
+  }
+  
+  .dark .btn-secondary {
+    color: #7C4DFF;
+    border-color: #5227FF;
+  }
+  
+  .dark .btn-secondary:hover {
+    background: #5227FF;
+    color: white;
+    box-shadow: 0 4px 20px -4px #5227FF60;
+  }
+  
+  /* Dark mode highlight adjustments */
+  .dark .highlight-bg {
+    background: #5227FF25;
+    border-left-color: #7C4DFF;
+  }
+  
+  .dark .highlight-text {
+    color: #7C4DFF;
+  }
+  
+  .dark .highlight-border {
+    border-color: #5227FF;
   }
 }
