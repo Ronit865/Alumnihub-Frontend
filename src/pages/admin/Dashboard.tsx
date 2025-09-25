@@ -268,28 +268,28 @@ export function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <Button onClick={() => navigate('/Alumni')} variant="outline" className="h-20 flex-col gap-2 hover:bg-accent/50 transition-smooth">
-                <Users className="h-6 w-6 text-primary" />
+              <Button onClick={() => navigate('/Alumni')} variant="outline" className="h-20 flex-col gap-2 bg-orange-50 hover:bg-orange-100 border-orange-200 text-orange-700 hover:text-orange-800 dark:bg-orange-950 dark:hover:bg-orange-900 dark:border-orange-800 dark:text-orange-300 dark:hover:text-orange-200 transition-smooth">
+                <Users className="h-6 w-6 text-orange-600 dark:text-orange-400" />
                 <span className="text-sm">Add Alumni</span>
               </Button>
-              <Button onClick={() => navigate('/Events')} variant="outline" className="h-20 flex-col gap-2 hover:bg-accent/50 transition-smooth">
-                <Calendar className="h-6 w-6 text-primary" />
+              <Button onClick={() => navigate('/Events')} variant="outline" className="h-20 flex-col gap-2 bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700 hover:text-blue-800 dark:bg-blue-950 dark:hover:bg-blue-900 dark:border-blue-800 dark:text-blue-300 dark:hover:text-blue-200 transition-smooth">
+                <Calendar className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 <span className="text-sm">Create Event</span>
               </Button>
-              <Button onClick={() => navigate('/communications')} variant="outline" className="h-20 flex-col gap-2 hover:bg-accent/50 transition-smooth">
-                <Mail className="h-6 w-6 text-primary" />
+              <Button onClick={() => navigate('/communications')} variant="outline" className="h-20 flex-col gap-2 bg-teal-50 hover:bg-teal-100 border-teal-200 text-teal-700 hover:text-teal-800 dark:bg-teal-950 dark:hover:bg-teal-900 dark:border-teal-800 dark:text-teal-300 dark:hover:text-teal-200 transition-smooth">
+                <Mail className="h-6 w-6 text-teal-600 dark:text-teal-400" />
                 <span className="text-sm">Send Newsletter</span>
               </Button>
-              <Button onClick={() => navigate('/donations')} variant="outline" className="h-20 flex-col gap-2 hover:bg-accent/50 transition-smooth">
-                <DollarSign className="h-6 w-6 text-primary" />
+              <Button onClick={() => navigate('/donations')} variant="outline" className="h-20 flex-col gap-2 bg-pink-50 hover:bg-pink-100 border-pink-200 text-pink-700 hover:text-pink-800 dark:bg-pink-950 dark:hover:bg-pink-900 dark:border-pink-800 dark:text-pink-300 dark:hover:text-pink-200 transition-smooth">
+                <DollarSign className="h-6 w-6 text-pink-600 dark:text-pink-400" />
                 <span className="text-sm">View Donations</span>
               </Button>
-              <Button onClick={() => navigate('/analytics')} variant="outline" className="h-20 flex-col gap-2 hover:bg-accent/50 transition-smooth">
-                <TrendingUp className="h-6 w-6 text-primary" />
+              <Button onClick={() => navigate('/analytics')} variant="outline" className="h-20 flex-col gap-2 bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-700 hover:text-purple-800 dark:bg-purple-950 dark:hover:bg-purple-900 dark:border-purple-800 dark:text-purple-300 dark:hover:text-purple-200 transition-smooth">
+                <TrendingUp className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                 <span className="text-sm">Analytics</span>
               </Button>
-              <Button onClick={() => navigate('/jobs')} variant="outline" className="h-20 flex-col gap-2 hover:bg-accent/50 transition-smooth">
-                <Award className="h-6 w-6 text-primary" />
+              <Button onClick={() => navigate('/jobs')} variant="outline" className="h-20 flex-col gap-2 bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-700 hover:text-emerald-800 dark:bg-emerald-950 dark:hover:bg-emerald-900 dark:border-emerald-800 dark:text-emerald-300 dark:hover:text-emerald-200 transition-smooth">
+                <Award className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
                 <span className="text-sm">Jobs</span>
               </Button>
             </div>
