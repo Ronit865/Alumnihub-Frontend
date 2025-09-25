@@ -48,7 +48,7 @@ export const ForgotPassword = () => {
           navigate("/auth/otp-verification", {
             state: { email: data.email }
           });
-        }, 1000);
+        }, 1000000);
       }
 
       // Navigate to OTP verification with email
