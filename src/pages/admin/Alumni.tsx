@@ -73,6 +73,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
+import { Transform } from "stream";
 
 // Define the User interface based on your backend model
 interface User {
@@ -410,7 +411,7 @@ export function Alumni() {
               Add Alumni
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-md bento-card gradient-surface border-card-border/50">
+          <DialogContent className="sm:max-w-md bento-card gradient-surface border-card-border/50" style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Upload className="h-5 w-5 text-primary" />
