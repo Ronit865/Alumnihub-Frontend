@@ -73,7 +73,17 @@ export default function Events() {
             const response = { success: true };
 
             if (response.success) {
-                toast.success("Successfully registered for event!");
+                // Enhanced success toast with green styling
+                toast.success("Successfully registered for event!", {
+                    style: {
+                        background: '#10b981',
+                        color: '#ffffff',
+                        border: '1px solid #059669',
+                    },
+                    duration: 4000,
+                    description: "You will receive event updates via email.",
+                });
+                
                 setRegisteredEvents(prev => new Set(prev).add(eventId));
                 
                 // Update the event's participants count locally
