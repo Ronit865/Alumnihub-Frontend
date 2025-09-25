@@ -275,37 +275,61 @@ export function Donations() {
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-slide-up">
-                {donationStats.map((stat, index) => (
-                    <Card
-                        key={stat.title}
-                        className="bento-card bento-card-hover gradient-subtle border-card-border/50"
-                        style={{ animationDelay: `${index * 100}ms` }}
-                    >
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground">
-                                {stat.title}
-                            </CardTitle>
-                            <stat.icon className="h-4 w-4 text-primary" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-                            <div className="flex items-center space-x-2 text-xs">
-                                <Badge
-                                    variant={stat.changeType === "increase" ? "default" : "destructive"}
-                                    className="bg-success/10 text-success border-success/20"
-                                >
-                                    {stat.changeType === "increase" ? (
-                                        <ArrowUpRight className="h-3 w-3 mr-1" />
-                                    ) : (
-                                        <ArrowDownRight className="h-3 w-3 mr-1" />
-                                    )}
-                                    {stat.change}
-                                </Badge>
-                                <span className="text-muted-foreground">{stat.description}</span>
-                            </div>
-                        </CardContent>
-                    </Card>
-                ))}
+                <div className="stats-card-pink">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="stats-card-label">Total Raised</p>
+                            <p className="stats-card-number">₹1.95Cr</p>
+                            <p className="text-xs text-white/80 flex items-center gap-1 mt-1">
+                                <ArrowUpRight className="w-3 h-3" />
+                                +12.5% this year
+                            </p>
+                        </div>
+                        <IndianRupee className="stats-card-icon" />
+                    </div>
+                </div>
+
+                <div className="stats-card-blue">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="stats-card-label">Active Donors</p>
+                            <p className="stats-card-number">1,248</p>
+                            <p className="text-xs text-white/80 flex items-center gap-1 mt-1">
+                                <TrendingUp className="w-3 h-3" />
+                                +8.3% contributors
+                            </p>
+                        </div>
+                        <Users className="stats-card-icon" />
+                    </div>
+                </div>
+
+                <div className="stats-card-orange">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="stats-card-label">Avg. Donation</p>
+                            <p className="stats-card-number">₹1.57L</p>
+                            <p className="text-xs text-white/80 flex items-center gap-1 mt-1">
+                                <TrendingUp className="w-3 h-3" />
+                                +5.7% per donor
+                            </p>
+                        </div>
+                        <TrendingUp className="stats-card-icon" />
+                    </div>
+                </div>
+
+                <div className="stats-card-teal">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="stats-card-label">Campaign Goal</p>
+                            <p className="stats-card-number">78%</p>
+                            <p className="text-xs text-white/80 flex items-center gap-1 mt-1">
+                                <Target className="w-3 h-3" />
+                                Of ₹2.5Cr target
+                            </p>
+                        </div>
+                        <Target className="stats-card-icon" />
+                    </div>
+                </div>
             </div>
 
             {/* Main Content Grid */}
@@ -369,7 +393,7 @@ export function Donations() {
                                                     Created {formatDate(campaign.createdAt || "")}
                                                 </p>
                                             </div>
-                                            <Badge className="bg-primary/10 text-primary border-primary/20 ml-4">
+                                            <Badge variant="secondary" className="ml-4">
                                                 {getDonorCount(campaign)} donors
                                             </Badge>
                                         </div>
@@ -377,11 +401,11 @@ export function Donations() {
                                         <div className="space-y-2">
                                             <div className="flex justify-between text-sm">
                                                 <span className="text-muted-foreground">Progress</span>
-                                                <span className="font-medium">
+                                                <span className="font-medium text-foreground">
                                                     {formatCurrency(campaign.raised || 0)} of {formatCurrency(campaign.goal)}
                                                 </span>
                                             </div>
-                                            <div className="w-full bg-muted rounded-full h-2">
+                                            <div className="w-full bg-secondary rounded-full h-2">
                                                 <div
                                                     className="bg-primary h-2 rounded-full transition-all duration-500"
                                                     style={{ width: `${getProgressPercentage(campaign.raised, campaign.goal)}%` }}
@@ -399,102 +423,71 @@ export function Donations() {
                     </CardContent>
                 </Card>
 
-                {/* Top Donors */}
-                <Card className="bento-card gradient-surface border-card-border/50">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Users className="h-5 w-5 text-primary" />
-                            Top Donors
-                        </CardTitle>
-                        <CardDescription>
-                            Largest contributors this year
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-4">
-                            {recentDonations.slice(0, 5).map((donation, index) => (
-                                <div
-                                    key={donation.id}
-                                    className="flex items-center gap-3 animate-fade-in"
-                                    style={{ animationDelay: `${index * 100}ms` }}
-                                >
-                                    <Avatar className="h-10 w-10">
-                                        <AvatarImage src={donation.avatar} alt={donation.donor} />
-                                        <AvatarFallback className="bg-primary/10 text-primary">
-                                            {donation.donor.split(" ").map((n) => n[0]).join("")}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                    <div className="flex-1">
-                                        <p className="font-medium text-foreground">{donation.donor}</p>
-                                        <p className="text-sm text-muted-foreground">Class of {donation.class}</p>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="font-semibold text-foreground">{formatCurrency(donation.amount)}</p>
-                                        <p className="text-xs text-muted-foreground">{donation.campaign}</p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
+                {/* Recent Donations Table - Only visible on large screens */}
+                <div className="hidden lg:block">
+                    <Card className="bento-card gradient-surface border-card-border/50">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <ArrowUpRight className="h-5 w-5 text-primary" />
+                                Recent Donations
+                            </CardTitle>
+                            <CardDescription>
+                                Latest donations received
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className="text-muted-foreground">Donor</TableHead>
+                                            <TableHead className="text-muted-foreground">Email</TableHead>
+                                            <TableHead className="text-muted-foreground">Amount</TableHead>
+                                            <TableHead className="text-muted-foreground">Campaign</TableHead>
+                                            <TableHead className="text-muted-foreground">Date</TableHead>
+                                            <TableHead className="text-muted-foreground">Status</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {recentDonations.map((donation) => (
+                                            <TableRow key={donation.id}>
+                                                <TableCell className="font-medium text-white">
+                                                    <div className="flex items-center">
+                                                        <Avatar className="mr-3">
+                                                            <AvatarImage src={donation.avatar} alt={donation.donor} />
+                                                            <AvatarFallback>{donation.donor.charAt(0)}</AvatarFallback>
+                                                        </Avatar>
+                                                        {donation.donor}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-white/80">{donation.email}</TableCell>
+                                                <TableCell className="text-white/80">{formatCurrency(donation.amount)}</TableCell>
+                                                <TableCell className="text-white/80">{donation.campaign}</TableCell>
+                                                <TableCell className="text-white/80">{formatDate(donation.date)}</TableCell>
+                                                <TableCell>
+                                                    {donation.status === "completed" ? (
+                                                        <Badge className="bg-success/10 text-success border-success/20">
+                                                            Completed
+                                                        </Badge>
+                                                    ) : donation.status === "pending" ? (
+                                                        <Badge variant="outline" className="border-warning text-warning">
+                                                            Pending
+                                                        </Badge>
+                                                    ) : (
+                                                        <Badge variant="destructive">
+                                                            Failed
+                                                        </Badge>
+                                                    )}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
-
-            {/* Recent Donations Table */}
-            <Card className="bento-card gradient-surface border-card-border/50">
-                <CardHeader>
-                    <CardTitle>Recent Donations</CardTitle>
-                    <CardDescription>
-                        Latest donation transactions and their status
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Donor</TableHead>
-                                <TableHead>Amount</TableHead>
-                                <TableHead>Campaign</TableHead>
-                                <TableHead>Date</TableHead>
-                                <TableHead>Status</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {recentDonations.map((donation, index) => (
-                                <TableRow
-                                    key={donation.id}
-                                    className="hover:bg-accent/30 transition-smooth animate-fade-in"
-                                    style={{ animationDelay: `${index * 100}ms` }}
-                                >
-                                    <TableCell>
-                                        <div className="flex items-center gap-3">
-                                            <Avatar className="h-8 w-8">
-                                                <AvatarImage src={donation.avatar} alt={donation.donor} />
-                                                <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                                                    {donation.donor.split(" ").map((n) => n[0]).join("")}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                            <div>
-                                                <p className="font-medium text-foreground">{donation.donor}</p>
-                                                <p className="text-sm text-muted-foreground">Class of {donation.class}</p>
-                                            </div>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="font-semibold">
-                                        {formatCurrency(donation.amount)}
-                                    </TableCell>
-                                    <TableCell>{donation.campaign}</TableCell>
-                                    <TableCell className="text-muted-foreground">
-                                        {new Date(donation.date).toLocaleDateString('en-IN')}
-                                    </TableCell>
-                                    <TableCell>
-                                        {getStatusBadge(donation.status)}
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
         </div>
     );
 }

@@ -135,53 +135,45 @@ export function Jobs() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 animate-slide-up">
-        <Card className="bento-card gradient-subtle border-card-border/50">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Listings</p>
-                <p className="text-2xl font-bold text-foreground">127</p>
-              </div>
-              <Briefcase className="h-8 w-8 text-primary" />
+        <div className="stats-card-blue">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="stats-card-label">Total Listings</p>
+              <p className="stats-card-number">127</p>
             </div>
-          </CardContent>
-        </Card>
+            <Briefcase className="stats-card-icon" />
+          </div>
+        </div>
         
-        <Card className="bento-card gradient-subtle border-card-border/50">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Pending Review</p>
-                <p className="text-2xl font-bold text-warning">23</p>
-              </div>
-              <Clock className="h-8 w-8 text-warning" />
+        <div className="stats-card-orange">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="stats-card-label">Pending Review</p>
+              <p className="stats-card-number">23</p>
             </div>
-          </CardContent>
-        </Card>
+            <Clock className="stats-card-icon" />
+          </div>
+        </div>
         
-        <Card className="bento-card gradient-subtle border-card-border/50">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Applications</p>
-                <p className="text-2xl font-bold text-success">1,247</p>
-              </div>
-              <CheckCircle className="h-8 w-8 text-success" />
+        <div className="stats-card-teal">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="stats-card-label">Applications</p>
+              <p className="stats-card-number">1,247</p>
             </div>
-          </CardContent>
-        </Card>
+            <CheckCircle className="stats-card-icon" />
+          </div>
+        </div>
         
-        <Card className="bento-card gradient-subtle border-card-border/50">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Mentorship</p>
-                <p className="text-2xl font-bold text-primary">34</p>
-              </div>
-              <Briefcase className="h-8 w-8 text-primary" />
+        <div className="stats-card-pink">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="stats-card-label">Mentorship</p>
+              <p className="stats-card-number">34</p>
             </div>
-          </CardContent>
-        </Card>
+            <Briefcase className="stats-card-icon" />
+          </div>
+        </div>
       </div>
 
       {/* Filters and Search */}

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Mail, Send, Users, MessageSquare, Bell, Plus, Eye, Edit, Trash2 } from "lucide-react";
+import { Mail, Send, Users, MessageSquare, Bell, Plus, Eye, Edit, Trash2, TrendingUp } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
@@ -173,29 +173,61 @@ export function Communications() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-slide-up">
-        {communicationStats.map((stat, index) => (
-          <Card 
-            key={stat.title} 
-            className="bento-card bento-card-hover gradient-subtle border-card-border/50"
-            style={{ animationDelay: `${index * 100}ms` }}
-          >
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                {stat.title}
-              </CardTitle>
-              <stat.icon className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-              <div className="flex items-center space-x-2 text-xs">
-                <Badge className="bg-success/10 text-success border-success/20">
-                  +{stat.change}
-                </Badge>
-                <span className="text-muted-foreground">{stat.description}</span>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+        <div className="stats-card-pink">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="stats-card-label">Newsletter Subscribers</p>
+              <p className="stats-card-number">9,432</p>
+              <p className="text-xs text-white/80 flex items-center gap-1 mt-1">
+                <TrendingUp className="w-3 h-3" />
+                +3.2% subscriptions
+              </p>
+            </div>
+            <Mail className="stats-card-icon" />
+          </div>
+        </div>
+        
+        <div className="stats-card-blue">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="stats-card-label">Messages Sent</p>
+              <p className="stats-card-number">47,892</p>
+              <p className="text-xs text-white/80 flex items-center gap-1 mt-1">
+                <Send className="w-3 h-3" />
+                +12.1% this month
+              </p>
+            </div>
+            <Send className="stats-card-icon" />
+          </div>
+        </div>
+        
+        <div className="stats-card-teal">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="stats-card-label">Open Rate</p>
+              <p className="stats-card-number">67.8%</p>
+              <p className="text-xs text-white/80 flex items-center gap-1 mt-1">
+                <Eye className="w-3 h-3" />
+                +2.3% average
+              </p>
+            </div>
+            <Eye className="stats-card-icon" />
+          </div>
+        </div>
+        
+        <div className="stats-card-orange">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="stats-card-label">Response Rate</p>
+              <p className="stats-card-number">23.4%</p>
+              <p className="text-xs text-white/80 flex items-center gap-1 mt-1">
+                <MessageSquare className="w-3 h-3" />
+                +5.7% engagement
+              </p>
+            </div>
+            <MessageSquare className="stats-card-icon" />
+          </div>
+        </div>
       </div>
 
       {/* Main Content */}

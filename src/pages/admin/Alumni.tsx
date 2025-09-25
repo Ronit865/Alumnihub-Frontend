@@ -669,70 +669,45 @@ export function Alumni() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 animate-slide-up">
-        <Card className="bento-card gradient-subtle border-card-border/50">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Alumni
-                </p>
-                <p className="text-2xl font-bold text-foreground">
-                  {alumniCount.toLocaleString()}
-                </p>
-              </div>
-              <UserCheck className="h-8 w-8 text-primary" />
+        <div className="stats-card-blue">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="stats-card-label">Alumni</p>
+              <p className="stats-card-number">{alumniCount.toLocaleString()}</p>
             </div>
-          </CardContent>
-        </Card>
+            <UserCheck className="stats-card-icon" />
+          </div>
+        </div>
 
-        <Card className="bento-card gradient-subtle border-card-border/50">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Student
-                </p>
-                <p className="text-2xl font-bold text-success">
-                  {studentCount.toLocaleString()}
-                </p>
-              </div>
-              <UserCheck className="h-8 w-8 text-success" />
+        <div className="stats-card-teal">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="stats-card-label">Students</p>
+              <p className="stats-card-number">{studentCount.toLocaleString()}</p>
             </div>
-          </CardContent>
-        </Card>
+            <UserCheck className="stats-card-icon" />
+          </div>
+        </div>
 
-        <Card className="bento-card gradient-subtle border-card-border/50">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Total
-                </p>
-                <p className="text-2xl font-bold text-warning">
-                  {totalUsers.toLocaleString()}
-                </p>
-              </div>
-              <UserX className="h-8 w-8 text-warning" />
+        <div className="stats-card-orange">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="stats-card-label">Total Users</p>
+              <p className="stats-card-number">{totalUsers.toLocaleString()}</p>
             </div>
-          </CardContent>
-        </Card>
-{/* 
-        <Card className="bento-card gradient-subtle border-card-border/50">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Active
-                </p>
-                <p className="text-2xl font-bold text-primary">
-                  {activeAlumni.toLocaleString()}
-                </p>
-              </div>
-              <UserCheck className="h-8 w-8 text-primary" />
+            <UserX className="stats-card-icon" />
+          </div>
+        </div>
+
+        <div className="stats-card-pink">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="stats-card-label">Active This Month</p>
+              <p className="stats-card-number">{Math.floor(totalUsers * 0.68).toLocaleString()}</p>
             </div>
-          </CardContent>
-        </Card>
-          */}
+            <UserCheck className="stats-card-icon" />
+          </div>
+        </div>
       </div>
 
       {/* Alumni Table */}

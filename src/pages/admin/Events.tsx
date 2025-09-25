@@ -423,53 +423,45 @@ export function Events() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 animate-slide-up">
-        <Card className="bento-card gradient-subtle border-card-border/50">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Events</p>
-                <p className="text-2xl font-bold text-foreground">{totalEvents}</p>
-              </div>
-              <CalendarDays className="h-8 w-8 text-primary" />
+        <div className="stats-card-orange">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="stats-card-label">Total Events</p>
+              <p className="stats-card-number">{totalEvents}</p>
             </div>
-          </CardContent>
-        </Card>
+            <CalendarDays className="stats-card-icon" />
+          </div>
+        </div>
         
-        <Card className="bento-card gradient-subtle border-card-border/50">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Active Events</p>
-                <p className="text-2xl font-bold text-primary">{activeEvents}</p>
-              </div>
-              <Clock className="h-8 w-8 text-primary" />
+        <div className="stats-card-blue">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="stats-card-label">Active Events</p>
+              <p className="stats-card-number">{activeEvents}</p>
             </div>
-          </CardContent>
-        </Card>
+            <Clock className="stats-card-icon" />
+          </div>
+        </div>
         
-        <Card className="bento-card gradient-subtle border-card-border/50">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Participants</p>
-                <p className="text-2xl font-bold text-success">{totalParticipants}</p>
-              </div>
-              <Users className="h-8 w-8 text-success" />
+        <div className="stats-card-teal">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="stats-card-label">Total Participants</p>
+              <p className="stats-card-number">{totalParticipants}</p>
             </div>
-          </CardContent>
-        </Card>
+            <Users className="stats-card-icon" />
+          </div>
+        </div>
         
-        <Card className="bento-card gradient-subtle border-card-border/50">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Avg. Participants</p>
-                <p className="text-2xl font-bold text-warning">{averageParticipants}</p>
-              </div>
-              <CalendarDays className="h-8 w-8 text-warning" />
+        <div className="stats-card-pink">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="stats-card-label">Avg. Participants</p>
+              <p className="stats-card-number">{averageParticipants}</p>
             </div>
-          </CardContent>
-        </Card>
+            <CalendarDays className="stats-card-icon" />
+          </div>
+        </div>
       </div>
 
       {/* <div className="grid grid-cols-1 lg:grid-cols-4 gap-6"> */}

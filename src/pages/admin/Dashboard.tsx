@@ -196,33 +196,61 @@ export function Dashboard() {
 
       {/* KPI Grid - Bento Style */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-slide-up">
-        {kpiData.map((kpi, index) => (
-          <Card
-            key={kpi.title}
-            className="bento-card bento-card-hover gradient-subtle border-card-border/50"
-            style={{ animationDelay: `${index * 100}ms` }}
-          >
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                {kpi.title}
-              </CardTitle>
-              <kpi.icon className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">{kpi.value}</div>
-              <div className="flex items-center space-x-2 text-xs">
-                <Badge
-                  variant={kpi.changeType === "increase" ? "default" : "destructive"}
-                  className="bg-success/10 text-success border-success/20"
-                >
-                  <ArrowUpRight className="h-3 w-3 mr-1" />
-                  {kpi.change}
-                </Badge>
-                <span className="text-muted-foreground">{kpi.description}</span>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+        <div className="stats-card-orange">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="stats-card-label">Total Alumni</p>
+              <p className="stats-card-number">{loading ? "..." : totalAlumni.toLocaleString()}</p>
+              <p className="text-xs text-white/80 flex items-center gap-1 mt-1">
+                <ArrowUpRight className="w-3 h-3" />
+                +2.1% from last month
+              </p>
+            </div>
+            <Users className="stats-card-icon" />
+          </div>
+        </div>
+
+        <div className="stats-card-blue">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="stats-card-label">Total Events</p>
+              <p className="stats-card-number">{loading ? "..." : totalEvents.toString()}</p>
+              <p className="text-xs text-white/80 flex items-center gap-1 mt-1">
+                <ArrowUpRight className="w-3 h-3" />
+                +15% this month
+              </p>
+            </div>
+            <Calendar className="stats-card-icon" />
+          </div>
+        </div>
+
+        <div className="stats-card-pink">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="stats-card-label">Total Donations</p>
+              <p className="stats-card-number">₹ 2.4Cr</p>
+              <p className="text-xs text-white/80 flex items-center gap-1 mt-1">
+                <ArrowUpRight className="w-3 h-3" />
+                +12.5% this year
+              </p>
+            </div>
+            <DollarSign className="stats-card-icon" />
+          </div>
+        </div>
+
+        <div className="stats-card-teal">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="stats-card-label">Engagement Rate</p>
+              <p className="stats-card-number">68%</p>
+              <p className="text-xs text-white/80 flex items-center gap-1 mt-1">
+                <TrendingUp className="w-3 h-3" />
+                +5.2% active users
+              </p>
+            </div>
+            <TrendingUp className="stats-card-icon" />
+          </div>
+        </div>
       </div>
 
       {/* Main Content Grid */}
