@@ -56,49 +56,57 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  const fetchCurrentUser = async () => {
-    try {
-      setIsLoading(true);
-      const storedUserType = localStorage.getItem('userType') as 'user' | 'admin' | null;
-      
-      if (!storedUserType) {
-        return;
-      }
+  // ...existing code...
 
-      let response;
-      if (storedUserType === 'admin') {
-        response = await adminService.getCurrentAdmin();
-        if (response.success) {
-          const successData = handleApiSuccess(response);
-          setAdmin(successData.data);
-          setUser(null);
-        }
-      } else {
-        response = await userService.getCurrentUser();
-        if (response.success) {
-          const successData = handleApiSuccess(response);
-          setUser(successData.data);
-          setAdmin(null);
-        }
-      }
-      
-      setUserType(storedUserType);
-    } catch (error: any) {
-      const apiError = handleApiError(error);
-      console.error('Failed to fetch current user:', apiError.message);
-      
-      // If token is invalid, remove it
-      if (apiError.statusCode === 401) {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('userType');
-        setUser(null);
-        setAdmin(null);
-        setUserType(null);
-      }
-    } finally {
-      setIsLoading(false);
+const fetchCurrentUser = async () => {
+  try {
+    setIsLoading(true);
+    const storedUserType = localStorage.getItem('userType') as 'user' | 'admin' | null;
+    
+    if (!storedUserType) {
+      return;
     }
-  };
+
+    let response;
+    if (storedUserType === 'admin') {
+      response = await adminService.getCurrentAdmin();
+      if (response.success) {
+        // Handle the response structure properly
+        const adminData = response.data || response;
+        console.log('Fetched admin data:', adminData);
+        setAdmin(adminData);
+        setUser(null);
+      }
+    } else {
+      response = await userService.getCurrentUser();
+      if (response.success) {
+        // Handle the response structure properly
+        const userData = response.data || response;
+        console.log('Fetched user data:', userData);
+        setUser(userData);
+        setAdmin(null);
+      }
+    }
+    
+    setUserType(storedUserType);
+  } catch (error: any) {
+    const apiError = handleApiError(error);
+    console.error('Failed to fetch current user:', apiError.message);
+    
+    // If token is invalid, remove it
+    if (apiError.statusCode === 401) {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('userType');
+      setUser(null);
+      setAdmin(null);
+      setUserType(null);
+    }
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+// ...existing code...
 
   const login = (userData: any) => {
     console.log('Login data received:', userData);
