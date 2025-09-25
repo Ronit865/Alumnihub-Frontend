@@ -96,18 +96,21 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className="border-r" collapsible="icon">
-      <SidebarContent className="p-0">
+    <Sidebar className="border-r h-screen sticky top-0" collapsible="icon">
+      <SidebarContent className="p-0 h-full">
         {/* Logo Section */}
-        <div className={`border-b ${open ? "p-4 sm:p-6" : "p-2 sm:p-3"}`}>
-          <div className={`flex items-center ${open ? "gap-2 sm:gap-3" : "justify-center"}`}>
-            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center shrink-0">
-              <GraduationCap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary-foreground" />
+        <div className={`border-b h-14 sm:h-16 flex items-center ${open ? "justify-center p-3 sm:p-4" : "justify-center p-1 sm:p-2"}`}>
+          <div className={`flex items-center ${open ? "gap-3 sm:gap-4" : "justify-center"}`}>
+            <div className={`flex items-center justify-center shrink-0 ${open ? "w-10 h-10 sm:w-12 sm:h-12" : "w-7 h-7 sm:w-8 sm:h-8"}`}>
+              <img 
+                src="/ANlogo.png" 
+                alt="AllyNet Logo" 
+                className="w-full h-full object-contain"
+              />
             </div>
             {open && (
               <div className="min-w-0">
-                <h1 className="font-bold text-base sm:text-lg gradient-text truncate">AlumniHub</h1>
-                <p className="text-xs sm:text-sm text-muted-foreground truncate">Management System</p>
+                <h1 className="font-bold text-lg sm:text-xl md:text-2xl gradient-text truncate">AllyNet</h1>
               </div>
             )}
           </div>
