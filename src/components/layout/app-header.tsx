@@ -44,31 +44,37 @@ export function AppHeader() {
 
   return (
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-      <div className="flex h-16 items-center justify-between px-6">
+      <div className="flex h-14 sm:h-16 items-center justify-between px-3 sm:px-4 md:px-6">
         {/* Left side - Sidebar trigger and search */}
-        <div className="flex items-center gap-4 flex-1">
+        <div className="flex items-center gap-2 sm:gap-4 flex-1">
           <SidebarTrigger className="p-2" />
+          <div className="hidden md:block">
+            <AdminToggle />
+          </div>
         </div>
 
         {/* Right side - notifications and profile */}
-        <div className="flex items-center gap-3">
-          {/* <AdminToggle /> */}
+        <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
+          {/* Show AdminToggle on mobile in a dropdown or smaller format */}
+          <div className="block md:hidden">
+            <AdminToggle />
+          </div>
           
           {/* Notifications */}
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="w-5 h-5" />
-            <span className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full flex items-center justify-center">
-              <span className="text-[10px] text-primary-foreground font-medium">3</span>
+          <Button variant="ghost" size="icon" className="relative h-8 w-8 sm:h-10 sm:w-10">
+            <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-primary rounded-full flex items-center justify-center">
+              <span className="text-[8px] sm:text-[10px] text-primary-foreground font-medium">3</span>
             </span>
           </Button>
 
           {/* Profile Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                <Avatar className="h-10 w-10 ring-2 ring-primary/20">
+              <Button variant="ghost" className="relative h-8 w-8 sm:h-10 sm:w-10 rounded-full">
+                <Avatar className="h-8 w-8 sm:h-10 sm:w-10 ring-2 ring-primary/20">
                   <AvatarImage src={avatarSrc} alt="Profile" />
-                  <AvatarFallback className="bg-primary text-primary-foreground font-medium">
+                  <AvatarFallback className="bg-primary text-primary-foreground font-medium text-xs sm:text-sm">
                     {avatarFallback}
                   </AvatarFallback>
                 </Avatar>
