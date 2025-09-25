@@ -91,7 +91,7 @@ export function Dashboard() {
         const events = eventsResponse.data || [];
         setTotalEvents(events.length);
 
-         const courseCounts = alumni.reduce((acc: any, user: any) => {
+        const courseCounts = alumni.reduce((acc: any, user: any) => {
           const course = user.course || 'Not Specified';
           acc[course] = (acc[course] || 0) + 1;
           return acc;
@@ -117,14 +117,14 @@ export function Dashboard() {
     fetchDashboardData();
   }, []);
 
- const renderCustomLabel = (entry: any) => {
+  const renderCustomLabel = (entry: any) => {
     if (departmentData.length === 0) return '';
     const total = departmentData.reduce((sum, item) => sum + item.value, 0);
     const percent = ((entry.value / total) * 100).toFixed(1);
     return `${percent}%`;
   };
 
-   const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
@@ -254,7 +254,7 @@ export function Dashboard() {
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         {/* Quick Actions - Larger Bento Card */}
         <Card className="lg:col-span-2 bento-card gradient-surface border-card-border/50">
           <CardHeader>
@@ -294,103 +294,103 @@ export function Dashboard() {
               </Button>
             </div>
           </CardContent>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="bento-card gradient-surface border-card-border/50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <GraduationCap className="h-5 w-5 text-primary" />
-              Alumni by Department
-            </CardTitle>
-            <CardDescription>
-              Distribution of alumni across different departments
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {departmentData.length > 0 ? (
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={departmentData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={renderCustomLabel}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {departmentData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip content={<CustomTooltip />} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            ) : (
-              <div className="h-80 flex items-center justify-center text-muted-foreground">
-                <div className="text-center">
-                  <GraduationCap className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No department data available</p>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 m-2">
+            <Card className="bento-card gradient-surface border-card-border/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <GraduationCap className="h-5 w-5 text-primary" />
+                  Alumni by Department
+                </CardTitle>
+                <CardDescription>
+                  Distribution of alumni across different departments
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {departmentData.length > 0 ? (
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={departmentData}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          label={renderCustomLabel}
+                          outerRadius={80}
+                          fill="#8884d8"
+                          dataKey="value"
+                        >
+                          {departmentData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip content={<CustomTooltip />} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="h-80 flex items-center justify-center text-muted-foreground">
+                    <div className="text-center">
+                      <GraduationCap className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>No department data available</p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
-        {/* Department Statistics */}
-        <Card className="bento-card gradient-surface border-card-border/50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-primary" />
-              Department Statistics
-            </CardTitle>
-            <CardDescription>
-              Detailed breakdown by department
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {departmentData.length > 0 ? (
-              <div className="space-y-4 max-h-80 overflow-y-auto">
-                {departmentData
-                  .sort((a, b) => b.value - a.value)
-                  .map((dept, index) => {
-                    const total = departmentData.reduce((sum, item) => sum + item.value, 0);
-                    const percentage = ((dept.value / total) * 100).toFixed(1);
-                    
-                    return (
-                      <div key={dept.name} className="flex items-center justify-between p-3 rounded-lg hover:bg-accent/30 transition-smooth">
-                        <div className="flex items-center gap-3">
-                          <div 
-                            className="w-4 h-4 rounded-full" 
-                            style={{ backgroundColor: dept.color }}
-                          />
-                          <div>
-                            <p className="text-sm font-medium text-foreground">{dept.name}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {percentage}% of total
-                            </p>
+            {/* Department Statistics */}
+            <Card className="bento-card gradient-surface border-card-border/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-primary" />
+                  Department Statistics
+                </CardTitle>
+                <CardDescription>
+                  Detailed breakdown by department
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {departmentData.length > 0 ? (
+                  <div className="space-y-4 max-h-80 overflow-y-auto">
+                    {departmentData
+                      .sort((a, b) => b.value - a.value)
+                      .map((dept, index) => {
+                        const total = departmentData.reduce((sum, item) => sum + item.value, 0);
+                        const percentage = ((dept.value / total) * 100).toFixed(1);
+
+                        return (
+                          <div key={dept.name} className="flex items-center justify-between p-3 rounded-lg hover:bg-accent/30 transition-smooth">
+                            <div className="flex items-center gap-3">
+                              <div
+                                className="w-4 h-4 rounded-full"
+                                style={{ backgroundColor: dept.color }}
+                              />
+                              <div>
+                                <p className="text-sm font-medium text-foreground">{dept.name}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {percentage}% of total
+                                </p>
+                              </div>
+                            </div>
+                            <Badge variant="secondary" className="text-xs">
+                              {dept.value}
+                            </Badge>
                           </div>
-                        </div>
-                        <Badge variant="secondary" className="text-xs">
-                          {dept.value}
-                        </Badge>
-                      </div>
-                    );
-                  })}
-              </div>
-            ) : (
-              <div className="h-60 flex items-center justify-center text-muted-foreground">
-                <div className="text-center">
-                  <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">No department data available</p>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+                        );
+                      })}
+                  </div>
+                ) : (
+                  <div className="h-60 flex items-center justify-center text-muted-foreground">
+                    <div className="text-center">
+                      <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">No department data available</p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </Card>
 
         {/* Recent Activity */}
@@ -436,9 +436,6 @@ export function Dashboard() {
           </CardContent>
         </Card>
       </div>
-      
-    
-  
-  </div>
+    </div>
   );
 }
