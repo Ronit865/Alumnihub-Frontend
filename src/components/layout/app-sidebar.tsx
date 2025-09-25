@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom"; // Change NavLink to Link
 import {
   LayoutDashboard,
   Users,
@@ -79,18 +79,21 @@ export function AppSidebar() {
   };
 
   const isActive = (path: string) => {
-  if (path === "/") {
-    return location.pathname === "/" && !isAdminMode;
-  }
-  if (path === "/admin") {
-    return location.pathname === "/admin";
-  }
-  return location.pathname === path;
-};
+    console.log(`Checking path: ${path}, current: ${location.pathname}`); // Debug log
+    if (path === "/") {
+      return location.pathname === "/" && !isAdminMode;
+    }
+    if (path === "/admin") {
+      return location.pathname === "/admin" || location.pathname === "/admin/dashboard";
+    }
+    return location.pathname === path;
+  };
 
   const getNavClasses = (path: string) => {
     const baseClasses = "sidebar-nav-item w-full justify-start gap-2 sm:gap-3 h-9 sm:h-11 px-2 sm:px-3 font-medium text-sm sm:text-base";
-    return isActive(path) 
+    const active = isActive(path);
+    console.log(`Path: ${path}, Active: ${active}`); // Debug log
+    return active
       ? `${baseClasses} active bg-primary text-primary-foreground` 
       : `${baseClasses} text-muted-foreground hover:text-foreground hover:bg-accent`;
   };
@@ -123,10 +126,10 @@ export function AppSidebar() {
               {(isAdminMode ? adminNavigation : navigation).map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <NavLink to={item.url} className={getNavClasses(item.url)}>
+                    <Link to={item.url} className={getNavClasses(item.url)}>
                       <item.icon className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
                       {open && <span className="truncate text-sm sm:text-base">{item.title}</span>}
-                    </NavLink>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -139,10 +142,10 @@ export function AppSidebar() {
           <SidebarMenu className="space-y-0.5 sm:space-y-1">
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
-                <NavLink to={isAdminMode ? "/admin/settings" : "/settings"} className={getNavClasses(isAdminMode ? "/admin/settings" : "/settings")}>
+                <Link to={isAdminMode ? "/admin/settings" : "/settings"} className={getNavClasses(isAdminMode ? "/admin/settings" : "/settings")}>
                   <Settings className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
                   {open && <span className="truncate text-sm sm:text-base">Settings</span>}
-                </NavLink>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             
