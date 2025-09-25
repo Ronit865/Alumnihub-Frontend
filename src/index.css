@@ -160,6 +160,8 @@
   
   .hover-lift {
     transition: var(--transition-smooth);
+    will-change: transform, box-shadow;
+    position: relative;
   }
   
   .hover-lift:hover {
@@ -172,6 +174,8 @@
     box-shadow: var(--shadow-card);
     border-radius: var(--radius);
     transition: var(--transition-smooth);
+    will-change: transform, box-shadow;
+    position: relative;
   }
   
   .bento-card:hover {

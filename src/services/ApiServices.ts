@@ -27,7 +27,12 @@ export const authService = {
       localStorage.setItem('userType', response.data.user.role === 'admin' ? 'admin' : 'user');
     }
     
-    return response;
+    return {
+      statusCode: response.status,
+      data: response.data,
+      message: response.data.message || 'Login successful',
+      success: response.status === 200
+    };
   },
   
   logout: async (): Promise<ApiResponse> => {
