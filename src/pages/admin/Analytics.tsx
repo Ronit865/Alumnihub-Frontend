@@ -96,10 +96,10 @@ const topUniversities = [
 ];
 
 const geographicData = [
-  { location: "California", count: 3456, percentage: 27.5 },
-  { location: "New York", count: 2134, percentage: 17.0 },
-  { location: "Texas", count: 1876, percentage: 15.0 },
-  { location: "Florida", count: 1234, percentage: 9.8 },
+  { location: "Banglore", count: 3456, percentage: 27.5 },
+  { location: "Mumbai", count: 2134, percentage: 17.0 },
+  { location: "Pune", count: 1876, percentage: 15.0 },
+  { location: "Delhi", count: 1234, percentage: 9.8 },
   { location: "International", count: 987, percentage: 7.9 },
 ];
 
