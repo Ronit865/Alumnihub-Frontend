@@ -1,18 +1,29 @@
 import { useState } from "react";
-import { User, Upload, Settings as SettingsIcon, Download, Mail, Database } from "lucide-react";
+import { User, Upload, Settings as SettingsIcon, Download, Mail, Database, Link, Phone, MapPin, GraduationCap, Building, Calendar, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function Settings() {
-  const [firstName, setFirstName] = useState("Admin");
-  const [lastName, setLastName] = useState("User");
-  const [email, setEmail] = useState("admin@university.edu");
-  const [jobTitle, setJobTitle] = useState("Alumni Relations Manager");
-  const [department, setDepartment] = useState("Alumni Affairs");
+  const [name, setName] = useState("John Doe");
+  const [email, setEmail] = useState("john.doe@alumni.edu");
+  const [graduationYear, setGraduationYear] = useState("2020");
+  const [course, setCourse] = useState("Computer Science Engineering");
+  const [currentPosition, setCurrentPosition] = useState("Software Engineer");
+  const [company, setCompany] = useState("Tech Corp");
+  const [location, setLocation] = useState("San Francisco, CA");
+  const [phone, setPhone] = useState("+1-234-567-8900");
+  const [bio, setBio] = useState("Passionate software engineer with 4+ years of experience in full-stack development.");
+  const [linkedinUrl, setLinkedinUrl] = useState("https://linkedin.com/in/johndoe");
+  
+  // Password change states
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -45,10 +56,11 @@ export default function Settings() {
                 <Avatar className="w-24 h-24 ring-4 ring-primary/10">
                   <AvatarImage src="" alt="Profile" />
                   <AvatarFallback className="bg-primary/10 text-primary text-xl font-medium">
-                    {firstName[0]}{lastName[0]}
+                    {name.split(' ').map(n => n[0]).join('')}
                   </AvatarFallback>
                 </Avatar>
-                <div>
+                <div className="flex-1">
+                  <h3 className="text-2xl font-semibold mb-2">{name}</h3>
                   <Button variant="outline" className="gap-2">
                     <Upload className="w-4 h-4" />
                     Change Photo
@@ -62,51 +74,129 @@ export default function Settings() {
               <Separator />
 
               {/* Personal Information */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
+                  <Label htmlFor="name">Full Name</Label>
                   <Input
-                    id="firstName"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Enter your full name"
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
+                  <Label htmlFor="email">Email Address</Label>
                   <Input
-                    id="lastName"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email address"
                   />
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="graduationYear" className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4" />
+                      Graduation Year
+                    </Label>
+                    <Input
+                      id="graduationYear"
+                      value={graduationYear}
+                      onChange={(e) => setGraduationYear(e.target.value)}
+                      placeholder="e.g., 2020"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="course" className="flex items-center gap-2">
+                      <GraduationCap className="w-4 h-4" />
+                      Course
+                    </Label>
+                    <Input
+                      id="course"
+                      value={course}
+                      onChange={(e) => setCourse(e.target.value)}
+                      placeholder="e.g., Computer Science"
+                    />
+                  </div>
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="jobTitle">Job Title</Label>
-                <Input
-                  id="jobTitle"
-                  value={jobTitle}
-                  onChange={(e) => setJobTitle(e.target.value)}
-                />
-              </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="currentPosition">Current Position</Label>
+                    <Input
+                      id="currentPosition"
+                      value={currentPosition}
+                      onChange={(e) => setCurrentPosition(e.target.value)}
+                      placeholder="e.g., Software Engineer"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="company" className="flex items-center gap-2">
+                      <Building className="w-4 h-4" />
+                      Company
+                    </Label>
+                    <Input
+                      id="company"
+                      value={company}
+                      onChange={(e) => setCompany(e.target.value)}
+                      placeholder="e.g., Tech Corp"
+                    />
+                  </div>
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="department">Department</Label>
-                <Input
-                  id="department"
-                  value={department}
-                  onChange={(e) => setDepartment(e.target.value)}
-                />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="location" className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4" />
+                      Location
+                    </Label>
+                    <Input
+                      id="location"
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                      placeholder="e.g., San Francisco, CA"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone" className="flex items-center gap-2">
+                      <Phone className="w-4 h-4" />
+                      Phone
+                    </Label>
+                    <Input
+                      id="phone"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="e.g., +1-234-567-8900"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="bio">Bio</Label>
+                  <Textarea
+                    id="bio"
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    placeholder="Tell us about yourself..."
+                    className="min-h-[100px]"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="linkedinUrl" className="flex items-center gap-2">
+                    <Link className="w-4 h-4" />
+                    LinkedIn Profile
+                  </Label>
+                  <Input
+                    id="linkedinUrl"
+                    value={linkedinUrl}
+                    onChange={(e) => setLinkedinUrl(e.target.value)}
+                    placeholder="https://linkedin.com/in/yourprofile"
+                  />
+                </div>
               </div>
 
               <div className="flex justify-end">
@@ -116,37 +206,55 @@ export default function Settings() {
           </Card>
         </div>
 
-        {/* Quick Actions */}
+        {/* Change Password & System Info */}
         <div className="space-y-6">
+          {/* Change Password */}
           <Card>
             <CardHeader>
               <div className="flex items-center gap-3">
-                <SettingsIcon className="w-5 h-5 text-primary" />
+                <Lock className="w-5 h-5 text-primary" />
                 <div>
-                  <CardTitle>Quick Actions</CardTitle>
+                  <CardTitle>Change Password</CardTitle>
                   <CardDescription>
-                    Common administrative tasks
+                    Update your account password for security
                   </CardDescription>
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <Button variant="outline" className="w-full justify-start gap-3">
-                <Download className="w-4 h-4" />
-                Export Alumni Data
-              </Button>
-              <Button variant="outline" className="w-full justify-start gap-3">
-                <Upload className="w-4 h-4" />
-                Import Alumni Data
-              </Button>
-              <Button variant="outline" className="w-full justify-start gap-3">
-                <Mail className="w-4 h-4" />
-                Bulk Email Settings
-              </Button>
-              <Button variant="outline" className="w-full justify-start gap-3">
-                <Database className="w-4 h-4" />
-                Database Backup
-              </Button>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="currentPassword">Current Password</Label>
+                <Input
+                  id="currentPassword"
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  placeholder="Enter current password"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="newPassword">New Password</Label>
+                <Input
+                  id="newPassword"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Enter new password"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm new password"
+                />
+              </div>            
+              <Button className="w-full">Update Password</Button>
             </CardContent>
           </Card>
 
