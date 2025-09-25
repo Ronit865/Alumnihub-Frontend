@@ -43,7 +43,7 @@ export function AppHeader() {
   const avatarFallback = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
   return (
-    <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+    <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 border-l-0">
       <div className="flex h-14 sm:h-16 items-center justify-between px-3 sm:px-4 md:px-6">
         {/* Left side - Sidebar trigger and search */}
         <div className="flex items-center gap-2 sm:gap-4 flex-1">
@@ -99,12 +99,6 @@ export function AppHeader() {
                 <User className="mr-2 h-4 w-4" />
                 <span>Profile</span>
               </DropdownMenuItem>
-              {/* <DropdownMenuItem>
-                Settings
-              </DropdownMenuItem> */}
-              {/* <DropdownMenuItem>
-                Support
-              </DropdownMenuItem> */}
               <DropdownMenuSeparator />
               <DropdownMenuItem 
                 className="text-destructive cursor-pointer"
