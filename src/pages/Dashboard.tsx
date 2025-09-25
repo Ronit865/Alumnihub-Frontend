@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { adminService, eventService } from "@/services/ApiServices";
+import { adminService, eventService, userService } from "@/services/ApiServices";
 import { toast } from "sonner";
 
 interface DashboardStats {
@@ -55,7 +55,7 @@ export default function Dashboard() {
       setLoading(true);
 
       // Fetch alumni data
-      const alumniResponse = await adminService.getAllUsers();
+      const alumniResponse = await userService.getAllUsers();
       const allUsers = Array.isArray(alumniResponse) ? alumniResponse : [];
       
       // Filter verified alumni

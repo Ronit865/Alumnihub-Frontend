@@ -65,6 +65,11 @@ export const userService = {
     return await api.patch('/users/update-user', data);
   },
   
+  getAllUsers: async (): Promise<ApiResponse> => {
+    const response = await api.get('/users/user');
+    return response.data;
+  },
+
   updateAvatar: async (formData: FormData): Promise<ApiResponse> => {
     return await api.post('/users/update-avatar', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
