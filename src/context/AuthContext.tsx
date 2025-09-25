@@ -7,6 +7,15 @@ interface User {
   email: string;
   role: string;
   avatar?: string;
+  // Add these fields to match your backend user model
+  graduationYear?: string;
+  course?: string;
+  currentPosition?: string;
+  company?: string;
+  location?: string;
+  phone?: string;
+  bio?: string;
+  linkedinUrl?: string;
 }
 
 interface Admin {

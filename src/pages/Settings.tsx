@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { User, Upload, Settings as SettingsIcon, Download, Mail, Database, Link, Phone, MapPin, GraduationCap, Building, Calendar, Lock } from "lucide-react";
+import { useState, useEffect } from "react";
+import { User, Upload, Lock, Calendar, GraduationCap, Building, MapPin, Phone, Link } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,23 +7,251 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/context/AuthContext";
+import { userService, handleApiError, handleApiSuccess } from "@/services/ApiServices";
 
 export default function Settings() {
-  const [name, setName] = useState("John Doe");
-  const [email, setEmail] = useState("john.doe@alumni.edu");
-  const [graduationYear, setGraduationYear] = useState("2020");
-  const [course, setCourse] = useState("Computer Science Engineering");
-  const [currentPosition, setCurrentPosition] = useState("Software Engineer");
-  const [company, setCompany] = useState("Tech Corp");
-  const [location, setLocation] = useState("San Francisco, CA");
-  const [phone, setPhone] = useState("+1-234-567-8900");
-  const [bio, setBio] = useState("Passionate software engineer with 4+ years of experience in full-stack development.");
-  const [linkedinUrl, setLinkedinUrl] = useState("https://linkedin.com/in/johndoe");
+  const { user, fetchCurrentUser } = useAuth();
+  const { toast } = useToast();
+  
+  // Profile form states
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [graduationYear, setGraduationYear] = useState("");
+  const [course, setCourse] = useState("");
+  const [currentPosition, setCurrentPosition] = useState("");
+  const [company, setCompany] = useState("");
+  const [location, setLocation] = useState("");
+  const [phone, setPhone] = useState("");
+  const [bio, setBio] = useState("");
+  const [linkedinUrl, setLinkedinUrl] = useState("");
   
   // Password change states
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  
+  // Loading states
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+
+  // Load user data on component mount
+  useEffect(() => {
+    if (user) {
+      setName(user.name || "");
+      setEmail(user.email || "");
+      setGraduationYear(user.graduationYear || "");
+      setCourse(user.course || "");
+      setCurrentPosition(user.currentPosition || "");
+      setCompany(user.company || "");
+      setLocation(user.location || "");
+      setPhone(user.phone || "");
+      setBio(user.bio || "");
+      setLinkedinUrl(user.linkedinUrl || "");
+    }
+  }, [user]);
+
+  const handleProfileUpdate = async () => {
+    try {
+      setIsUpdatingProfile(true);
+      
+      // Basic validation
+      if (!name.trim()) {
+        toast({
+          title: "Validation Error",
+          description: "Name is required.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!email.trim()) {
+        toast({
+          title: "Validation Error",
+          description: "Email is required.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        toast({
+          title: "Validation Error",
+          description: "Please enter a valid email address.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Prepare profile data - only send non-empty fields
+      const profileData: any = {
+        name: name.trim(),
+        email: email.trim(),
+      };
+
+      // Only add optional fields if they have values
+      if (graduationYear.trim()) profileData.graduationYear = graduationYear.trim();
+      if (course.trim()) profileData.course = course.trim();
+      if (currentPosition.trim()) profileData.currentPosition = currentPosition.trim();
+      if (company.trim()) profileData.company = company.trim();
+      if (location.trim()) profileData.location = location.trim();
+      if (phone.trim()) profileData.phone = phone.trim();
+      if (bio.trim()) profileData.bio = bio.trim();
+      if (linkedinUrl.trim()) profileData.linkedinUrl = linkedinUrl.trim();
+
+      console.log('Sending profile data:', profileData); // Debug log
+
+      const response = await userService.updateProfile(profileData);
+      
+      if (response.success) {
+        toast({
+          title: "Profile Updated",
+          description: "Your profile has been updated successfully.",
+        });
+        
+        // Refresh user data
+        await fetchCurrentUser();
+      }
+    } catch (error: any) {
+      console.error('Profile update error:', error); // Debug log
+      const apiError = handleApiError(error);
+      toast({
+        title: "Update Failed",
+        description: apiError.message || "Failed to update profile. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdatingProfile(false);
+    }
+  };
+
+  const handlePasswordChange = async () => {
+    // Validation
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all password fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Validation Error",
+        description: "New passwords do not match.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast({
+        title: "Validation Error",
+        description: "New password must be at least 6 characters long.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setIsChangingPassword(true);
+      
+      const response = await userService.changePassword({
+        oldPassword: currentPassword,
+        newPassword: newPassword
+      });
+
+      if (response.success) {
+        toast({
+          title: "Password Changed",
+          description: "Your password has been updated successfully.",
+        });
+        
+        // Clear password fields
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+      }
+    } catch (error: any) {
+      const apiError = handleApiError(error);
+      toast({
+        title: "Password Change Failed",
+        description: apiError.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Invalid File",
+        description: "Please select an image file (JPG, PNG, or GIF).",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file size (2MB max)
+    if (file.size > 2 * 1024 * 1024) {
+      toast({
+        title: "File Too Large",
+        description: "Please select an image smaller than 2MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setIsUploadingAvatar(true);
+      
+      const formData = new FormData();
+      formData.append('avatar', file);
+
+      const response = await userService.updateAvatar(formData);
+      
+      if (response.success) {
+        toast({
+          title: "Avatar Updated",
+          description: "Your profile photo has been updated successfully.",
+        });
+        
+        // Refresh user data to get new avatar URL
+        await fetchCurrentUser();
+      }
+    } catch (error: any) {
+      const apiError = handleApiError(error);
+      toast({
+        title: "Upload Failed",
+        description: apiError.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-2">Loading...</h2>
+          <p className="text-muted-foreground">Please wait while we load your profile.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -54,17 +282,31 @@ export default function Settings() {
               {/* Profile Photo */}
               <div className="flex items-center gap-6">
                 <Avatar className="w-24 h-24 ring-4 ring-primary/10">
-                  <AvatarImage src="" alt="Profile" />
+                  <AvatarImage src={user.avatar} alt="Profile" />
                   <AvatarFallback className="bg-primary/10 text-primary text-xl font-medium">
                     {name.split(' ').map(n => n[0]).join('')}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
                   <h3 className="text-2xl font-semibold mb-2">{name}</h3>
-                  <Button variant="outline" className="gap-2">
-                    <Upload className="w-4 h-4" />
-                    Change Photo
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      variant="outline" 
+                      className="gap-2" 
+                      disabled={isUploadingAvatar}
+                      onClick={() => document.getElementById('avatar-upload')?.click()}
+                    >
+                      <Upload className="w-4 h-4" />
+                      {isUploadingAvatar ? "Uploading..." : "Change Photo"}
+                    </Button>
+                    <input
+                      id="avatar-upload"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleAvatarUpload}
+                    />
+                  </div>
                   <p className="text-sm text-muted-foreground mt-2">
                     JPG, PNG or GIF. Max size 2MB.
                   </p>
@@ -200,7 +442,12 @@ export default function Settings() {
               </div>
 
               <div className="flex justify-end">
-                <Button>Save Changes</Button>
+                <Button 
+                  onClick={handleProfileUpdate}
+                  disabled={isUpdatingProfile}
+                >
+                  {isUpdatingProfile ? "Saving..." : "Save Changes"}
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -254,7 +501,13 @@ export default function Settings() {
                   placeholder="Confirm new password"
                 />
               </div>            
-              <Button className="w-full">Update Password</Button>
+              <Button 
+                className="w-full" 
+                onClick={handlePasswordChange}
+                disabled={isChangingPassword}
+              >
+                {isChangingPassword ? "Updating..." : "Update Password"}
+              </Button>
             </CardContent>
           </Card>
 
@@ -277,24 +530,35 @@ export default function Settings() {
                 <span className="font-medium">Connected</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Storage Used</span>
-                <span className="font-medium">2.4 GB</span>
+                <span className="text-muted-foreground">User ID</span>
+                <span className="font-medium">{user._id}</span>
               </div>
             </CardContent>
           </Card>
 
-          {/* Danger Zone */}
-          <Card className="border-destructive/20">
+          {/* Account Info */}
+          <Card className="border-muted">
             <CardHeader>
-              <CardTitle className="text-destructive">Danger Zone</CardTitle>
+              <CardTitle>Account Information</CardTitle>
               <CardDescription>
-                Irreversible and destructive actions
+                Your account details and status
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <Button variant="destructive" className="w-full">
-                Reset All Data
-              </Button>
+            <CardContent className="space-y-4">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Account Type</span>
+                <span className="font-medium capitalize">{user.role}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Member Since</span>
+                <span className="font-medium">
+                  {new Date().toLocaleDateString()}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Status</span>
+                <span className="font-medium text-green-600">Active</span>
+              </div>
             </CardContent>
           </Card>
         </div>

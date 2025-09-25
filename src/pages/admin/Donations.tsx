@@ -2,17 +2,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { IndianRupee, TrendingUp, Users, Target, Plus, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { IndianRupee, TrendingUp, Users, Target, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState, useEffect } from "react";
-import { donationService } from "@/services/ApiServices";
-import { toast } from "sonner";
+import { donationService, handleApiError, handleApiSuccess } from "@/services/ApiServices";
+import { useToast } from "@/hooks/use-toast";
 
-// Keep the static data for stats and recent donations (you can replace these later)
+// Keep the static data for stats and recent donations
 const donationStats = [
     {
         title: "Total Raised",
@@ -49,94 +45,88 @@ const donationStats = [
 ];
 
 const recentDonations = [
-      {
-    "id": 1,
-    "donor": "Rohit Sharma",
-    "email": "rohit.sharma@email.com",
-    "amount": 100000,
-    "campaign": "Scholarship Fund",
-    "date": "2024-01-20",
-    "status": "completed",
-    "avatar": "/placeholder.svg",
-    "class": "2019"
-  },
-  {
-    "id": 2,
-    "donor": "Ananya Mehta",
-    "email": "ananya.mehta@email.com",
-    "amount": 500000,
-    "campaign": "Research Grant",
-    "date": "2024-01-18",
-    "status": "completed",
-    "avatar": "/placeholder.svg",
-    "class": "2018"
-  },
-  {
-    "id": 3,
-    "donor": "Anonymous",
-    "email": "donor@anonymous.com",
-    "amount": 205000,
-    "campaign": "Campus Infrastructure",
-    "date": "2024-01-15",
-    "status": "completed",
-    "avatar": "/placeholder.svg",
-    "class": "Unknown"
-  },
-  {
-    "id": 4,
-    "donor": "Priya Nair",
-    "email": "priya.nair@email.com",
-    "amount": 2500000,
-    "campaign": "Technology Lab",
-    "date": "2024-01-12",
-    "status": "pending",
-    "avatar": "/placeholder.svg",
-    "class": "2020"
-  },
-  {
-    "id": 5,
-    "donor": "Karan Patel",
-    "email": "karan.patel@email.com",
-    "amount": 7500000,
-    "campaign": "Student Welfare Fund",
-    "date": "2024-01-10",
-    "status": "completed",
-    "avatar": "/placeholder.svg",
-    "class": "2017"
-  }
+    {
+        "id": 1,
+        "donor": "Rohit Sharma",
+        "email": "rohit.sharma@email.com",
+        "amount": 100000,
+        "campaign": "Scholarship Fund",
+        "date": "2024-01-20",
+        "status": "completed",
+        "avatar": "/placeholder.svg",
+        "class": "2019"
+    },
+    {
+        "id": 2,
+        "donor": "Ananya Mehta",
+        "email": "ananya.mehta@email.com",
+        "amount": 500000,
+        "campaign": "Research Grant",
+        "date": "2024-01-18",
+        "status": "completed",
+        "avatar": "/placeholder.svg",
+        "class": "2018"
+    },
+    {
+        "id": 3,
+        "donor": "Anonymous",
+        "email": "donor@anonymous.com",
+        "amount": 205000,
+        "campaign": "Campus Infrastructure",
+        "date": "2024-01-15",
+        "status": "completed",
+        "avatar": "/placeholder.svg",
+        "class": "Unknown"
+    },
+    {
+        "id": 4,
+        "donor": "Priya Nair",
+        "email": "priya.nair@email.com",
+        "amount": 2500000,
+        "campaign": "Technology Lab",
+        "date": "2024-01-12",
+        "status": "pending",
+        "avatar": "/placeholder.svg",
+        "class": "2020"
+    },
+    {
+        "id": 5,
+        "donor": "Karan Patel",
+        "email": "karan.patel@email.com",
+        "amount": 7500000,
+        "campaign": "Student Welfare Fund",
+        "date": "2024-01-10",
+        "status": "completed",
+        "avatar": "/placeholder.svg",
+        "class": "2017"
+    }
 ];
 
-// Define interface for campaign data from backend
+// Enhanced interface for campaign data from backend - matching user side
 interface Campaign {
     _id: string;
     name: string;
     description: string;
     goal: number;
     raised?: number;
-    donors?: number;
+    raisedAmount?: number;
+    donors?: number | any[]; // Can be either number or array
+    donorCount?: number;
+    donorsCount?: number;
+    numberOfDonors?: number;
+    donations?: any[]; // Array of donation records
     endDate?: string;
     status?: string;
     createdAt?: string;
-}
-
-// Campaign form interface
-interface CampaignForm {
-    name: string;
-    description: string;
-    goal: number;
+    updatedAt?: string;
+    category?: string;
 }
 
 export function Donations() {
     const [campaigns, setCampaigns] = useState<Campaign[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [formData, setFormData] = useState<CampaignForm>({
-        name: "",
-        description: "",
-        goal: 0,
-    });
+    const { toast } = useToast();
 
     // Fetch campaigns from database
     useEffect(() => {
@@ -144,14 +134,64 @@ export function Donations() {
             try {
                 setLoading(true);
                 const response = await donationService.getCampaigns();
+                
+                console.log('Admin - API Response:', response);
+                console.log('Admin - Campaign data:', response.data);
+                
                 if (response.success) {
-                    setCampaigns(response.data);
+                    // Process campaigns to handle the schema differences - same as user side
+                    const processedCampaigns = (response.data || []).map((campaign: any) => {
+                        // Handle raised amount - prioritize 'raised' over 'raisedAmount'
+                        const raisedAmount = campaign.raised || campaign.raisedAmount || 0;
+                        
+                        // Handle donors count with multiple fallbacks - same logic as user side
+                        let donorCount = 0;
+                        if (Array.isArray(campaign.donors)) {
+                            donorCount = campaign.donors.length;
+                        } else if (typeof campaign.donors === 'number') {
+                            donorCount = campaign.donors;
+                        } else if (campaign.donorCount) {
+                            donorCount = campaign.donorCount;
+                        } else if (campaign.donorsCount) {
+                            donorCount = campaign.donorsCount;
+                        } else if (campaign.numberOfDonors) {
+                            donorCount = campaign.numberOfDonors;
+                        } else if (campaign.donations && Array.isArray(campaign.donations)) {
+                            donorCount = campaign.donations.length;
+                        }
+
+                        console.log(`Admin - Campaign ${campaign.name}:`, {
+                            originalData: campaign,
+                            processedRaised: raisedAmount,
+                            processedDonors: donorCount
+                        });
+
+                        return {
+                            ...campaign,
+                            raised: raisedAmount,
+                            donors: donorCount
+                        };
+                    });
+                    
+                    setCampaigns(processedCampaigns);
+                    setError(null);
                 } else {
                     setError(response.message || "Failed to fetch campaigns");
+                    toast({
+                        title: "Error",
+                        description: response.message || "Failed to fetch campaigns",
+                        variant: "destructive",
+                    });
                 }
             } catch (err: any) {
-                setError(err.message || "An error occurred while fetching campaigns");
-                console.error("Error fetching campaigns:", err);
+                const apiError = handleApiError(err);
+                setError(apiError.message || "An error occurred while fetching campaigns");
+                toast({
+                    title: "Error",
+                    description: apiError.message || "Failed to load campaigns",
+                    variant: "destructive",
+                });
+                console.error("Admin - Error fetching campaigns:", err);
             } finally {
                 setLoading(false);
             }
@@ -159,61 +199,6 @@ export function Donations() {
 
         fetchCampaigns();
     }, []);
-
-    // Handle form input changes
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: name === 'goal' ? parseFloat(value) || 0 : value
-        }));
-    };
-
-    // Handle form submission
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        
-        // Validation
-        if (!formData.name.trim()) {
-            toast.error("Campaign name is required");
-            return;
-        }
-        
-        if (!formData.description.trim()) {
-            toast.error("Campaign description is required");
-            return;
-        }
-        
-        if (formData.goal <= 0) {
-            toast.error("Goal amount must be greater than 0");
-            return;
-        }
-
-        try {
-            setIsSubmitting(true);
-            const response = await donationService.createCampaign(formData);
-            
-            if (response.success) {
-                toast.success("Campaign created successfully!");
-                setCampaigns(prev => [...prev, response.data]);
-                setIsDialogOpen(false);
-                setFormData({ name: "", description: "", goal: 0 });
-            } else {
-                toast.error(response.message || "Failed to create campaign");
-            }
-        } catch (err: any) {
-            toast.error(err.message || "An error occurred while creating campaign");
-            console.error("Error creating campaign:", err);
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
-    // Reset form when dialog closes
-    const handleDialogClose = () => {
-        setIsDialogOpen(false);
-        setFormData({ name: "", description: "", goal: 0 });
-    };
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat("en-IN", { 
@@ -245,102 +230,47 @@ export function Donations() {
     // Function to format date
     const formatDate = (dateString: string) => {
         try {
-            return new Date(dateString).toLocaleDateString();
+            return new Date(dateString).toLocaleDateString('en-IN', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
         } catch {
             return "N/A";
         }
     };
 
+    // Updated function to safely get donor count - matching user side logic
+    const getDonorCount = (campaign: Campaign): number => {
+        // Handle different possible field names and formats - same as user side
+        if (Array.isArray(campaign.donors)) {
+            return campaign.donors.length;
+        } else if (typeof campaign.donors === 'number') {
+            return campaign.donors;
+        } else if (typeof campaign.donorCount === 'number') {
+            return campaign.donorCount;
+        } else if (typeof campaign.donorsCount === 'number') {
+            return campaign.donorsCount;
+        } else if (typeof campaign.numberOfDonors === 'number') {
+            return campaign.numberOfDonors;
+        } else if (campaign.donations && Array.isArray(campaign.donations)) {
+            return campaign.donations.length;
+        } else if (typeof campaign.donors === 'string') {
+            // Try to parse if it's a string number
+            const parsed = parseInt(campaign.donors, 10);
+            return isNaN(parsed) ? 0 : parsed;
+        }
+        return 0;
+    };
+
     return (
         <div className="space-y-8">
             {/* Header */}
-            <div className="flex justify-between items-start animate-fade-in">
-                <div>
-                    <h1 className="text-3xl font-bold text-foreground">Donation Management</h1>
-                    <p className="text-muted-foreground mt-2">
-                        Track fundraising campaigns, donations, and donor engagement.
-                    </p>
-                </div>
-                
-                {/* New Campaign Dialog */}
-                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                    <DialogTrigger asChild>
-                        <Button className="gradient-primary text-primary-foreground hover:shadow-purple">
-                            <Plus className="h-4 w-4 mr-2" />
-                            New Campaign
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[425px]">
-                        <DialogHeader>
-                            <DialogTitle>Create New Campaign</DialogTitle>
-                            <DialogDescription>
-                                Create a new fundraising campaign. Fill in the details below.
-                            </DialogDescription>
-                        </DialogHeader>
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="name">Campaign Name</Label>
-                                <Input
-                                    id="name"
-                                    name="name"
-                                    placeholder="e.g., Scholarship Fund 2024"
-                                    value={formData.name}
-                                    onChange={handleInputChange}
-                                    disabled={isSubmitting}
-                                    required
-                                />
-                            </div>
-                            
-                            <div className="space-y-2">
-                                <Label htmlFor="description">Description</Label>
-                                <Textarea
-                                    id="description"
-                                    name="description"
-                                    placeholder="Describe the purpose and goals of this campaign..."
-                                    value={formData.description}
-                                    onChange={handleInputChange}
-                                    disabled={isSubmitting}
-                                    required
-                                    rows={3}
-                                />
-                            </div>
-                            
-                            <div className="space-y-2">
-                                <Label htmlFor="goal">Goal Amount (₹)</Label>
-                                <Input
-                                    id="goal"
-                                    name="goal"
-                                    type="number"
-                                    placeholder="4165000"
-                                    min="1"
-                                    step="1"
-                                    value={formData.goal || ""}
-                                    onChange={handleInputChange}
-                                    disabled={isSubmitting}
-                                    required
-                                />
-                            </div>
-                            
-                            <div className="flex justify-end space-x-2 pt-4">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={handleDialogClose}
-                                    disabled={isSubmitting}
-                                >
-                                    Cancel
-                                </Button>
-                                <Button
-                                    type="submit"
-                                    disabled={isSubmitting}
-                                    className="gradient-primary text-primary-foreground"
-                                >
-                                    {isSubmitting ? "Creating..." : "Create Campaign"}
-                                </Button>
-                            </div>
-                        </form>
-                    </DialogContent>
-                </Dialog>
+            <div className="animate-fade-in">
+                <h1 className="text-3xl font-bold text-foreground">Donation Management</h1>
+                <p className="text-muted-foreground mt-2">
+                    Track fundraising campaigns, donations, and donor engagement.
+                </p>
             </div>
 
             {/* Stats Grid */}
@@ -380,7 +310,7 @@ export function Donations() {
 
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Active Campaigns - Now using database data */}
+                {/* Active Campaigns */}
                 <Card className="lg:col-span-2 bento-card gradient-surface border-card-border/50">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
@@ -393,16 +323,33 @@ export function Donations() {
                     </CardHeader>
                     <CardContent className="h-[600px] overflow-hidden">
                         {loading ? (
-                            <div className="text-center py-8 text-muted-foreground">
-                                Loading campaigns...
+                            <div className="flex items-center justify-center h-full">
+                                <div className="text-center">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+                                    <p className="text-muted-foreground">Loading campaigns...</p>
+                                </div>
                             </div>
                         ) : error ? (
-                            <div className="text-center py-8 text-destructive">
-                                Error: {error}
+                            <div className="flex items-center justify-center h-full">
+                                <div className="text-center">
+                                    <p className="text-destructive mb-2">Error loading campaigns</p>
+                                    <p className="text-sm text-muted-foreground">{error}</p>
+                                    <Button 
+                                        variant="outline" 
+                                        onClick={() => window.location.reload()}
+                                        className="mt-4"
+                                    >
+                                        Retry
+                                    </Button>
+                                </div>
                             </div>
                         ) : campaigns.length === 0 ? (
-                            <div className="text-center py-8 text-muted-foreground">
-                                No campaigns found. Create your first campaign!
+                            <div className="flex items-center justify-center h-full">
+                                <div className="text-center">
+                                    <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                                    <p className="text-muted-foreground mb-2">No campaigns found</p>
+                                    <p className="text-sm text-muted-foreground">No active campaigns available.</p>
+                                </div>
                             </div>
                         ) : (
                             <div className="h-full overflow-y-auto pr-2 space-y-6 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
@@ -413,23 +360,17 @@ export function Donations() {
                                         style={{ animationDelay: `${index * 150}ms` }}
                                     >
                                         <div className="flex justify-between items-start mb-3">
-                                            <div>
-                                                <h3 className="font-semibold text-foreground">{campaign.name}</h3>
+                                            <div className="flex-1">
+                                                <h3 className="font-semibold text-foreground mb-2">{campaign.name}</h3>
                                                 <p className="text-sm text-muted-foreground mb-2">
                                                     {campaign.description}
                                                 </p>
-                                                {campaign.endDate ? (
-                                                    <p className="text-sm text-muted-foreground">
-                                                        Ends {formatDate(campaign.endDate)}
-                                                    </p>
-                                                ) : (
-                                                    <p className="text-sm text-muted-foreground">
-                                                        Created {formatDate(campaign.createdAt || "")}
-                                                    </p>
-                                                )}
+                                                <p className="text-sm text-muted-foreground">
+                                                    Created {formatDate(campaign.createdAt || "")}
+                                                </p>
                                             </div>
-                                            <Badge className="bg-primary/10 text-primary border-primary/20">
-                                                {campaign.donors || 0} donors
+                                            <Badge className="bg-primary/10 text-primary border-primary/20 ml-4">
+                                                {getDonorCount(campaign)} donors
                                             </Badge>
                                         </div>
 
@@ -543,7 +484,7 @@ export function Donations() {
                                     </TableCell>
                                     <TableCell>{donation.campaign}</TableCell>
                                     <TableCell className="text-muted-foreground">
-                                        {new Date(donation.date).toLocaleDateString()}
+                                        {new Date(donation.date).toLocaleDateString('en-IN')}
                                     </TableCell>
                                     <TableCell>
                                         {getStatusBadge(donation.status)}
