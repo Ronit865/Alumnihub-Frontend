@@ -8,9 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { useToast } from "@/hooks/use-toast";
 import { authService, handleApiError, handleApiSuccess } from "@/services/ApiServices";
 import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -22,7 +22,6 @@ type LoginForm = z.infer<typeof loginSchema>;
 export const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
@@ -35,7 +34,7 @@ export const Login = () => {
     },
   });
   
-const onSubmit = async (data: LoginForm) => {
+  const onSubmit = async (data: LoginForm) => {
     setIsLoading(true);
     try {
       const credentials = {
@@ -56,9 +55,16 @@ const onSubmit = async (data: LoginForm) => {
         // Update AuthContext with user data
         login(response.data);
         
-        toast({
-          title: "Login successful",
-          description: successData.message || "Welcome back!",
+        // Enhanced success toast with green styling
+        toast.success("Login successful!", {
+          style: {
+            background: '#10b981',
+            color: '#ffffff',
+            border: '1px solid #059669',
+          },
+          duration: 4000,
+          description: successData.message || "Welcome back to AlumniHub!",
+          descriptionClassName: "text-white",
         });
         
         // Get intended destination or default route
@@ -76,17 +82,14 @@ const onSubmit = async (data: LoginForm) => {
       console.error('Login error:', error);
       const apiError = handleApiError(error);
       
-      toast({
-        title: "Login failed",
+      toast.error("Login failed", {
         description: apiError.message,
-        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
   };
 
-     
   return (
      <div className="w-full max-w-md">
       <Card className="shadow-lg border-0 bg-card/95 backdrop-blur">
