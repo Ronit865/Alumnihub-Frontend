@@ -24,7 +24,7 @@ export function AppHeader() {
 
         {/* Right side - notifications and profile */}
         <div className="flex items-center gap-3">
-          <AdminToggle />
+          {/* <AdminToggle /> */}
           
           {/* Notifications */}
           <Button variant="ghost" size="icon" className="relative">
