@@ -1,4 +1,4 @@
-import { Search, Bell, User } from "lucide-react";
+import { Search, Bell, User, LogOut } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -12,8 +12,36 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminToggle } from "./admin-toggle";
+import { useAuth } from "@/context/AuthContext";
+import { authService } from "@/services/ApiServices";
+import { useNavigate } from "react-router-dom";
 
 export function AppHeader() {
+  const { user, admin, logout, userType } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      // Call backend logout endpoint
+      await authService.logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Continue with logout even if backend call fails
+    } finally {
+      // Clear local state and storage
+      logout();
+      // Redirect to login page
+      navigate('/auth/login');
+    }
+  };
+
+  // Get current user data (either user or admin)
+  const currentUser = user || admin;
+  const displayName = currentUser?.name || 'User';
+  const displayEmail = currentUser?.email || '';
+  const avatarSrc = currentUser?.avatar || '';
+  const avatarFallback = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+
   return (
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
       <div className="flex h-16 items-center justify-between px-6">
@@ -39,9 +67,9 @@ export function AppHeader() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                 <Avatar className="h-10 w-10 ring-2 ring-primary/20">
-                  <AvatarImage src="" alt="Profile" />
+                  <AvatarImage src={avatarSrc} alt="Profile" />
                   <AvatarFallback className="bg-primary text-primary-foreground font-medium">
-                    AD
+                    {avatarFallback}
                   </AvatarFallback>
                 </Avatar>
               </Button>
@@ -49,10 +77,15 @@ export function AppHeader() {
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">Admin User</p>
+                  <p className="text-sm font-medium leading-none">{displayName}</p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    admin@university.edu
+                    {displayEmail}
                   </p>
+                  {userType === 'admin' && (
+                    <p className="text-xs leading-none text-primary font-medium">
+                      Administrator
+                    </p>
+                  )}
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
@@ -67,8 +100,12 @@ export function AppHeader() {
                 Support
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive">
-                Log out
+              <DropdownMenuItem 
+                className="text-destructive cursor-pointer"
+                onClick={handleLogout}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

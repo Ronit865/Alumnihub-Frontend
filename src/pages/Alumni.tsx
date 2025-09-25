@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { adminService } from "@/services/ApiServices";
+import { adminService, userService } from "@/services/ApiServices";
 import { toast } from "@/components/ui/use-toast";
 
 // Define the User interface to match your backend model
@@ -45,7 +45,7 @@ export default function Alumni() {
   } = useQuery({
     queryKey: ["public-alumni"],
     queryFn: async () => {
-      const response = await adminService.getAllUsers();
+      const response = await userService.getAllUsers();
       return response;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -72,8 +72,7 @@ export default function Alumni() {
     user && 
     user.name && 
     user.email && 
-    user.role?.toLowerCase() === "alumni" && 
-    user.isVerified === true
+    user.role?.toLowerCase() === "alumni"  // && isVerified: true (if you want only verified ones
   );
 
   // Get unique graduation years from the data
