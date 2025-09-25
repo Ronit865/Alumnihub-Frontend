@@ -329,7 +329,7 @@ export function Settings() {
         </CardContent>
       </Card>
 
-      {/* System Settings */}
+      {/* System Settings
       <Card className="bento-card gradient-surface border-card-border/50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -403,7 +403,7 @@ export function Settings() {
             Save System Settings
           </Button>
         </CardContent>
-      </Card>
+      </Card> */}
     </div>
   );
 }

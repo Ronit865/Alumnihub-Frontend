@@ -385,7 +385,7 @@ export function Alumni() {
     return (
       <div className="flex items-center justify-center h-96">
         <Loader2 className="h-8 w-8 animate-spin" />
-        <span className="ml-2">Loading alumni data...</span>
+        <span className="ml-2">Loading user data...</span>
       </div>
     );
   }
@@ -396,7 +396,7 @@ export function Alumni() {
       <div className="flex justify-between items-start animate-fade-in">
         <div>
           <h1 className="text-3xl font-bold text-foreground">
-            Alumni Management
+            Users Management
           </h1>
           <p className="text-muted-foreground mt-2">
             Manage alumni profiles, verify registrations, and track engagement.

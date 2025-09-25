@@ -41,7 +41,7 @@ const navigation = [
 
 const adminNavigation = [
   { title: "Admin Dashboard", url: "/admin", icon: LayoutDashboard },
-  { title: "Manage Alumni", url: "/admin/alumni", icon: Users },
+  { title: "Manage Users", url: "/admin/alumni", icon: Users },
   { title: "Manage Events", url: "/admin/events", icon: Calendar },
   { title: "Manage Jobs", url: "/admin/jobs", icon: Briefcase },
   { title: "Manage Donations", url: "/admin/donations", icon: Heart },
@@ -79,11 +79,14 @@ export function AppSidebar() {
   };
 
   const isActive = (path: string) => {
-    if (path === "/" || path === "/admin") {
-      return location.pathname === path;
-    }
-    return location.pathname === path;
-  };
+  if (path === "/") {
+    return location.pathname === "/" && !isAdminMode;
+  }
+  if (path === "/admin") {
+    return location.pathname === "/admin";
+  }
+  return location.pathname === path;
+};
 
   const getNavClasses = (path: string) => {
     const baseClasses = "sidebar-nav-item w-full justify-start gap-2 sm:gap-3 h-9 sm:h-11 px-2 sm:px-3 font-medium text-sm sm:text-base";
