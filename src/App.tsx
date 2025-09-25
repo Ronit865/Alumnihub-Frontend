@@ -33,6 +33,7 @@ import { Communications as AdminCommunications } from "./pages/admin/Communicati
 import { Analytics as AdminAnalytics } from "./pages/admin/Analytics";
 import { Settings as AdminSettings } from "./pages/admin/Settings";
 import { AuthLayout } from "./components/layout/AuthLayout";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -52,9 +53,12 @@ const App = () => (
               <Route path="reset-password" element={<ResetPassword />} />
             </Route>
             
-            {/* Protected Routes - With Sidebar */}
-            <Route path="/" element={<MainLayout />}>
-              {/* User Routes */}
+            {/* Protected User Routes - With Sidebar */}
+            <Route path="/" element={
+              <ProtectedRoute>
+                <MainLayout />
+              </ProtectedRoute>
+            }>
               <Route index element={<Dashboard />} />
               <Route path="alumni" element={<Alumni />} />
               <Route path="events" element={<Events />} />
@@ -63,17 +67,23 @@ const App = () => (
               <Route path="messages" element={<PersonalMessages />} />
               <Route path="communications" element={<Communications />} />
               <Route path="settings" element={<Settings />} />
-              
-              {/* Admin Routes */}
-              <Route path="admin" element={<AdminDashboard />} />
-              <Route path="admin/dashboard" element={<AdminDashboard />} />
-              <Route path="admin/alumni" element={<AdminAlumni />} />
-              <Route path="admin/events" element={<AdminEvents />} />
-              <Route path="admin/jobs" element={<AdminJobs />} />
-              <Route path="admin/donations" element={<AdminDonations />} />
-              <Route path="admin/communications" element={<AdminCommunications />} />
-              <Route path="admin/analytics" element={<AdminAnalytics />} />
-              <Route path="admin/settings" element={<AdminSettings />} />
+            </Route>
+            
+            {/* Protected Admin Routes - With Sidebar */}
+            <Route path="/admin" element={
+              <ProtectedRoute requireAdmin={true}>
+                <MainLayout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<AdminDashboard />} />
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="alumni" element={<AdminAlumni />} />
+              <Route path="events" element={<AdminEvents />} />
+              <Route path="jobs" element={<AdminJobs />} />
+              <Route path="donations" element={<AdminDonations />} />
+              <Route path="communications" element={<AdminCommunications />} />
+              <Route path="analytics" element={<AdminAnalytics />} />
+              <Route path="settings" element={<AdminSettings />} />
             </Route>
             
             {/* Catch-all route */}

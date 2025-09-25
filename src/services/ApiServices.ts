@@ -17,8 +17,17 @@ interface ApiError {
 
 // Auth Services
 export const authService = {
-  login: async (credentials: { email: string; password: string }): Promise<ApiResponse> => {
-    return await api.post('/login', credentials);
+ login: async (credentials: { email: string; password: string }): Promise<ApiResponse> => {
+    const response = await api.post('/login', credentials);
+    
+    // Store userType based on response
+    if (response.data?.userType) {
+      localStorage.setItem('userType', response.data.userType);
+    } else if (response.data?.user?.role) {
+      localStorage.setItem('userType', response.data.user.role === 'admin' ? 'admin' : 'user');
+    }
+    
+    return response;
   },
   
   logout: async (): Promise<ApiResponse> => {

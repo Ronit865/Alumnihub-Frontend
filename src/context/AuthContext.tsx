@@ -92,30 +92,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const login = (userData: any) => {
-    const { userType: responseUserType, user: responseUser, admin: responseAdmin } = userData;
+    console.log('Login data received:', userData);
     
-    // Store user type and access token
-    if (responseUserType) {
-      localStorage.setItem('userType', responseUserType);
-      setUserType(responseUserType);
-    }
+    // Handle different response formats from your backend
+    const responseUserType = userData.userType || (userData.user?.role === 'admin' ? 'admin' : 'user');
+    const responseUser = userData.user;
+    const responseAdmin = userData.admin;
     
+    // Store user type
+    localStorage.setItem('userType', responseUserType);
+    setUserType(responseUserType as 'user' | 'admin');
+    
+    // Store access token
     if (userData.accessToken) {
       localStorage.setItem('accessToken', userData.accessToken);
     }
 
     // Set appropriate user/admin data
-    if (responseUserType === 'admin' && responseAdmin) {
-      setAdmin(responseAdmin);
+    if (responseUserType === 'admin') {
+      const adminData = responseAdmin || userData;
+      console.log('Setting admin data:', adminData);
+      setAdmin(adminData);
       setUser(null);
-    } else if (responseUserType === 'user' && responseUser) {
-      setUser(responseUser);
-      setAdmin(null);
-    } else if (userData.user) {
-      // Fallback for existing login format
-      setUser(userData.user);
+    } else {
+      const userData_ = responseUser || userData;
+      console.log('Setting user data:', userData_);
+      setUser(userData_);
       setAdmin(null);
     }
+    
+    // Set loading to false immediately after login
+    setIsLoading(false);
   };
 
   const logout = () => {

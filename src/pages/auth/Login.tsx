@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { authService, handleApiError, handleApiSuccess } from "@/services/ApiServices";
+import { useAuth } from "@/context/AuthContext";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -23,6 +24,8 @@ export const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
 
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -31,33 +34,46 @@ export const Login = () => {
       password: "",
     },
   });
-
-  const onSubmit = async (data: LoginForm) => {
+  
+const onSubmit = async (data: LoginForm) => {
     setIsLoading(true);
     try {
       const credentials = {
         email: data.email,
         password: data.password
       };
+      
       const response = await authService.login(credentials);
       
       if (response.success) {
         const successData = handleApiSuccess(response);
         
-        // Store tokens - adjust based on your actual response structure
+        // Store tokens
         if (response.data?.accessToken) {
           localStorage.setItem('accessToken', response.data.accessToken);
         }
+        
+        // Update AuthContext with user data
+        login(response.data);
         
         toast({
           title: "Login successful",
           description: successData.message || "Welcome back!",
         });
         
-        // Navigate to dashboard
-        navigate('/');
+        // Get intended destination or default route
+        const from = location.state?.from?.pathname;
+        const userType = response.data?.userType || (response.data?.user?.role === 'admin' ? 'admin' : 'user');
+        
+        // Role-based redirection
+        if (userType === 'admin') {
+          navigate(from && from.startsWith('/admin') ? from : '/admin', { replace: true });
+        } else {
+          navigate(from && !from.startsWith('/admin') ? from : '/', { replace: true });
+        }
       }
     } catch (error: any) {
+      console.error('Login error:', error);
       const apiError = handleApiError(error);
       
       toast({
@@ -65,23 +81,12 @@ export const Login = () => {
         description: apiError.message,
         variant: "destructive",
       });
-      
-      // Handle specific error cases
-      if (apiError.statusCode === 401) {
-        console.log("Invalid credentials");
-      } else if (apiError.statusCode === 404) {
-        console.log("User not found");
-      }
-      
-      // Log detailed errors for debugging
-      if (apiError.errors.length > 0) {
-        console.log("Validation errors:", apiError.errors);
-      }
     } finally {
       setIsLoading(false);
     }
   };
 
+     
   return (
      <div className="w-full max-w-md">
       <Card className="shadow-lg border-0 bg-card/95 backdrop-blur">

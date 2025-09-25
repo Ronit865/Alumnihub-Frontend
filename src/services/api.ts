@@ -1,5 +1,4 @@
 import axios from "axios";
-import { promise } from "zod";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
@@ -35,7 +34,11 @@ api.interceptors.response.use(
       const apiError = error.response.data;
       
       // Check if it's a 401 unauthorized error and attempt token refresh
-      if (error.response.status === 401 && !originalRequest._retry) {
+      // Skip refresh for login and other auth endpoints
+      if (error.response.status === 401 && 
+          !originalRequest._retry && 
+          !originalRequest.url?.includes('/login') &&
+          !originalRequest.url?.includes('/refresh-token')) {
         originalRequest._retry = true;
         
         try {
@@ -49,13 +52,13 @@ api.interceptors.response.use(
           }
         } catch (refreshError) {
           localStorage.removeItem('accessToken');
+          localStorage.removeItem('userType');
           window.location.href = '/auth/login';
           return Promise.reject(refreshError);
         }
-        return Promise.reject(apiError)
       }
       
-      // Create a structured error object matching your ApiError format
+       // Create a structured error object matching your ApiError format
       const structuredError = {
         statusCode: apiError.statusCode || error.response.status,
         message: apiError.message || "Something went wrong",
