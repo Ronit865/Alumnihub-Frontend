@@ -86,7 +86,7 @@ export function AppSidebar() {
   };
 
   const getNavClasses = (path: string) => {
-    const baseClasses = "sidebar-nav-item w-full justify-start gap-3 h-11 px-3 font-medium";
+    const baseClasses = "sidebar-nav-item w-full justify-start gap-2 sm:gap-3 h-9 sm:h-11 px-2 sm:px-3 font-medium text-sm sm:text-base";
     return isActive(path) 
       ? `${baseClasses} active bg-primary text-primary-foreground` 
       : `${baseClasses} text-muted-foreground hover:text-foreground hover:bg-accent`;
@@ -96,33 +96,33 @@ export function AppSidebar() {
     <Sidebar className="border-r" collapsible="icon">
       <SidebarContent className="p-0">
         {/* Logo Section */}
-        <div className={`border-b ${open ? "p-6" : "p-3"}`}>
-          <div className={`flex items-center ${open ? "gap-3" : "justify-center"}`}>
-            <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center shrink-0">
-              <GraduationCap className="w-4 h-4 text-primary-foreground" />
+        <div className={`border-b ${open ? "p-4 sm:p-6" : "p-2 sm:p-3"}`}>
+          <div className={`flex items-center ${open ? "gap-2 sm:gap-3" : "justify-center"}`}>
+            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center shrink-0">
+              <GraduationCap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary-foreground" />
             </div>
             {open && (
               <div className="min-w-0">
-                <h1 className="font-bold text-lg gradient-text truncate">AlumniHub</h1>
-                <p className="text-sm text-muted-foreground truncate">Management System</p>
+                <h1 className="font-bold text-base sm:text-lg gradient-text truncate">AlumniHub</h1>
+                <p className="text-xs sm:text-sm text-muted-foreground truncate">Management System</p>
               </div>
             )}
           </div>
         </div>
 
         {/* Main Navigation */}
-        <SidebarGroup className={open ? "px-3" : "px-2"}>
-          <SidebarGroupLabel className={!open ? "sr-only" : ""}>
+        <SidebarGroup className={open ? "px-2 sm:px-3" : "px-1 sm:px-2"}>
+          <SidebarGroupLabel className={!open ? "sr-only" : "text-xs sm:text-sm"}>
             Main Menu
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
+            <SidebarMenu className="space-y-0.5 sm:space-y-1">
               {(isAdminMode ? adminNavigation : navigation).map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} className={getNavClasses(item.url)}>
-                      <item.icon className="w-5 h-5 shrink-0" />
-                      {open && <span className="truncate">{item.title}</span>}
+                      <item.icon className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+                      {open && <span className="truncate text-sm sm:text-base">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -132,13 +132,13 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {/* Bottom Section */}
-        <div className={`mt-auto border-t ${open ? "p-3" : "p-2"}`}>
-          <SidebarMenu className="space-y-1">
+        <div className={`mt-auto border-t ${open ? "p-2 sm:p-3" : "p-1 sm:p-2"}`}>
+          <SidebarMenu className="space-y-0.5 sm:space-y-1">
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
                 <NavLink to={isAdminMode ? "/admin/settings" : "/settings"} className={getNavClasses(isAdminMode ? "/admin/settings" : "/settings")}>
-                  <Settings className="w-5 h-5 shrink-0" />
-                  {open && <span className="truncate">Settings</span>}
+                  <Settings className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+                  {open && <span className="truncate text-sm sm:text-base">Settings</span>}
                 </NavLink>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -149,10 +149,10 @@ export function AppSidebar() {
                 variant="ghost"
                 size={!open ? "icon" : "default"}
                 onClick={toggleTheme}
-                className={`${!open ? "w-11 h-11 justify-center" : "w-full justify-start gap-3 h-11"} text-muted-foreground hover:text-foreground hover:bg-accent`}
+                className={`${!open ? "w-9 h-9 sm:w-11 sm:h-11 justify-center" : "w-full justify-start gap-2 sm:gap-3 h-9 sm:h-11"} text-muted-foreground hover:text-foreground hover:bg-accent`}
               >
-                {isDark ? <Sun className="w-5 h-5 shrink-0" /> : <Moon className="w-5 h-5 shrink-0" />}
-                {open && <span className="truncate">{isDark ? "Light Mode" : "Dark Mode"}</span>}
+                {isDark ? <Sun className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" /> : <Moon className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />}
+                {open && <span className="truncate text-sm sm:text-base">{isDark ? "Light Mode" : "Dark Mode"}</span>}
               </Button>
             </SidebarMenuItem>
           </SidebarMenu>
