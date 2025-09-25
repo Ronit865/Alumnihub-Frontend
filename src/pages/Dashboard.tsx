@@ -300,51 +300,107 @@ export default function Dashboard() {
           size="md"
           className="h-full"
         >
-          <div className="space-y-3">
-            <div className="flex items-center space-x-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                <span className="text-white font-bold text-xs">TCS</span>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col items-center p-3 rounded-lg hover:bg-muted/50 transition-colors text-center">
+              <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center mb-2 shadow-sm">
+                <img 
+                  src="https://logos-world.net/wp-content/uploads/2020/09/Tata-Consultancy-Services-TCS-Logo.png" 
+                  alt="TCS Logo" 
+                  className="w-10 h-7 object-contain"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                  }}
+                />
+                <span className="text-blue-600 font-bold text-sm hidden">TCS</span>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm">Tata Consultancy Services</p>
-                <p className="text-xs text-muted-foreground">250+ alumni</p>
-              </div>
+              <p className="font-medium text-xs mb-1">TCS</p>
+              <p className="text-xs text-muted-foreground">250+ alumni</p>
             </div>
-            <div className="flex items-center space-x-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
-              <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                <span className="text-white font-bold text-xs">INF</span>
+            
+            <div className="flex flex-col items-center p-3 rounded-lg hover:bg-muted/50 transition-colors text-center">
+              <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center mb-2 shadow-sm">
+                <img 
+                  src="https://logos-world.net/wp-content/uploads/2020/06/Infosys-Logo.png" 
+                  alt="Infosys Logo" 
+                  className="w-10 h-7 object-contain"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                  }}
+                />
+                <span className="text-blue-600 font-bold text-sm hidden">INF</span>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm">Infosys</p>
-                <p className="text-xs text-muted-foreground">180+ alumni</p>
-              </div>
+              <p className="font-medium text-xs mb-1">Infosys</p>
+              <p className="text-xs text-muted-foreground">180+ alumni</p>
             </div>
-            <div className="flex items-center space-x-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
-              <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                <span className="text-white font-bold text-xs">G</span>
+            
+            <div className="flex flex-col items-center p-3 rounded-lg hover:bg-muted/50 transition-colors text-center">
+              <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center mb-2 shadow-sm">
+                <img 
+                  src="https://logos-world.net/wp-content/uploads/2020/09/Google-Logo.png" 
+                  alt="Google Logo" 
+                  className="w-9 h-9 object-contain"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                  }}
+                />
+                <span className="text-blue-600 font-bold text-sm hidden">G</span>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm">Google</p>
-                <p className="text-xs text-muted-foreground">45+ alumni</p>
-              </div>
+              <p className="font-medium text-xs mb-1">Google</p>
+              <p className="text-xs text-muted-foreground">45+ alumni</p>
             </div>
-            <div className="flex items-center space-x-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center flex-shrink-0">
-                <span className="text-white font-bold text-xs">MS</span>
+            
+            <div className="flex flex-col items-center p-3 rounded-lg hover:bg-muted/50 transition-colors text-center">
+              <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center mb-2 shadow-sm">
+                <img 
+                  src="https://logos-world.net/wp-content/uploads/2020/09/Microsoft-Logo.png" 
+                  alt="Microsoft Logo" 
+                  className="w-10 h-7 object-contain"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                  }}
+                />
+                <span className="text-blue-600 font-bold text-sm hidden">MS</span>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm">Microsoft</p>
-                <p className="text-xs text-muted-foreground">38+ alumni</p>
-              </div>
+              <p className="font-medium text-xs mb-1">Microsoft</p>
+              <p className="text-xs text-muted-foreground">38+ alumni</p>
             </div>
-            <div className="flex items-center space-x-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                <span className="text-white font-bold text-xs">WP</span>
+            
+            <div className="flex flex-col items-center p-3 rounded-lg hover:bg-muted/50 transition-colors text-center">
+              <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center mb-2 shadow-sm">
+                <img 
+                  src="https://logos-world.net/wp-content/uploads/2020/07/IBM-Logo.png" 
+                  alt="IBM Logo" 
+                  className="w-10 h-7 object-contain"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                  }}
+                />
+                <span className="text-blue-800 font-bold text-sm hidden">IBM</span>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm">Wipro</p>
-                <p className="text-xs text-muted-foreground">120+ alumni</p>
+              <p className="font-medium text-xs mb-1">IBM</p>
+              <p className="text-xs text-muted-foreground">95+ alumni</p>
+            </div>
+            
+            <div className="flex flex-col items-center p-3 rounded-lg hover:bg-muted/50 transition-colors text-center">
+              <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center mb-2 shadow-sm">
+                <img 
+                  src="https://logos-world.net/wp-content/uploads/2020/09/Wipro-Logo.png" 
+                  alt="Wipro Logo" 
+                  className="w-10 h-7 object-contain"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                  }}
+                />
+                <span className="text-purple-600 font-bold text-sm hidden">WP</span>
               </div>
+              <p className="font-medium text-xs mb-1">Wipro</p>
+              <p className="text-xs text-muted-foreground">120+ alumni</p>
             </div>
           </div>
         </BentoCard>
