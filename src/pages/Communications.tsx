@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 const messages = [
   {
     id: 1,
-    user: "Sarah Johnson '18",
+    user: "Priya Sharma '18",
     message: "Looking for mentorship opportunities in AI/ML. Would love to connect with alumni in this field!",
     timestamp: "2 hours ago",
     replies: 5,
@@ -19,15 +19,15 @@ const messages = [
   },
   {
     id: 2,
-    user: "Michael Chen '15",
-    message: "Hosting a fintech startup meetup next month in NYC. Alumni in finance welcome to join!",
+    user: "Arjun Patel '15",
+    message: "Hosting a fintech startup meetup next month in Mumbai. Alumni in finance welcome to join!",
     timestamp: "4 hours ago",
     replies: 12,
     category: "Events"
   },
   {
     id: 3,
-    user: "Emily Rodriguez '20",
+    user: "Kavya Reddy '20",
     message: "Just published a research paper on biomedical engineering. Happy to discuss with fellow researchers.",
     timestamp: "1 day ago",
     replies: 8,
@@ -35,7 +35,7 @@ const messages = [
   },
   {
     id: 4,
-    user: "David Kim '16",
+    user: "Rohan Singh '16",
     message: "Our marketing agency is hiring! Looking for talented alumni to join our team.",
     timestamp: "2 days ago",
     replies: 15,
@@ -46,34 +46,50 @@ const messages = [
 const notifications = [
   {
     id: 1,
-    title: "New Event: Alumni Tech Summit",
-    message: "Registration is now open for the annual tech summit on Dec 15th",
+    title: "Priya Sharma replied to your post",
+    message: "Thanks for the mentorship advice! I'd love to connect and discuss further.",
     timestamp: "1 hour ago",
-    type: "event",
+    type: "reply",
     read: false
   },
   {
     id: 2,
-    title: "Donation Milestone Reached",
-    message: "Scholarship fund has reached 85% of its goal thanks to your support!",
-    timestamp: "3 hours ago",
-    type: "donation",
+    title: "Arjun Patel started a new thread",
+    message: "Looking for co-founders for my new fintech startup - anyone interested?",
+    timestamp: "2 hours ago",
+    type: "thread",
     read: false
   },
   {
     id: 3,
-    title: "New Job Posting",
-    message: "Sarah Johnson posted a new software engineering position at Google",
+    title: "Kavya Reddy replied to you",
+    message: "Great question about biomedical research! Here's my perspective...",
     timestamp: "5 hours ago",
-    type: "job",
+    type: "reply",
     read: true
   },
   {
     id: 4,
-    title: "Alumni Spotlight",
-    message: "Featured this month: Michael Chen's journey from student to VP",
+    title: "Rohan Singh mentioned you in a post",
+    message: "Tagging @AlumniDave for insights on marketing strategy for startups",
+    timestamp: "8 hours ago",
+    type: "mention",
+    read: true
+  },
+  {
+    id: 5,
+    title: "Ananya Gupta started a new discussion",
+    message: "Anyone attending the upcoming Alumni Tech Summit? Let's plan a meetup!",
     timestamp: "1 day ago",
-    type: "news",
+    type: "thread",
+    read: true
+  },
+  {
+    id: 6,
+    title: "5 people liked your comment",
+    message: "Your comment on 'Career transition tips' received multiple likes",
+    timestamp: "2 days ago",
+    type: "like",
     read: true
   }
 ];
@@ -91,17 +107,14 @@ export default function Communications() {
             Stay connected with the alumni community
           </p>
         </div>
-        <Button className="gap-2">
-          <Plus className="w-4 h-4" />
-          New Announcement
-        </Button>
+       
       </div>
 
       <Tabs defaultValue="community" className="space-y-6">
         <TabsList className="grid w-full max-w-md grid-cols-3">
           <TabsTrigger value="community">Community</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="broadcasts">Broadcasts</TabsTrigger>
+          {/* <TabsTrigger value="broadcasts">Broadcasts</TabsTrigger> */}
         </TabsList>
 
         <TabsContent value="community" className="space-y-6">

@@ -17,9 +17,9 @@ import {
 const conversations = [
   {
     id: 1,
-    name: "Sarah Johnson '18",
+    name: "Priya Sharma '18",
     avatar: "",
-    lastMessage: "Thanks for connecting! Looking forward to the mentorship session.",
+    lastMessage: "Thanks for the mentorship advice!",
     time: "2m ago",
     unread: 2,
     online: true,
@@ -27,9 +27,9 @@ const conversations = [
   },
   {
     id: 2,
-    name: "Michael Chen '15",
+    name: "Arjun Patel '15",
     avatar: "",
-    lastMessage: "The networking event was fantastic! Great turnout.",
+    lastMessage: "Looking forward to the meetup",
     time: "15m ago",
     unread: 0,
     online: true,
@@ -37,9 +37,9 @@ const conversations = [
   },
   {
     id: 3,
-    name: "Emily Rodriguez '20",
+    name: "Kavya Reddy '20",
     avatar: "",
-    lastMessage: "Could you share the alumni directory access?",
+    lastMessage: "Great insights on the research paper",
     time: "1h ago",
     unread: 1,
     online: false,
@@ -47,9 +47,9 @@ const conversations = [
   },
   {
     id: 4,
-    name: "David Kim '16",
+    name: "Rohan Singh '16",
     avatar: "",
-    lastMessage: "Looking forward to speaking at the tech summit!",
+    lastMessage: "Let's discuss the startup idea",
     time: "3h ago",
     unread: 0,
     online: false,
@@ -57,9 +57,9 @@ const conversations = [
   },
   {
     id: 5,
-    name: "Lisa Wang '19",
+    name: "Ananya Gupta '19",
     avatar: "",
-    lastMessage: "The donation campaign is going well. Current update attached.",
+    lastMessage: "Thanks for connecting!",
     time: "1d ago",
     unread: 0,
     online: false,
@@ -70,7 +70,7 @@ const conversations = [
 const messages = [
   {
     id: 1,
-    sender: "Sarah Johnson '18",
+    sender: "Priya Sharma '18",
     content: "Hi! I hope you're doing well. I wanted to reach out about the mentorship program.",
     time: "10:30 AM",
     isMe: false,
@@ -78,13 +78,13 @@ const messages = [
   {
     id: 2,
     sender: "Me",
-    content: "Hello Sarah! Great to hear from you. I'd be happy to help with the mentorship program. What specific areas are you interested in?",
+    content: "Hello Priya! Great to hear from you. I'd be happy to help with the mentorship program. What specific areas are you interested in?",
     time: "10:32 AM",
     isMe: true,
   },
   {
     id: 3,
-    sender: "Sarah Johnson '18",
+    sender: "Priya Sharma '18",
     content: "I'm particularly interested in career development in the tech industry. Your background in software engineering would be perfect for guidance.",
     time: "10:35 AM",
     isMe: false,
@@ -98,7 +98,7 @@ const messages = [
   },
   {
     id: 5,
-    sender: "Sarah Johnson '18",
+    sender: "Priya Sharma '18",
     content: "Thanks for connecting! Looking forward to the mentorship session.",
     time: "10:40 AM",
     isMe: false,
