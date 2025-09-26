@@ -58,6 +58,11 @@ export function AppSidebar() {
   const location = useLocation();
   const [isDark, setIsDark] = useState(() => {
     if (typeof window !== "undefined") {
+      // First check localStorage, then fallback to DOM class
+      const savedTheme = localStorage.getItem("theme");
+      if (savedTheme) {
+        return savedTheme === "dark";
+      }
       return document.documentElement.classList.contains("dark");
     }
     return false;
@@ -67,8 +72,18 @@ export function AppSidebar() {
   const isAdminMode = location.pathname.startsWith('/admin');
 
   useEffect(() => {
-    const isDarkMode = document.documentElement.classList.contains("dark");
-    setIsDark(isDarkMode);
+    // Apply theme on component mount
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme) {
+      const isDarkTheme = savedTheme === "dark";
+      setIsDark(isDarkTheme);
+      document.documentElement.classList.toggle("dark", isDarkTheme);
+    } else {
+      // If no saved theme, check current DOM state
+      const isDarkMode = document.documentElement.classList.contains("dark");
+      setIsDark(isDarkMode);
+      localStorage.setItem("theme", isDarkMode ? "dark" : "light");
+    }
   }, []);
 
   const toggleTheme = () => {

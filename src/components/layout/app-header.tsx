@@ -49,7 +49,7 @@ export function AppHeader() {
         <div className="flex items-center gap-2 sm:gap-4 flex-1">
           <SidebarTrigger className="p-2" />
           <div className="hidden md:block">
-            {/* <AdminToggle /> */}
+ 
           </div>
         </div>
 
