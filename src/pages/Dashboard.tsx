@@ -133,7 +133,7 @@ export default function Dashboard() {
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary/90 to-primary/80 p-8 text-white">
         <div className="relative z-10">
           <h1 className="text-4xl font-bold mb-4">
-            Welcome to AlumniHub
+            Welcome to AllyNet
           </h1>
           <p className="text-xl text-primary-foreground/90 mb-6 max-w-2xl">
             Connect, engage, and grow with our vibrant alumni community. Discover events, 
@@ -287,6 +287,14 @@ export default function Dashboard() {
             <div className="p-3 bg-muted/50 rounded-lg">
               <h4 className="font-medium text-sm">Data Scientist</h4>
               <p className="text-xs text-muted-foreground">Microsoft • ₹140k-180k</p>
+            </div>
+            <div className="p-3 bg-muted/50 rounded-lg">
+              <h4 className="font-medium text-sm">DevOps Engineer</h4>
+              <p className="text-xs text-muted-foreground">Amazon • ₹150k-190k</p>
+            </div>
+            <div className="p-3 bg-muted/50 rounded-lg">
+              <h4 className="font-medium text-sm">UI/UX Designer</h4>
+              <p className="text-xs text-muted-foreground">Adobe • ₹120k-160k</p>
             </div>
             <Button onClick={() => navigate('/jobs')} size="sm" className="w-full mt-2">
               View All Jobs
