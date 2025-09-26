@@ -149,7 +149,7 @@ export function Donations() {
         category: ""
     });
     const [formErrors, setFormErrors] = useState<Partial<CreateCampaignForm>>({});
-    const { toast: useToastHook } = useToast();
+    const { toast: toastHook } = useToast(); // Renamed to avoid conflict
 
     // Fetch campaigns from database
     useEffect(() => {
@@ -200,7 +200,7 @@ export function Donations() {
                     setError(null);
                 } else {
                     setError(response.message || "Failed to fetch campaigns");
-                    toast({
+                    toastHook({
                         title: "Error",
                         description: response.message || "Failed to fetch campaigns",
                         variant: "destructive",
@@ -209,7 +209,7 @@ export function Donations() {
             } catch (err: any) {
                 const apiError = handleApiError(err);
                 setError(apiError.message || "An error occurred while fetching campaigns");
-                toast({
+                toastHook({
                     title: "Error",
                     description: apiError.message || "Failed to load campaigns",
                     variant: "destructive",
@@ -221,7 +221,7 @@ export function Donations() {
         };
 
         fetchCampaigns();
-    }, []);
+    }, [toastHook]);
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat("en-IN", { 
@@ -343,22 +343,27 @@ export function Donations() {
                 category: formData.category.trim() || undefined
             };
 
-            await donationService.createCampaign(campaignData);
-            toast.success("Campaign created successfully");
+            const response = await donationService.createCampaign(campaignData);
             
-            // Reset form and close dialog
-            setFormData({
-                name: "",
-                description: "",
-                goal: "",
-                endDate: "",
-                category: ""
-            });
-            setFormErrors({});
-            setIsCreateDialogOpen(false);
-            
-            // Refresh campaigns list
-            window.location.reload(); // Simple refresh - you can implement a more sophisticated refetch
+            if (response.success) {
+                toast.success("Campaign created successfully");
+                
+                // Reset form and close dialog
+                setFormData({
+                    name: "",
+                    description: "",
+                    goal: "",
+                    endDate: "",
+                    category: ""
+                });
+                setFormErrors({});
+                setIsCreateDialogOpen(false);
+                
+                // Refresh campaigns list
+                window.location.reload();
+            } else {
+                toast.error(`Failed to create campaign: ${response.message}`);
+            }
         } catch (err: any) {
             const errorInfo = handleApiError(err);
             toast.error(`Failed to create campaign: ${errorInfo.message}`);
