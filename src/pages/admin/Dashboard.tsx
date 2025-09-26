@@ -6,11 +6,7 @@ import { useState, useEffect } from "react";
 import { adminService, eventService, handleApiError } from "@/services/ApiServices";
 import { toast } from "sonner";
 import { Navigate, useNavigate } from "react-router-dom";
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
-
-
-
-
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, LineChart, Line, XAxis, YAxis, CartesianGrid, BarChart, Bar } from 'recharts';
 
 const recentActivities = [
   {
@@ -61,6 +57,22 @@ const recentActivities = [
     time: "3 days ago",
     icon: UserCheck,
   },
+];
+
+// Add donation data
+const donationData = [
+  { month: 'Jan', donations: 180000, donors: 45 },
+  { month: 'Feb', donations: 220000, donors: 52 },
+  { month: 'Mar', donations: 280000, donors: 68 },
+  { month: 'Apr', donations: 340000, donors: 78 },
+  { month: 'May', donations: 290000, donors: 65 },
+  { month: 'Jun', donations: 420000, donors: 92 },
+  { month: 'Jul', donations: 380000, donors: 85 },
+  { month: 'Aug', donations: 450000, donors: 98 },
+  { month: 'Sep', donations: 520000, donors: 115 },
+  { month: 'Oct', donations: 480000, donors: 102 },
+  { month: 'Nov', donations: 560000, donors: 128 },
+  { month: 'Dec', donations: 640000, donors: 145 }
 ];
 
 const DEPARTMENT_COLORS = [
@@ -132,6 +144,23 @@ export function Dashboard() {
           <p className="font-medium">{data.name}</p>
           <p className="text-sm text-muted-foreground">
             Alumni: <span className="font-semibold text-foreground">{data.value}</span>
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const CustomDonationTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-background border border-border rounded-lg p-3 shadow-lg">
+          <p className="font-medium">{`${label}`}</p>
+          <p className="text-sm text-blue-600">
+            Donations: <span className="font-semibold">₹{payload[0].value.toLocaleString()}</span>
+          </p>
+          <p className="text-sm text-green-600">
+            Donors: <span className="font-semibold">{payload[1].value}</span>
           </p>
         </div>
       );
@@ -254,7 +283,7 @@ export function Dashboard() {
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-0">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         {/* Quick Actions - Larger Bento Card */}
         <div className="lg:col-span-2 space-y-6">
           <Card className="bento-card gradient-surface border-card-border/50">
@@ -436,6 +465,157 @@ export function Dashboard() {
               View All Activities
               <ArrowUpRight className="h-4 w-4 ml-2" />
             </Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Donation Trends Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        {/* Donation Trends Line Chart */}
+        <Card className="bento-card gradient-surface border-card-border/50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5 text-primary" />
+              Donation Trends
+            </CardTitle>
+            <CardDescription>
+              Monthly donation amounts over the year
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={donationData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                  <XAxis 
+                    dataKey="month" 
+                    className="text-muted-foreground text-xs"
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis 
+                    className="text-muted-foreground text-xs"
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}K`}
+                  />
+                  <Tooltip content={<CustomDonationTooltip />} />
+                  <Line 
+                    type="monotone" 
+                    dataKey="donations" 
+                    stroke="#3b82f6" 
+                    strokeWidth={3}
+                    dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                    activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Donor Count Bar Chart */}
+        <Card className="bento-card gradient-surface border-card-border/50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <UserCheck className="h-5 w-5 text-primary" />
+              Monthly Donors
+            </CardTitle>
+            <CardDescription>
+              Number of donors contributing each month
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={donationData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                  <XAxis 
+                    dataKey="month" 
+                    className="text-muted-foreground text-xs"
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis 
+                    className="text-muted-foreground text-xs"
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip 
+                    formatter={(value, name) => [value, 'Donors']}
+                    labelStyle={{ color: 'var(--foreground)' }}
+                    contentStyle={{ 
+                      backgroundColor: 'var(--background)', 
+                      border: '1px solid var(--border)',
+                      borderRadius: '8px'
+                    }}
+                  />
+                  <Bar 
+                    dataKey="donors" 
+                    fill="#10b981"
+                    radius={[4, 4, 0, 0]}
+                    className="hover:opacity-80 transition-opacity"
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Donation Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <Card className="bento-card gradient-surface border-card-border/50">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Total Raised</p>
+                <p className="text-2xl font-bold text-foreground">₹47.9L</p>
+                <p className="text-xs text-green-600 flex items-center gap-1 mt-1">
+                  <TrendingUp className="w-3 h-3" />
+                  +18.2% from last year
+                </p>
+              </div>
+              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+                <DollarSign className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bento-card gradient-surface border-card-border/50">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Total Donors</p>
+                <p className="text-2xl font-bold text-foreground">1,023</p>
+                <p className="text-xs text-green-600 flex items-center gap-1 mt-1">
+                  <TrendingUp className="w-3 h-3" />
+                  +12.4% this year
+                </p>
+              </div>
+              <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
+                <UserCheck className="w-6 h-6 text-green-600 dark:text-green-400" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bento-card gradient-surface border-card-border/50">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Avg. Donation</p>
+                <p className="text-2xl font-bold text-foreground">₹4,680</p>
+                <p className="text-xs text-green-600 flex items-center gap-1 mt-1">
+                  <TrendingUp className="w-3 h-3" />
+                  +5.1% per donor
+                </p>
+              </div>
+              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
+                <Award className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
