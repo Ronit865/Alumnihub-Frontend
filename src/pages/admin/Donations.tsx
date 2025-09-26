@@ -2,11 +2,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { IndianRupee, TrendingUp, Users, Target, ArrowUpRight, ArrowDownRight, Trophy, Clock } from "lucide-react";
+import { IndianRupee, TrendingUp, Users, Target, ArrowUpRight, ArrowDownRight, Trophy, Clock, Plus, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
 import { donationService, handleApiError, handleApiSuccess } from "@/services/ApiServices";
 import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 // Keep the static data for stats and recent donations
 const donationStats = [
@@ -122,11 +127,29 @@ interface Campaign {
     category?: string;
 }
 
+interface CreateCampaignForm {
+    name: string;
+    description: string;
+    goal: string;
+    endDate: string;
+    category: string;
+}
+
 export function Donations() {
     const [campaigns, setCampaigns] = useState<Campaign[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const { toast } = useToast();
+    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+    const [isCreating, setIsCreating] = useState(false);
+    const [formData, setFormData] = useState<CreateCampaignForm>({
+        name: "",
+        description: "",
+        goal: "",
+        endDate: "",
+        category: ""
+    });
+    const [formErrors, setFormErrors] = useState<Partial<CreateCampaignForm>>({});
+    const { toast: toastHook } = useToast(); // Renamed to avoid conflict
 
     // Fetch campaigns from database
     useEffect(() => {
@@ -177,7 +200,7 @@ export function Donations() {
                     setError(null);
                 } else {
                     setError(response.message || "Failed to fetch campaigns");
-                    toast({
+                    toastHook({
                         title: "Error",
                         description: response.message || "Failed to fetch campaigns",
                         variant: "destructive",
@@ -186,7 +209,7 @@ export function Donations() {
             } catch (err: any) {
                 const apiError = handleApiError(err);
                 setError(apiError.message || "An error occurred while fetching campaigns");
-                toast({
+                toastHook({
                     title: "Error",
                     description: apiError.message || "Failed to load campaigns",
                     variant: "destructive",
@@ -198,7 +221,7 @@ export function Donations() {
         };
 
         fetchCampaigns();
-    }, []);
+    }, [toastHook]);
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat("en-IN", { 
@@ -263,14 +286,262 @@ export function Donations() {
         return 0;
     };
 
+    const handleInputChange = (field: keyof CreateCampaignForm, value: string) => {
+        setFormData(prev => ({ ...prev, [field]: value }));
+        // Clear error when user starts typing
+        if (formErrors[field]) {
+            setFormErrors(prev => ({ ...prev, [field]: undefined }));
+        }
+    };
+
+    const validateForm = (): boolean => {
+        const errors: Partial<CreateCampaignForm> = {};
+        
+        if (!formData.name.trim()) {
+            errors.name = "Campaign name is required";
+        }
+        
+        if (!formData.description.trim()) {
+            errors.description = "Description is required";
+        }
+        
+        if (!formData.goal || parseFloat(formData.goal) <= 0) {
+            errors.goal = "Please enter a valid goal amount";
+        }
+
+        if (!formData.endDate) {
+            errors.endDate = "End date is required";
+        } else {
+            const selectedDate = new Date(formData.endDate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            if (selectedDate <= today) {
+                errors.endDate = "End date must be in the future";
+            }
+        }
+        
+        setFormErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
+    const handleCreateCampaign = async (e: React.FormEvent) => {
+        e.preventDefault();
+        
+        if (!validateForm()) {
+            return;
+        }
+
+        try {
+            setIsCreating(true);
+            
+            const campaignData = {
+                name: formData.name.trim(),
+                description: formData.description.trim(),
+                goal: parseFloat(formData.goal),
+                endDate: formData.endDate,
+                category: formData.category.trim() || undefined
+            };
+
+            const response = await donationService.createCampaign(campaignData);
+            
+            if (response.success) {
+                toast.success("Campaign created successfully");
+                
+                // Reset form and close dialog
+                setFormData({
+                    name: "",
+                    description: "",
+                    goal: "",
+                    endDate: "",
+                    category: ""
+                });
+                setFormErrors({});
+                setIsCreateDialogOpen(false);
+                
+                // Refresh campaigns list
+                window.location.reload();
+            } else {
+                toast.error(`Failed to create campaign: ${response.message}`);
+            }
+        } catch (err: any) {
+            const errorInfo = handleApiError(err);
+            toast.error(`Failed to create campaign: ${errorInfo.message}`);
+        } finally {
+            setIsCreating(false);
+        }
+    };
+
+    const resetForm = () => {
+        setFormData({
+            name: "",
+            description: "",
+            goal: "",
+            endDate: "",
+            category: ""
+        });
+        setFormErrors({});
+    };
+
     return (
         <div className="space-y-8">
             {/* Header */}
-            <div className="animate-fade-in">
-                <h1 className="text-3xl font-bold text-foreground">Donation Management</h1>
-                <p className="text-muted-foreground mt-2">
-                    Track fundraising campaigns, donations, and donor engagement.
-                </p>
+            <div className="flex justify-between items-start animate-fade-in">
+                <div>
+                    <h1 className="text-3xl font-bold text-foreground">Donation Management</h1>
+                    <p className="text-muted-foreground mt-2">
+                        Track fundraising campaigns, donations, and donor engagement.
+                    </p>
+                </div>
+                
+                {/* Create Campaign Dialog */}
+                <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                    <DialogTrigger asChild>
+                        <Button 
+                            className="gradient-primary text-primary-foreground hover:shadow-purple"
+                            onClick={() => setIsCreateDialogOpen(true)}
+                        >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Create Campaign
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[500px] bento-card gradient-surface border-card-border/50" style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+                        <DialogHeader>
+                            <DialogTitle className="text-xl font-semibold text-foreground">Create New Campaign</DialogTitle>
+                            <DialogDescription className="text-muted-foreground">
+                                Start a new fundraising campaign for the alumni community.
+                            </DialogDescription>
+                        </DialogHeader>
+                        
+                        <form onSubmit={handleCreateCampaign} className="space-y-6 mt-4">
+                            {/* Campaign Name */}
+                            <div className="space-y-2">
+                                <Label htmlFor="name" className="text-sm font-medium text-foreground">
+                                    Campaign Name *
+                                </Label>
+                                <Input
+                                    id="name"
+                                    placeholder="Enter campaign name"
+                                    value={formData.name}
+                                    onChange={(e) => handleInputChange("name", e.target.value)}
+                                    className={`border-card-border/50 focus:border-primary ${
+                                        formErrors.name ? "border-destructive" : ""
+                                    }`}
+                                />
+                                {formErrors.name && (
+                                    <p className="text-sm text-destructive">{formErrors.name}</p>
+                                )}
+                            </div>
+
+                            {/* Campaign Description */}
+                            <div className="space-y-2">
+                                <Label htmlFor="description" className="text-sm font-medium text-foreground">
+                                    Description *
+                                </Label>
+                                <Textarea
+                                    id="description"
+                                    placeholder="Describe your campaign goals and purpose"
+                                    value={formData.description}
+                                    onChange={(e) => handleInputChange("description", e.target.value)}
+                                    className={`min-h-[100px] border-card-border/50 focus:border-primary resize-none ${
+                                        formErrors.description ? "border-destructive" : ""
+                                    }`}
+                                />
+                                {formErrors.description && (
+                                    <p className="text-sm text-destructive">{formErrors.description}</p>
+                                )}
+                            </div>
+
+                            {/* Goal and End Date Row */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="goal" className="text-sm font-medium text-foreground">
+                                        Goal Amount (₹) *
+                                    </Label>
+                                    <Input
+                                        id="goal"
+                                        type="number"
+                                        placeholder="100000"
+                                        value={formData.goal}
+                                        onChange={(e) => handleInputChange("goal", e.target.value)}
+                                        className={`border-card-border/50 focus:border-primary ${
+                                            formErrors.goal ? "border-destructive" : ""
+                                        }`}
+                                    />
+                                    {formErrors.goal && (
+                                        <p className="text-sm text-destructive">{formErrors.goal}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="endDate" className="text-sm font-medium text-foreground">
+                                        End Date *
+                                    </Label>
+                                    <Input
+                                        id="endDate"
+                                        type="date"
+                                        value={formData.endDate}
+                                        onChange={(e) => handleInputChange("endDate", e.target.value)}
+                                        className={`border-card-border/50 focus:border-primary ${
+                                            formErrors.endDate ? "border-destructive" : ""
+                                        }`}
+                                        min={new Date().toISOString().split('T')[0]}
+                                    />
+                                    {formErrors.endDate && (
+                                        <p className="text-sm text-destructive">{formErrors.endDate}</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Category */}
+                            <div className="space-y-2">
+                                <Label htmlFor="category" className="text-sm font-medium text-foreground">
+                                    Category (Optional)
+                                </Label>
+                                <Input
+                                    id="category"
+                                    placeholder="e.g., Scholarship, Infrastructure, Research"
+                                    value={formData.category}
+                                    onChange={(e) => handleInputChange("category", e.target.value)}
+                                    className="border-card-border/50 focus:border-primary"
+                                />
+                            </div>
+
+                            {/* Form Actions */}
+                            <div className="flex justify-end gap-3 pt-4 border-t border-card-border/20">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => {
+                                        resetForm();
+                                        setIsCreateDialogOpen(false);
+                                    }}
+                                    disabled={isCreating}
+                                    className="border-card-border/50"
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    disabled={isCreating}
+                                    className="gradient-primary text-primary-foreground hover:shadow-purple"
+                                >
+                                    {isCreating ? (
+                                        <>
+                                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                            Creating...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Plus className="h-4 w-4 mr-2" />
+                                            Create Campaign
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
+                        </form>
+                    </DialogContent>
+                </Dialog>
             </div>
 
             {/* Stats Grid */}
