@@ -12,7 +12,7 @@ import { useAuth } from "@/context/AuthContext";
 import { userService, handleApiError, handleApiSuccess } from "@/services/ApiServices";
 
 export default function Settings() {
-  const { user, fetchCurrentUser } = useAuth();
+  const { user, fetchCurrentUser, isLoading } = useAuth();
   const { toast } = useToast();
   
   // Profile form states
@@ -242,10 +242,12 @@ export default function Settings() {
     }
   };
 
-  if (!user) {
+  // Show loading state while auth is loading or user data is not available
+  if (isLoading || !user) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <h2 className="text-xl font-semibold mb-2">Loading...</h2>
           <p className="text-muted-foreground">Please wait while we load your profile.</p>
         </div>
@@ -284,11 +286,11 @@ export default function Settings() {
                 <Avatar className="w-24 h-24 ring-4 ring-primary/10">
                   <AvatarImage src={user.avatar} alt="Profile" />
                   <AvatarFallback className="bg-primary/10 text-primary text-xl font-medium">
-                    {name.split(' ').map(n => n[0]).join('')}
+                    {user.name ? user.name.split(' ').map(n => n[0]).join('') : 'U'}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
-                  <h3 className="text-2xl font-semibold mb-2">{name}</h3>
+                  <h3 className="text-2xl font-semibold mb-2">{user.name}</h3>
                   <div className="flex items-center gap-2">
                     <Button 
                       variant="outline" 

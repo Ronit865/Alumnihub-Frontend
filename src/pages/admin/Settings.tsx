@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/context/AuthContext";
 import { adminService, handleApiError, handleApiSuccess } from "@/services/ApiServices";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { 
   Settings as SettingsIcon, 
@@ -24,15 +24,15 @@ import {
 } from "lucide-react";
 
 export function Settings() {
-  const { admin, fetchCurrentUser } = useAuth();
+  const { admin, fetchCurrentUser, isLoading } = useAuth();
   const [isUpdating, setIsUpdating] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Form state for admin profile
   const [profileData, setProfileData] = useState({
-    name: admin?.name || "",
-    email: admin?.email || "",
+    name: "",
+    email: "",
   });
 
   // Password change state
@@ -41,6 +41,16 @@ export function Settings() {
     newPassword: "",
     confirmPassword: ""
   });
+
+  // Update profile data when admin data is loaded
+  useEffect(() => {
+    if (admin) {
+      setProfileData({
+        name: admin.name || "",
+        email: admin.email || "",
+      });
+    }
+  }, [admin]);
 
   // Handle profile update
   const handleProfileUpdate = async () => {
@@ -129,6 +139,82 @@ export function Settings() {
     }
   };
 
+  // Show loading state while auth is loading or admin data is not available
+  if (isLoading || !admin) {
+    return (
+      <div className="space-y-8">
+        {/* Header Loading */}
+        <div className="animate-fade-in">
+          <div className="h-8 w-48 bg-muted rounded animate-pulse mb-2"></div>
+          <div className="h-4 w-80 bg-muted rounded animate-pulse"></div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Profile Settings Loading */}
+          <Card className="lg:col-span-2 bento-card gradient-surface border-card-border/50">
+            <CardHeader>
+              <div className="h-6 w-40 bg-muted rounded animate-pulse mb-2"></div>
+              <div className="h-4 w-60 bg-muted rounded animate-pulse"></div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-center gap-6">
+                <div className="h-20 w-20 bg-muted rounded-full animate-pulse"></div>
+                <div className="space-y-2">
+                  <div className="h-8 w-32 bg-muted rounded animate-pulse"></div>
+                  <div className="h-4 w-48 bg-muted rounded animate-pulse"></div>
+                </div>
+              </div>
+              <Separator />
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <div className="h-4 w-20 bg-muted rounded animate-pulse"></div>
+                  <div className="h-10 w-full bg-muted rounded animate-pulse"></div>
+                </div>
+                <div className="space-y-2">
+                  <div className="h-4 w-24 bg-muted rounded animate-pulse"></div>
+                  <div className="h-10 w-full bg-muted rounded animate-pulse"></div>
+                </div>
+              </div>
+              <div className="h-10 w-32 bg-muted rounded animate-pulse"></div>
+            </CardContent>
+          </Card>
+
+          {/* Quick Actions Loading */}
+          <Card className="bento-card gradient-surface border-card-border/50">
+            <CardHeader>
+              <div className="h-6 w-32 bg-muted rounded animate-pulse mb-2"></div>
+              <div className="h-4 w-48 bg-muted rounded animate-pulse"></div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-10 w-full bg-muted rounded animate-pulse"></div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Security Settings Loading */}
+        <Card className="bento-card gradient-surface border-card-border/50">
+          <CardHeader>
+            <div className="h-6 w-40 bg-muted rounded animate-pulse mb-2"></div>
+            <div className="h-4 w-64 bg-muted rounded animate-pulse"></div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-4">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <div className="h-4 w-32 bg-muted rounded animate-pulse"></div>
+                  <div className="h-10 w-full bg-muted rounded animate-pulse"></div>
+                </div>
+              ))}
+              <div className="h-10 w-40 bg-muted rounded animate-pulse"></div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -154,9 +240,9 @@ export function Settings() {
           <CardContent className="space-y-6">
             <div className="flex items-center gap-6">
               <Avatar className="h-20 w-20">
-                <AvatarImage src={admin?.avatar} alt={admin?.name || "Admin"} />
+                <AvatarImage src={admin.avatar} alt={admin.name || "Admin"} />
                 <AvatarFallback className="bg-primary/10 text-primary text-lg">
-                  {admin?.name?.charAt(0).toUpperCase() || "A"}
+                  {admin.name ? admin.name.charAt(0).toUpperCase() : "A"}
                 </AvatarFallback>
               </Avatar>
               <div className="space-y-2">
@@ -328,82 +414,6 @@ export function Settings() {
           </div>
         </CardContent>
       </Card>
-
-      {/* System Settings
-      <Card className="bento-card gradient-surface border-card-border/50">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Database className="h-5 w-5 text-primary" />
-            System Configuration
-          </CardTitle>
-          <CardDescription>
-            Configure system-wide settings and preferences
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="timezone">Default Timezone</Label>
-                <Input id="timezone" defaultValue="America/Los_Angeles" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="dateFormat">Date Format</Label>
-                <Input id="dateFormat" defaultValue="MM/DD/YYYY" />
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="currency">Default Currency</Label>
-                <Input id="currency" defaultValue="USD" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="language">System Language</Label>
-                <Input id="language" defaultValue="English (US)" />
-              </div>
-            </div>
-          </div>
-
-          <Separator />
-
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <Label className="text-base">Alumni Auto-Approval</Label>
-                <p className="text-sm text-muted-foreground">
-                  Automatically approve alumni registrations with verified email domains
-                </p>
-              </div>
-              <Switch />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <Label className="text-base">Public Alumni Directory</Label>
-                <p className="text-sm text-muted-foreground">
-                  Allow alumni to view other alumni profiles in the directory
-                </p>
-              </div>
-              <Switch defaultChecked />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <Label className="text-base">Event Registration Emails</Label>
-                <p className="text-sm text-muted-foreground">
-                  Send automatic confirmation emails for event registrations
-                </p>
-              </div>
-              <Switch defaultChecked />
-            </div>
-          </div>
-
-          <Button className="bg-primary hover:bg-primary/90">
-            Save System Settings
-          </Button>
-        </CardContent>
-      </Card> */}
     </div>
   );
 }

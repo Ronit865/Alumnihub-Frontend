@@ -17,7 +17,7 @@ import { authService } from "@/services/ApiServices";
 import { useNavigate } from "react-router-dom";
 
 export function AppHeader() {
-  const { user, admin, logout, userType } = useAuth();
+  const { user, admin, logout, userType, isLoading } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -37,10 +37,33 @@ export function AppHeader() {
 
   // Get current user data (either user or admin)
   const currentUser = user || admin;
-  const displayName = currentUser?.name || 'User';
+  // Don't show fallback "User" if we're still loading
+  const displayName = isLoading ? '' : (currentUser?.name || 'User');
   const displayEmail = currentUser?.email || '';
   const avatarSrc = currentUser?.avatar || '';
-  const avatarFallback = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  const avatarFallback = displayName ? displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'U';
+
+  // Show loading state if still fetching user data
+  if (isLoading) {
+    return (
+      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 border-l-0">
+        <div className="flex h-14 sm:h-16 items-center justify-between px-3 sm:px-4 md:px-6">
+          {/* Left side - Sidebar trigger and search */}
+          <div className="flex items-center gap-2 sm:gap-4 flex-1">
+            <SidebarTrigger className="p-2" />
+            <div className="hidden md:block">
+            </div>
+          </div>
+
+          {/* Right side - loading skeleton */}
+          <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
+            <div className="h-8 w-8 sm:h-10 sm:w-10 bg-muted rounded-full animate-pulse" />
+            <div className="h-8 w-8 sm:h-10 sm:w-10 bg-muted rounded-full animate-pulse" />
+          </div>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 border-l-0">
@@ -55,11 +78,6 @@ export function AppHeader() {
 
         {/* Right side - notifications and profile */}
         <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
-          {/* Show AdminToggle on mobile in a dropdown or smaller format */}
-          <div className="block md:hidden">
-            <AdminToggle />
-          </div>
-          
           {/* Notifications */}
           <Button variant="ghost" size="icon" className="relative h-8 w-8 sm:h-10 sm:w-10">
             <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -83,9 +101,11 @@ export function AppHeader() {
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">{displayName}</p>
+                  <p className="text-sm font-medium leading-none">
+                    {displayName || 'Loading...'}
+                  </p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    {displayEmail}
+                    {displayEmail || 'Loading...'}
                   </p>
                   {userType === 'admin' && (
                     <p className="text-xs leading-none text-primary font-medium">

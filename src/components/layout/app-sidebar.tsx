@@ -67,7 +67,7 @@ export function AppSidebar() {
     }
     return false;
   });
-  
+
   // Determine if we're in admin mode
   const isAdminMode = location.pathname.startsWith('/admin');
 
@@ -109,7 +109,7 @@ export function AppSidebar() {
     const active = isActive(path);
     console.log(`Path: ${path}, Active: ${active}`); // Debug log
     return active
-      ? `${baseClasses} active bg-primary text-primary-foreground` 
+      ? `${baseClasses} active bg-primary text-primary-foreground`
       : `${baseClasses} text-muted-foreground hover:text-foreground hover:bg-accent`;
   };
 
@@ -120,9 +120,9 @@ export function AppSidebar() {
         <div className={`border-b h-14 sm:h-16 flex items-center ${open ? "justify-center p-3 sm:p-4" : "justify-center p-1 sm:p-2"}`}>
           <div className={`flex items-center ${open ? "gap-3 sm:gap-4" : "justify-center"}`}>
             <div className={`flex items-center justify-center shrink-0 ${open ? "w-10 h-10 sm:w-12 sm:h-12" : "w-7 h-7 sm:w-8 sm:h-8"}`}>
-              <img 
-                src="/ANlogo.png" 
-                alt="AllyNet Logo" 
+              <img
+                src="/ANlogo.png"
+                alt="AllyNet Logo"
                 className="w-full h-full object-contain"
               />
             </div>
@@ -166,18 +166,20 @@ export function AppSidebar() {
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
-            
+
             {/* Theme Toggle */}
             <SidebarMenuItem>
-              <Button
-                variant="ghost"
-                size={!open ? "icon" : "default"}
-                onClick={toggleTheme}
-                className={`${!open ? "w-9 h-9 sm:w-11 sm:h-11 justify-center" : "w-full justify-start gap-2 sm:gap-3 h-9 sm:h-11"} text-muted-foreground hover:text-foreground hover:bg-accent`}
-              >
-                {isDark ? <Sun className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" /> : <Moon className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />}
-                {open && <span className="truncate text-sm sm:text-base">{isDark ? "Light Mode" : "Dark Mode"}</span>}
-              </Button>
+              <SidebarMenuButton asChild>
+                <Button
+                  variant="ghost"
+                  size={!open ? "icon" : "default"}
+                  onClick={toggleTheme}
+                  className={`${!open ? "w-9 h-9 sm:w-11 sm:h-11 justify-center" : "w-full justify-start gap-2 sm:gap-3 h-9 sm:h-11"} text-muted-foreground hover:text-foreground hover:bg-accent`}
+                >
+                  {isDark ? <Sun className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" /> : <Moon className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />}
+                  {open && <span className="truncate text-sm sm:text-base">{isDark ? "Light Mode" : "Dark Mode"}</span>}
+                </Button>
+              </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </div>
