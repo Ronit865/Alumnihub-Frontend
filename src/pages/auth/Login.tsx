@@ -63,7 +63,7 @@ export const Login = () => {
             border: '1px solid #059669',
           },
           duration: 1000,
-          description: successData.message || "Welcome back to AlumniHub!",
+          description: successData.message || "Welcome back to AllyNet!",
           descriptionClassName: "text-white",
         });
         
@@ -98,7 +98,7 @@ export const Login = () => {
               Welcome Back
             </CardTitle>
             <CardDescription className="text-muted-foreground">
-              Sign in to your alumni account
+              Sign in to your account
             </CardDescription>
           </CardHeader>
           <CardContent>
