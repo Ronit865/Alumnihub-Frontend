@@ -27,7 +27,7 @@ export const authService = {
       localStorage.setItem('userType', response.data.user.role === 'admin' ? 'admin' : 'user');
     }
     
-    return response.data || response;
+    return response || response.data;
   },
   
   logout: async (): Promise<ApiResponse> => {
