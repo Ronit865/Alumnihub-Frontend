@@ -7,7 +7,6 @@ interface User {
   email: string;
   role: string;
   avatar?: string;
-  // Add these fields to match your backend user model
   graduationYear?: string;
   course?: string;
   currentPosition?: string;
@@ -31,6 +30,7 @@ interface AuthContextType {
   login: (userData: any) => void;
   logout: () => void;
   fetchCurrentUser: () => Promise<void>;
+  updateUserData: (userData: User | Admin) => void;
   isLoading: boolean;
   isAuthenticated: boolean;
   userType: 'user' | 'admin' | null;
@@ -45,100 +45,126 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
-    const storedUserType = localStorage.getItem('userType') as 'user' | 'admin' | null;
-    
-    if (token && storedUserType) {
-      setUserType(storedUserType);
-      fetchCurrentUser();
-    } else {
-      setIsLoading(false);
-    }
+    const initializeAuth = async () => {
+      const token = localStorage.getItem('accessToken');
+      const storedUserType = localStorage.getItem('userType') as 'user' | 'admin' | null;
+      
+      if (token && storedUserType) {
+        setUserType(storedUserType);
+        await fetchCurrentUser();
+      } else {
+        setIsLoading(false);
+      }
+    };
+
+    initializeAuth();
   }, []);
 
-  // ...existing code...
+  const fetchCurrentUser = async () => {
+    try {
+      setIsLoading(true);
+      const storedUserType = localStorage.getItem('userType') as 'user' | 'admin' | null;
+      
+      if (!storedUserType) {
+        return;
+      }
 
-const fetchCurrentUser = async () => {
-  try {
-    setIsLoading(true);
-    const storedUserType = localStorage.getItem('userType') as 'user' | 'admin' | null;
-    
-    if (!storedUserType) {
-      return;
-    }
-
-    let response;
-    if (storedUserType === 'admin') {
-      response = await adminService.getCurrentAdmin();
-      if (response.success) {
-        // Handle the response structure properly
-        const adminData = response.data || response;
-        console.log('Fetched admin data:', adminData);
-        setAdmin(adminData);
+      let response;
+      if (storedUserType === 'admin') {
+        response = await adminService.getCurrentAdmin();
+        if (response.success) {
+          const adminData = response.data || response;
+          setAdmin(adminData);
+          setUser(null);
+          // Cache admin data
+          localStorage.setItem('cachedAdminData', JSON.stringify(adminData));
+        }
+      } else {
+        response = await userService.getCurrentUser();
+        if (response.success) {
+          const userData = response.data || response;
+          setUser(userData);
+          setAdmin(null);
+          // Cache user data
+          localStorage.setItem('cachedUserData', JSON.stringify(userData));
+        }
+      }
+      
+      setUserType(storedUserType);
+    } catch (error: any) {
+      const apiError = handleApiError(error);
+      
+      // If token is invalid, try to load cached data temporarily
+      if (apiError.statusCode === 401) {
+        const storedUserType = localStorage.getItem('userType');
+        
+        if (storedUserType === 'admin') {
+          const cachedAdmin = localStorage.getItem('cachedAdminData');
+          if (cachedAdmin) {
+            setAdmin(JSON.parse(cachedAdmin));
+            setUser(null);
+          }
+        } else {
+          const cachedUser = localStorage.getItem('cachedUserData');
+          if (cachedUser) {
+            setUser(JSON.parse(cachedUser));
+            setAdmin(null);
+          }
+        }
+        
+        // Don't immediately logout - let the token refresh mechanism handle it
+        console.warn('Token expired, using cached data temporarily');
+      } else {
+        // For other errors, clear everything
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('userType');
+        localStorage.removeItem('cachedUserData');
+        localStorage.removeItem('cachedAdminData');
         setUser(null);
-      }
-    } else {
-      response = await userService.getCurrentUser();
-      if (response.success) {
-        // Handle the response structure properly
-        const userData = response.data || response;
-        console.log('Fetched user data:', userData);
-        setUser(userData);
         setAdmin(null);
+        setUserType(null);
       }
+    } finally {
+      setIsLoading(false);
     }
-    
-    setUserType(storedUserType);
-  } catch (error: any) {
-    const apiError = handleApiError(error);
-    console.error('Failed to fetch current user:', apiError.message);
-    
-    // If token is invalid, remove it
-    if (apiError.statusCode === 401) {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('userType');
-      setUser(null);
-      setAdmin(null);
-      setUserType(null);
-    }
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
-// ...existing code...
+  const updateUserData = (userData: User | Admin) => {
+    const storedUserType = localStorage.getItem('userType');
+    
+    if (storedUserType === 'admin') {
+      setAdmin(userData as Admin);
+      localStorage.setItem('cachedAdminData', JSON.stringify(userData));
+    } else {
+      setUser(userData as User);
+      localStorage.setItem('cachedUserData', JSON.stringify(userData));
+    }
+  };
 
   const login = (userData: any) => {
-    console.log('Login data received:', userData);
-    
-    // Handle different response formats from your backend
     const responseUserType = userData.userType || (userData.user?.role === 'admin' ? 'admin' : 'user');
     const responseUser = userData.user;
     const responseAdmin = userData.admin;
     
-    // Store user type
     localStorage.setItem('userType', responseUserType);
     setUserType(responseUserType as 'user' | 'admin');
     
-    // Store access token
     if (userData.accessToken) {
       localStorage.setItem('accessToken', userData.accessToken);
     }
 
-    // Set appropriate user/admin data
     if (responseUserType === 'admin') {
       const adminData = responseAdmin || userData;
-      console.log('Setting admin data:', adminData);
       setAdmin(adminData);
       setUser(null);
+      localStorage.setItem('cachedAdminData', JSON.stringify(adminData));
     } else {
       const userData_ = responseUser || userData;
-      console.log('Setting user data:', userData_);
       setUser(userData_);
       setAdmin(null);
+      localStorage.setItem('cachedUserData', JSON.stringify(userData_));
     }
     
-    // Set loading to false immediately after login
     setIsLoading(false);
   };
 
@@ -148,6 +174,8 @@ const fetchCurrentUser = async () => {
     setUserType(null);
     localStorage.removeItem('accessToken');
     localStorage.removeItem('userType');
+    localStorage.removeItem('cachedUserData');
+    localStorage.removeItem('cachedAdminData');
   };
 
   const value = {
@@ -157,6 +185,7 @@ const fetchCurrentUser = async () => {
     login,
     logout,
     fetchCurrentUser,
+    updateUserData,
     isLoading,
     isAuthenticated: !!(user || admin),
   };

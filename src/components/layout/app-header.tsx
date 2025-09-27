@@ -22,23 +22,18 @@ export function AppHeader() {
 
   const handleLogout = async () => {
     try {
-      // Call backend logout endpoint
       await authService.logout();
     } catch (error) {
       console.error('Logout error:', error);
-      // Continue with logout even if backend call fails
     } finally {
-      // Clear local state and storage
       logout();
-      // Redirect to login page
       navigate('/auth/login');
     }
   };
 
   // Get current user data (either user or admin)
   const currentUser = user || admin;
-  // Don't show fallback "User" if we're still loading
-  const displayName = isLoading ? '' : (currentUser?.name || 'User');
+  const displayName = currentUser?.name || '';
   const displayEmail = currentUser?.email || '';
   const avatarSrc = currentUser?.avatar || '';
   const avatarFallback = displayName ? displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'U';
@@ -48,14 +43,11 @@ export function AppHeader() {
     return (
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 border-l-0">
         <div className="flex h-14 sm:h-16 items-center justify-between px-3 sm:px-4 md:px-6">
-          {/* Left side - Sidebar trigger and search */}
           <div className="flex items-center gap-2 sm:gap-4 flex-1">
             <SidebarTrigger className="p-2" />
             <div className="hidden md:block">
             </div>
           </div>
-
-          {/* Right side - loading skeleton */}
           <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
             <div className="h-8 w-8 sm:h-10 sm:w-10 bg-muted rounded-full animate-pulse" />
             <div className="h-8 w-8 sm:h-10 sm:w-10 bg-muted rounded-full animate-pulse" />
@@ -68,17 +60,13 @@ export function AppHeader() {
   return (
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 border-l-0">
       <div className="flex h-14 sm:h-16 items-center justify-between px-3 sm:px-4 md:px-6">
-        {/* Left side - Sidebar trigger and search */}
         <div className="flex items-center gap-2 sm:gap-4 flex-1">
           <SidebarTrigger className="p-2" />
           <div className="hidden md:block">
- 
           </div>
         </div>
 
-        {/* Right side - notifications and profile */}
         <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
-          {/* Notifications */}
           <Button variant="ghost" size="icon" className="relative h-8 w-8 sm:h-10 sm:w-10">
             <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
             <span className="absolute -top-1 -right-1 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-primary rounded-full flex items-center justify-center">
@@ -86,7 +74,6 @@ export function AppHeader() {
             </span>
           </Button>
 
-          {/* Profile Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 sm:h-10 sm:w-10 rounded-full">
@@ -102,10 +89,10 @@ export function AppHeader() {
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none">
-                    {displayName || 'Loading...'}
+                    {displayName || 'Guest'}
                   </p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    {displayEmail || 'Loading...'}
+                    {displayEmail || 'No email'}
                   </p>
                   {userType === 'admin' && (
                     <p className="text-xs leading-none text-primary font-medium">

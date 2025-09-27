@@ -94,7 +94,6 @@ export function AppSidebar() {
   };
 
   const isActive = (path: string) => {
-    console.log(`Checking path: ${path}, current: ${location.pathname}`); // Debug log
     if (path === "/") {
       return location.pathname === "/" && !isAdminMode;
     }
@@ -107,7 +106,6 @@ export function AppSidebar() {
   const getNavClasses = (path: string) => {
     const baseClasses = "sidebar-nav-item w-full justify-start gap-2 sm:gap-3 h-9 sm:h-11 px-2 sm:px-3 font-medium text-sm sm:text-base";
     const active = isActive(path);
-    console.log(`Path: ${path}, Active: ${active}`); // Debug log
     return active
       ? `${baseClasses} active bg-primary text-primary-foreground`
       : `${baseClasses} text-muted-foreground hover:text-foreground hover:bg-accent`;

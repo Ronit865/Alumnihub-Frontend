@@ -157,10 +157,7 @@ export function Donations() {
             try {
                 setLoading(true);
                 const response = await donationService.getCampaigns();
-                
-                console.log('Admin - API Response:', response);
-                console.log('Admin - Campaign data:', response.data);
-                
+
                 if (response.success) {
                     // Process campaigns to handle the schema differences - same as user side
                     const processedCampaigns = (response.data || []).map((campaign: any) => {
@@ -182,12 +179,6 @@ export function Donations() {
                         } else if (campaign.donations && Array.isArray(campaign.donations)) {
                             donorCount = campaign.donations.length;
                         }
-
-                        console.log(`Admin - Campaign ${campaign.name}:`, {
-                            originalData: campaign,
-                            processedRaised: raisedAmount,
-                            processedDonors: donorCount
-                        });
 
                         return {
                             ...campaign,
@@ -650,7 +641,7 @@ export function Donations() {
                             <div className="h-full overflow-y-auto pr-2 space-y-6 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
                                 {campaigns.map((campaign, index) => (
                                     <div
-                                        key={campaign._id}
+                                        key={`campaign-${campaign._id}-${index}`} // Add index for extra uniqueness if needed
                                         className="p-4 rounded-lg border border-card-border/50 hover:bg-accent/30 transition-smooth animate-fade-in"
                                         style={{ animationDelay: `${index * 150}ms` }}
                                     >
@@ -712,7 +703,7 @@ export function Donations() {
                                 .slice(0, 10)
                                 .map((donation, index) => (
                                 <div
-                                    key={donation.id}
+                                    key={`top-donor-${donation.id}-${index}`} // Make key more unique
                                     className="flex items-center justify-between p-4 rounded-lg border border-card-border/50 hover:bg-accent/30 transition-smooth animate-fade-in"
                                     style={{ animationDelay: `${index * 100}ms` }}
                                 >
@@ -781,7 +772,7 @@ export function Donations() {
                             <TableBody>
                                 {recentDonations.map((donation, index) => (
                                     <TableRow 
-                                        key={donation.id} 
+                                        key={`recent-donation-${donation.id}-${index}`} // Make key more unique
                                         className="animate-fade-in hover:bg-accent/30"
                                         style={{ animationDelay: `${index * 100}ms` }}
                                     >
