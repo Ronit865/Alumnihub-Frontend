@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Send, MessageSquare, Mail, Bell, Users, Plus } from "lucide-react";
+import { Send, MessageSquare, Mail, Bell, Users, Plus, TrendingUp, Flame, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,39 +7,59 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { RedditPostCard } from "@/components/communication/RedditPostCard";
+import { PostComposer } from "@/components/communication/PostComposer";
 
 const messages = [
   {
     id: 1,
     user: "Priya Sharma '18",
-    message: "Looking for mentorship opportunities in AI/ML. Would love to connect with alumni in this field!",
+    message: "Looking for mentorship opportunities in AI/ML. Would love to connect with alumni in this field! I'm particularly interested in computer vision and natural language processing. Currently working on a startup idea and would appreciate any guidance from experienced professionals.",
     timestamp: "2 hours ago",
-    replies: 5,
-    category: "Mentorship"
+    replies: 15,
+    category: "Mentorship",
+    upvotes: 45,
+    downvotes: 2
   },
   {
     id: 2,
-    user: "Arjun Patel '15",
-    message: "Hosting a fintech startup meetup next month in Mumbai. Alumni in finance welcome to join!",
+    user: "Arjun Patel '15", 
+    message: "Hosting a fintech startup meetup next month in Mumbai. Alumni in finance welcome to join! We'll be discussing the latest trends in digital banking, crypto, and payment solutions. Great networking opportunity!",
     timestamp: "4 hours ago",
-    replies: 12,
-    category: "Events"
+    replies: 23,
+    category: "Events",
+    upvotes: 67,
+    downvotes: 5
   },
   {
     id: 3,
     user: "Kavya Reddy '20",
-    message: "Just published a research paper on biomedical engineering. Happy to discuss with fellow researchers.",
+    message: "Just published a research paper on biomedical engineering applications in prosthetics. Happy to discuss with fellow researchers and share insights about the latest developments in the field.",
     timestamp: "1 day ago",
-    replies: 8,
-    category: "Research"
+    replies: 12,
+    category: "Research", 
+    upvotes: 34,
+    downvotes: 1
   },
   {
     id: 4,
     user: "Rohan Singh '16",
-    message: "Our marketing agency is hiring! Looking for talented alumni to join our team.",
+    message: "Our marketing agency is expanding! Looking for talented alumni to join our team. We're specifically looking for digital marketing specialists, content creators, and data analysts. Great company culture and competitive benefits.",
     timestamp: "2 days ago",
-    replies: 15,
-    category: "Jobs"
+    replies: 28,
+    category: "Jobs",
+    upvotes: 89,
+    downvotes: 7
+  },
+  {
+    id: 5,
+    user: "Ananya Gupta '19",
+    message: "Successfully raised Series A funding for my EdTech startup! AMA about the fundraising process, pitching to VCs, and building a product-market fit. Happy to share lessons learned.",
+    timestamp: "3 days ago",
+    replies: 42,
+    category: "Alumni Stories",
+    upvotes: 156,
+    downvotes: 3
   }
 ];
 
@@ -111,81 +131,100 @@ export default function Communications() {
       </div>
 
       <Tabs defaultValue="community" className="space-y-6">
-        <TabsList className="grid w-full max-w-md grid-cols-3">
-          <TabsTrigger value="community">Community</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          {/* <TabsTrigger value="broadcasts">Broadcasts</TabsTrigger> */}
-        </TabsList>
+        <div className="flex items-center justify-between">
+          <TabsList className="grid max-w-md grid-cols-2">
+            <TabsTrigger value="community" className="gap-2">
+              <MessageSquare className="w-4 h-4" />
+              Community
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="gap-2">
+              <Bell className="w-4 h-4" />
+              Notifications
+            </TabsTrigger>
+          </TabsList>
+          
+          {/* Sort Options */}
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" className="gap-2">
+              <Flame className="w-4 h-4" />
+              Hot
+            </Button>
+            <Button variant="ghost" size="sm" className="gap-2">
+              <Clock className="w-4 h-4" />
+              New
+            </Button>
+          </div>
+        </div>
 
         <TabsContent value="community" className="space-y-6">
-          {/* New Message */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="w-5 h-5 text-primary" />
-                Community Chat
-              </CardTitle>
-              <CardDescription>Share updates, ask questions, and connect with fellow alumni</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex gap-4">
-                <Avatar className="w-10 h-10">
-                  <AvatarFallback className="bg-primary/10 text-primary">AD</AvatarFallback>
-                </Avatar>
-                <div className="flex-1 space-y-3">
-                  <Textarea
-                    placeholder="Share something with the community..."
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    className="min-h-[100px]"
-                  />
-                  <div className="flex justify-between items-center">
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm">Add Image</Button>
-                      <Button variant="outline" size="sm">Add Poll</Button>
-                    </div>
-                    <Button className="gap-2">
-                      <Send className="w-4 h-4" />
-                      Post Message
-                    </Button>
+          {/* Post Composer */}
+          <PostComposer />
+
+          {/* Community Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card className="border-l-4 border-l-orange-500">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Total Posts</p>
+                    <p className="text-2xl font-bold">1,234</p>
                   </div>
+                  <MessageSquare className="w-8 h-8 text-orange-500" />
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-l-4 border-l-green-500">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Active Users</p>
+                    <p className="text-2xl font-bold">567</p>
+                  </div>
+                  <Users className="w-8 h-8 text-green-500" />
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-l-4 border-l-blue-500">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Comments</p>
+                    <p className="text-2xl font-bold">3,456</p>
+                  </div>
+                  <MessageSquare className="w-8 h-8 text-blue-500" />
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-l-4 border-l-purple-500">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Upvotes</p>
+                    <p className="text-2xl font-bold">12,789</p>
+                  </div>
+                  <TrendingUp className="w-8 h-8 text-purple-500" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
           {/* Messages Feed */}
           <div className="space-y-4">
             {messages.map((message) => (
-              <Card key={message.id} className="hover-lift">
-                <CardContent className="p-6">
-                  <div className="flex gap-4">
-                    <Avatar className="w-10 h-10">
-                      <AvatarFallback className="bg-primary/10 text-primary">
-                        {message.user.split(' ').map(n => n[0]).join('')}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <h4 className="font-semibold">{message.user}</h4>
-                          <Badge variant="outline">{message.category}</Badge>
-                        </div>
-                        <span className="text-sm text-muted-foreground">{message.timestamp}</span>
-                      </div>
-                      <p className="text-muted-foreground">{message.message}</p>
-                      <div className="flex items-center gap-4">
-                        <Button variant="ghost" size="sm" className="gap-2">
-                          <MessageSquare className="w-4 h-4" />
-                          {message.replies} replies
-                        </Button>
-                        <Button variant="ghost" size="sm">Like</Button>
-                        <Button variant="ghost" size="sm">Share</Button>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <RedditPostCard
+                key={message.id}
+                id={message.id}
+                user={message.user}
+                message={message.message}
+                timestamp={message.timestamp}
+                replies={message.replies}
+                category={message.category}
+                upvotes={message.upvotes}
+                downvotes={message.downvotes}
+              />
             ))}
           </div>
         </TabsContent>

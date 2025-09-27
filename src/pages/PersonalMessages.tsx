@@ -132,7 +132,7 @@ export default function PersonalMessages() {
       </div>
 
       {/* Messages Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[700px]">
         {/* Conversations List */}
         <Card className="lg:col-span-1">
           <CardHeader className="pb-3">
@@ -153,14 +153,16 @@ export default function PersonalMessages() {
             </div>
           </CardHeader>
           <CardContent className="p-0">
-            <ScrollArea className="h-[480px]">
+            <ScrollArea className="h-[580px]">
               <div className="space-y-1 p-3">
                 {filteredConversations.map((conversation) => (
                   <div
                     key={conversation.id}
                     onClick={() => setSelectedConversation(conversation)}
-                    className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors hover:bg-accent ${
-                      selectedConversation.id === conversation.id ? "bg-accent" : ""
+                    className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all duration-200 hover:bg-accent/80 ${
+                      selectedConversation.id === conversation.id 
+                        ? "bg-primary/10 border-l-4 border-l-primary" 
+                        : "hover:shadow-sm"
                     }`}
                   >
                     <div className="relative">
@@ -269,10 +271,10 @@ export default function PersonalMessages() {
                         </AvatarFallback>
                       </Avatar>
                     )}
-                    <div className={`rounded-2xl px-4 py-2 ${
+                    <div className={`rounded-2xl px-4 py-3 shadow-sm ${
                       message.isMe 
                         ? "bg-primary text-primary-foreground" 
-                        : "bg-muted"
+                        : "bg-card border border-border"
                     }`}>
                       <p className="text-sm">{message.content}</p>
                       <p className={`text-xs mt-1 ${
