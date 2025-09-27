@@ -37,28 +37,12 @@ export default function Settings() {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
-  // Load user data on component mount
-  useEffect(() => {
-    if (user) {
-      setName(user.name || "");
-      setEmail(user.email || "");
-      setGraduationYear(user.graduationYear || "");
-      setCourse(user.course || "");
-      setCurrentPosition(user.currentPosition || "");
-      setCompany(user.company || "");
-      setLocation(user.location || "");
-      setPhone(user.phone || "");
-      setBio(user.bio || "");
-      setLinkedinUrl(user.linkedinUrl || "");
-    }
-  }, [user]);
-
   const handleProfileUpdate = async () => {
     try {
       setIsUpdatingProfile(true);
       
-      // Basic validation
-      if (!name.trim()) {
+      // Basic validation with null/undefined checks
+      if (!name || !name.trim()) {
         toast({
           title: "Validation Error",
           description: "Name is required.",
@@ -67,7 +51,7 @@ export default function Settings() {
         return;
       }
 
-      if (!email.trim()) {
+      if (!email || !email.trim()) {
         toast({
           title: "Validation Error",
           description: "Email is required.",
@@ -78,7 +62,7 @@ export default function Settings() {
 
       // Validate email format
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
+      if (!emailRegex.test(email.trim())) {
         toast({
           title: "Validation Error",
           description: "Please enter a valid email address.",
@@ -87,21 +71,37 @@ export default function Settings() {
         return;
       }
 
-      // Prepare profile data - only send non-empty fields
+      // Prepare profile data - only send non-empty fields with proper null checks
       const profileData: any = {
         name: name.trim(),
         email: email.trim(),
       };
 
-      // Only add optional fields if they have values
-      if (graduationYear.trim()) profileData.graduationYear = graduationYear.trim();
-      if (course.trim()) profileData.course = course.trim();
-      if (currentPosition.trim()) profileData.currentPosition = currentPosition.trim();
-      if (company.trim()) profileData.company = company.trim();
-      if (location.trim()) profileData.location = location.trim();
-      if (phone.trim()) profileData.phone = phone.trim();
-      if (bio.trim()) profileData.bio = bio.trim();
-      if (linkedinUrl.trim()) profileData.linkedinUrl = linkedinUrl.trim();
+      // Only add optional fields if they have values and are strings
+      if (graduationYear && typeof graduationYear === 'string' && graduationYear.trim()) {
+        profileData.graduationYear = graduationYear.trim();
+      }
+      if (course && typeof course === 'string' && course.trim()) {
+        profileData.course = course.trim();
+      }
+      if (currentPosition && typeof currentPosition === 'string' && currentPosition.trim()) {
+        profileData.currentPosition = currentPosition.trim();
+      }
+      if (company && typeof company === 'string' && company.trim()) {
+        profileData.company = company.trim();
+      }
+      if (location && typeof location === 'string' && location.trim()) {
+        profileData.location = location.trim();
+      }
+      if (phone && typeof phone === 'string' && phone.trim()) {
+        profileData.phone = phone.trim();
+      }
+      if (bio && typeof bio === 'string' && bio.trim()) {
+        profileData.bio = bio.trim();
+      }
+      if (linkedinUrl && typeof linkedinUrl === 'string' && linkedinUrl.trim()) {
+        profileData.linkedinUrl = linkedinUrl.trim();
+      }
 
       console.log('Sending profile data:', profileData); // Debug log
 
@@ -241,6 +241,22 @@ export default function Settings() {
       setIsUploadingAvatar(false);
     }
   };
+
+  // Load user data on component mount with proper null checks
+  useEffect(() => {
+    if (user) {
+      setName(user.name || "");
+      setEmail(user.email || "");
+      setGraduationYear(user.graduationYear || "");
+      setCourse(user.course || "");
+      setCurrentPosition(user.currentPosition || "");
+      setCompany(user.company || "");
+      setLocation(user.location || "");
+      setPhone(user.phone || "");
+      setBio(user.bio || "");
+      setLinkedinUrl(user.linkedinUrl || "");
+    }
+  }, [user]);
 
   // Show loading state while auth is loading or user data is not available
   if (isLoading || !user) {
