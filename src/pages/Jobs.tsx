@@ -27,7 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PostJobDialog } from "@/components/jobs/PostJobDialog";
+import { useNavigate } from "react-router-dom";
 
 const jobs = [
   {
@@ -126,6 +126,7 @@ const mentorships = [
 ];
 
 export default function Jobs() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [appliedJobs, setAppliedJobs] = useState<Set<number>>(new Set());
@@ -172,10 +173,10 @@ export default function Jobs() {
             Discover career opportunities and connect with alumni mentors
           </p>
         </div>
-        <PostJobDialog onJobPosted={() => {
-          // Optionally refresh jobs or show success message
-          console.log("Job posted successfully");
-        }} />
+        <Button onClick={() => navigate("/jobs/post")} className="gap-2">
+          <Plus className="w-4 h-4" />
+          Post Job
+        </Button>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">

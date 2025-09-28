@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import Alumni from "./pages/Alumni";
 import Events from "./pages/Events";
 import Jobs from "./pages/Jobs";
+import PostJob from "./pages/PostJob";
 import Donations from "./pages/Donations";
 import PersonalMessages from "./pages/PersonalMessages";
 import Communications from "./pages/Communications";
@@ -63,6 +64,7 @@ const App = () => (
               <Route path="alumni" element={<Alumni />} />
               <Route path="events" element={<Events />} />
               <Route path="jobs" element={<Jobs />} />
+              <Route path="jobs/post" element={<PostJob />} />
               <Route path="donations" element={<Donations />} />
               <Route path="messages" element={<PersonalMessages />} />
               <Route path="communications" element={<Communications />} />
