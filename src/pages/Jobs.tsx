@@ -103,7 +103,7 @@ const mentorships = [
     id: 2,
     mentor: "Priya Mehta '15",
     title: "VP at HDFC Bank",
-    expertise: ["Finance", "Banking", "Career Transition"],
+    expertise: ["Finance", "Banking", "Career Transition" , "Leadership"],
     experience: "9 years",
     availability: "1 hour/week",
     rating: 4.8,
@@ -112,7 +112,7 @@ const mentorships = [
   {
     id: 3,
     mentor: "Amit Verma '20",
-    title: "Research Scientist at Dr. Reddy's Laboratories",
+    title: "Research Scientist at Zomato",
     expertise: [
       "Pharmaceutical Research",
       "PhD Guidance",
