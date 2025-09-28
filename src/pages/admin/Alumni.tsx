@@ -222,8 +222,9 @@ export function Alumni() {
     }
   }, [error]);
 
-  const alumniData: User[] = Array.isArray(alumniResponse) 
-    ? alumniResponse 
+  // Fix: Extract data from the response object
+  const alumniData: User[] = Array.isArray(alumniResponse?.data) 
+    ? alumniResponse.data 
     : [];
 
   const filteredAlumni = alumniData.filter((alumni) => {

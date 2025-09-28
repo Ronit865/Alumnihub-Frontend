@@ -17,7 +17,7 @@ import { authService } from "@/services/ApiServices";
 import { useNavigate } from "react-router-dom";
 
 export function AppHeader() {
-  const { user, admin, logout, userType, isLoading } = useAuth();
+  const { user, admin, logout, userType, isLoading, isInitialized } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -33,24 +33,24 @@ export function AppHeader() {
 
   // Get current user data (either user or admin)
   const currentUser = user || admin;
-  const displayName = currentUser?.name || '';
-  const displayEmail = currentUser?.email || '';
+  const displayName = currentUser?.name || 'Guest';
+  const displayEmail = currentUser?.email || 'No email';
   const avatarSrc = currentUser?.avatar || '';
-  const avatarFallback = displayName ? displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'U';
+  const avatarFallback = displayName && displayName !== 'Guest' 
+    ? displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) 
+    : 'U';
 
-  // Show loading state if still fetching user data
-  if (isLoading) {
+  // Show loading state only if not initialized AND we don't have any user data
+  if (!isInitialized && !currentUser) {
     return (
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 border-l-0">
-        <div className="flex h-14 sm:h-16 items-center justify-between px-3 sm:px-4 md:px-6">
-          <div className="flex items-center gap-2 sm:gap-4 flex-1">
-            <SidebarTrigger className="p-2" />
-            <div className="hidden md:block">
-            </div>
+        <div className="container flex h-16 items-center justify-between px-4">
+          <div className="flex items-center gap-2">
+            <SidebarTrigger className="md:hidden" />
           </div>
-          <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
-            <div className="h-8 w-8 sm:h-10 sm:w-10 bg-muted rounded-full animate-pulse" />
-            <div className="h-8 w-8 sm:h-10 sm:w-10 bg-muted rounded-full animate-pulse" />
+          
+          <div className="flex items-center gap-4">
+            <div className="w-8 h-8 rounded-full bg-muted animate-pulse"></div>
           </div>
         </div>
       </header>
@@ -89,10 +89,10 @@ export function AppHeader() {
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none">
-                    {displayName || 'Guest'}
+                    {displayName}
                   </p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    {displayEmail || 'No email'}
+                    {displayEmail}
                   </p>
                   {userType === 'admin' && (
                     <p className="text-xs leading-none text-primary font-medium">

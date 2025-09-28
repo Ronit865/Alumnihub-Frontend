@@ -1,11 +1,12 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "https://sih-project-pojd.onrender.com/api",
+  baseURL: "http://localhost:5000/api",
   withCredentials: true,
   timeout: 60000,
 });
 // baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api || "https://sih-project-pojd.onrender.com/api",
+  // baseURL: import.meta.env.VITE_API_URL || "https://sih-project-pojd.onrender.com/api",
 
 // Request interceptor to add auth token
 api.interceptors.request.use(

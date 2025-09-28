@@ -58,7 +58,9 @@ export const authService = {
 // User Services
 export const userService = {
   getCurrentUser: async (): Promise<ApiResponse> => {
-    return await api.get('/users/user');
+    const response = await api.get('/users/user');
+    console.log('getCurrentUser API response:', response);
+    return response || response.data  ;
   },
   
   updateProfile: async (data: any): Promise<ApiResponse> => {
@@ -66,8 +68,14 @@ export const userService = {
   },
   
   getAllUsers: async (): Promise<ApiResponse> => {
-    const response = await api.get('/users/user');
-    return response.data;
+    try {
+      const response = await api.get('/users/alluser');
+      console.log('getAllUsers API response:', response);
+      return response || response.data;
+    } catch (error: any) {
+      console.error('getAllUsers error:', error);
+      throw error;
+    }
   },
 
   updateAvatar: async (formData: FormData): Promise<ApiResponse> => {
@@ -87,7 +95,9 @@ export const userService = {
 // Admin Services
 export const adminService = {
   getCurrentAdmin: async (): Promise<ApiResponse> => {
-    return await api.get('/admin/current-admin');
+    const response = await api.get('/admin/current-admin');
+    console.log('getCurrentAdmin API response:', response);
+    return response || response.data;
   },
   
   uploadCSV: async (formData: FormData): Promise<ApiResponse> => {
@@ -97,8 +107,14 @@ export const adminService = {
   },
   
   getAllUsers: async (): Promise<ApiResponse> => {
-    const response = await api.get('/admin/user');
-    return response.data;
+    try {
+      const response = await api.get('/admin/alluser');
+      console.log('Admin getAllUsers API response:', response);
+      return response || response.data;
+    } catch (error: any) {
+      console.error('Admin getAllUsers error:', error);
+      throw error;
+    }
   },
   
   updateAdminProfile: async (data: { name: string; email: string }): Promise<ApiResponse> => {

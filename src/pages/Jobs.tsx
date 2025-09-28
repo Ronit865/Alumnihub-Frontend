@@ -173,16 +173,23 @@ export default function Jobs() {
             Discover career opportunities and connect with alumni mentors
           </p>
         </div>
-        <Button onClick={() => navigate("/jobs/post")} className="gap-2">
-          <Plus className="w-4 h-4" />
-          Post Job
-        </Button>
+      
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full max-w-md grid-cols-2">
-          <TabsTrigger value="jobs">Job Opportunities</TabsTrigger>
-          <TabsTrigger value="mentorship">Mentorship</TabsTrigger>
+          <TabsTrigger 
+            value="jobs"
+            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+          >
+            Job Opportunities
+          </TabsTrigger>
+          <TabsTrigger 
+            value="mentorship"
+            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+          >
+            Mentorship
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="jobs" className="space-y-6">
@@ -274,7 +281,7 @@ export default function Jobs() {
                       onClick={() => handleApply(job.id)}
                       disabled={appliedJobs.has(job.id)}
                       variant={appliedJobs.has(job.id) ? "secondary" : "default"}
-                      className={appliedJobs.has(job.id) ? "gap-2" : ""}
+                      className={appliedJobs.has(job.id) ? "gap-2 bg-[#00FFAB] text-black hover:bg-[#00FFAB]/80" : ""}
                     >
                       {appliedJobs.has(job.id) ? (
                         <>
@@ -360,7 +367,10 @@ export default function Jobs() {
                   <div className="flex gap-2 pt-2">
                     <Button 
                       size="sm" 
-                      className="flex-1"
+                      className={requestedMentorships.has(mentor.id) 
+                        ? "flex-1 bg-[#00FFAB] text-black hover:bg-[#00FFAB]/80" 
+                        : "flex-1"
+                      }
                       onClick={() => handleMentorshipRequest(mentor.id)}
                       disabled={requestedMentorships.has(mentor.id)}
                       variant={requestedMentorships.has(mentor.id) ? "secondary" : "default"}

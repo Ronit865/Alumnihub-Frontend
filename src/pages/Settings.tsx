@@ -12,7 +12,7 @@ import { useAuth } from "@/context/AuthContext";
 import { userService, handleApiError, handleApiSuccess } from "@/services/ApiServices";
 
 export default function Settings() {
-  const { user, fetchCurrentUser, isLoading } = useAuth();
+  const { user, fetchCurrentUser, isLoading, isInitialized } = useAuth();
   const { toast } = useToast();
   
   // Profile form states
@@ -259,13 +259,28 @@ export default function Settings() {
   }, [user]);
 
   // Show loading state while auth is loading or user data is not available
-  if (isLoading || !user) {
+  if (!isInitialized && !user) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <h2 className="text-xl font-semibold mb-2">Loading...</h2>
           <p className="text-muted-foreground">Please wait while we load your profile.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If no user data is available after initialization, show error state
+  if (isInitialized && !user) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-2">Unable to load profile</h2>
+          <p className="text-muted-foreground mb-4">Please try refreshing the page or logging in again.</p>
+          <Button onClick={() => window.location.reload()}>
+            Refresh Page
+          </Button>
         </div>
       </div>
     );

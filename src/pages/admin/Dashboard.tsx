@@ -96,10 +96,16 @@ export function Dashboard() {
         setLoading(true);
         setError(null);
 
-        // Fetch alumni data with fallback
+        // Fetch alumni data with proper response handling
         try {
           const alumniResponse = await adminService.getAllUsers();
-          const alumni = Array.isArray(alumniResponse) ? alumniResponse : [];
+          console.log('Full alumni response:', alumniResponse); // Debug log
+          
+          // Extract data from the response object
+          const alumni = Array.isArray(alumniResponse?.data) 
+            ? alumniResponse.data 
+            : [];
+          
           setTotalAlumni(alumni.length);
 
           // Process department data safely
@@ -135,7 +141,6 @@ export function Dashboard() {
       } catch (error: any) {
         console.error('Dashboard data fetch error:', error);
         setError('Failed to load dashboard data. Please refresh the page.');
-        // Don't show toast on initial load failure
       } finally {
         setLoading(false);
       }

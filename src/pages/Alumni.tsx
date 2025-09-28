@@ -13,8 +13,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { adminService, userService } from "@/services/ApiServices";
+import { adminService, userService, handleApiError } from "@/services/ApiServices";
 import { toast } from "@/components/ui/use-toast";
+import { useAuth } from "@/context/AuthContext";
 
 // Define the User interface to match your backend model
 interface User {
@@ -35,6 +36,7 @@ export default function Alumni() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedYear, setSelectedYear] = useState("all");
   const [selectedIndustry, setSelectedIndustry] = useState("all");
+  const { userType } = useAuth();
 
   // Fetch alumni data using React Query
   const {
@@ -43,12 +45,22 @@ export default function Alumni() {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["public-alumni"],
+    queryKey: ["public-alumni", userType],
     queryFn: async () => {
-      const response = await userService.getAllUsers();
-      return response;
+      try {
+        // Use appropriate service based on user type
+        const response = userType === 'admin' 
+          ? await adminService.getAllUsers()
+          : await userService.getAllUsers();
+        
+        return response;
+      } catch (error: any) {
+        const apiError = handleApiError(error);
+        throw new Error(apiError.message);
+      }
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
   });
 
   // Handle error
@@ -56,24 +68,51 @@ export default function Alumni() {
     if (error) {
       toast({
         title: "Error",
-        description: "Failed to fetch alumni data",
+        description: error.message || "Failed to fetch alumni data",
         variant: "destructive",
       });
     }
   }, [error]);
 
+  // Extract users from the API response - handle different response structures
+  const getAllUsersFromResponse = (response: any): User[] => {
+    // Try different possible response structures
+    if (Array.isArray(response)) {
+      return response;
+    }
+    
+    if (response?.data) {
+      if (Array.isArray(response.data)) {
+        return response.data;
+      }
+      if (response.data?.users && Array.isArray(response.data.users)) {
+        return response.data.users;
+      }
+      if (response.data?.data && Array.isArray(response.data.data)) {
+        return response.data.data;
+      }
+    }
+    
+    if (response?.users && Array.isArray(response.users)) {
+      return response.users;
+    }
+    
+    return [];
+  };
+
   // Get all users first
-  const allUsers: User[] = Array.isArray(alumniResponse) 
-    ? alumniResponse 
-    : [];
+  const allUsers: User[] = getAllUsersFromResponse(alumniResponse); 
 
   // Filter for verified alumni only
-  const alumniData: User[] = allUsers.filter(user => 
-    user && 
-    user.name && 
-    user.email && 
-    user.role?.toLowerCase() === "alumni"  // && isVerified: true (if you want only verified ones
-  );
+  const alumniData: User[] = allUsers.filter(user => {
+    if (!user || !user.name || !user.email) {
+      return false;
+    }
+    
+    // Check for alumni role - be flexible with string comparison
+    const userRole = user.role?.toLowerCase();
+    return userRole === "alumni" || userRole === "alumnus";
+  });
 
   // Get unique graduation years from the data
   const graduationYears = [...new Set(
@@ -116,6 +155,18 @@ export default function Alumni() {
       <div className="flex items-center justify-center h-96">
         <Loader2 className="h-8 w-8 animate-spin" />
         <span className="ml-2">Loading alumni data...</span>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error && !alumniResponse) {
+    return (
+      <div className="flex flex-col items-center justify-center h-96 space-y-4">
+        <p className="text-destructive">Failed to load alumni data</p>
+        <Button onClick={() => refetch()} variant="outline">
+          Try Again
+        </Button>
       </div>
     );
   }
@@ -186,7 +237,12 @@ export default function Alumni() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredAlumni.length === 0 ? (
           <div className="col-span-full text-center py-12">
-            <p className="text-muted-foreground text-lg">No verified alumni found matching your criteria</p>
+            <p className="text-muted-foreground text-lg">
+              {allUsers.length === 0 
+                ? "No users found in the system" 
+                : "No verified alumni found matching your criteria"
+              }
+            </p>
             <Button 
               variant="outline" 
               onClick={() => {

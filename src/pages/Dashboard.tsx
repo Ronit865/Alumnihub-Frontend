@@ -54,18 +54,36 @@ export default function Dashboard() {
     try {
       setLoading(true);
 
-      // Fetch alumni data
+      // Fetch alumni data - Fix: Extract data from response object
       const alumniResponse = await userService.getAllUsers();
-      const allUsers = Array.isArray(alumniResponse) ? alumniResponse : [];
+      console.log('Full Alumni API response structure:', alumniResponse); // Enhanced debug
+      console.log('Alumni data array:', alumniResponse?.data); // Check data array
+      
+      // Extract data from the response object properly
+      const allUsers = Array.isArray(alumniResponse?.data) 
+        ? alumniResponse.data 
+        : [];
+      
+      console.log('Processed users count:', allUsers.length); // Debug count
       
       // Filter verified alumni
-      const verifiedAlumni = allUsers.filter((user: Alumni) => 
-        user.role?.toLowerCase() === "alumni" 
-      );
+      const verifiedAlumni = allUsers.filter((user: Alumni) => {
+        console.log('User role:', user.role); // Debug user roles
+        return user.role?.toLowerCase() === "alumni";
+      });
 
-      // Fetch events data
+      console.log('Verified alumni count:', verifiedAlumni.length); // Debug filtered count
+
+      // Fetch events data - Fix: Handle response structure properly
       const eventsResponse = await eventService.getEvents();
-      const allEvents = eventsResponse.success ? eventsResponse.data : [];
+      console.log('Full Events API response structure:', eventsResponse); // Enhanced debug
+      console.log('Events data array:', eventsResponse?.data); // Check data array
+      
+      const allEvents = eventsResponse?.success && Array.isArray(eventsResponse.data) 
+        ? eventsResponse.data 
+        : [];
+      
+      console.log('Processed events count:', allEvents.length); // Debug count
       
       // Filter active events
       const activeEvents = allEvents.filter((event: Event) => event.isactive);
@@ -92,7 +110,9 @@ export default function Dashboard() {
       setFeaturedAlumni(featured);
 
     } catch (error: any) {
-      console.error("Error fetching dashboard data:", error);
+      console.error("Detailed error fetching dashboard data:", error);
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
       toast.error("Failed to load dashboard data");
     } finally {
       setLoading(false);
