@@ -59,7 +59,6 @@ export const authService = {
 export const userService = {
   getCurrentUser: async (): Promise<ApiResponse> => {
     const response = await api.get('/users/user');
-    console.log('getCurrentUser API response:', response);
     return response || response.data  ;
   },
   
@@ -70,10 +69,8 @@ export const userService = {
   getAllUsers: async (): Promise<ApiResponse> => {
     try {
       const response = await api.get('/users/alluser');
-      console.log('getAllUsers API response:', response);
       return response || response.data;
     } catch (error: any) {
-      console.error('getAllUsers error:', error);
       throw error;
     }
   },
@@ -96,7 +93,6 @@ export const userService = {
 export const adminService = {
   getCurrentAdmin: async (): Promise<ApiResponse> => {
     const response = await api.get('/admin/current-admin');
-    console.log('getCurrentAdmin API response:', response);
     return response || response.data;
   },
   
@@ -109,10 +105,8 @@ export const adminService = {
   getAllUsers: async (): Promise<ApiResponse> => {
     try {
       const response = await api.get('/admin/alluser');
-      console.log('Admin getAllUsers API response:', response);
       return response || response.data;
     } catch (error: any) {
-      console.error('Admin getAllUsers error:', error);
       throw error;
     }
   },
@@ -215,8 +209,6 @@ export const donationService = {
 
 // Error handler utility
 export const handleApiError = (error: ApiError) => {
-  console.error('API Error:', error);
-  
   return {
     message: error.message || 'An unexpected error occurred',
     errors: error.errors || [],
