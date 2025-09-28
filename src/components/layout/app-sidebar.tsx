@@ -13,7 +13,8 @@ import {
   Moon,
   GraduationCap,
   BarChart3,
-  Mail
+  Mail,
+  Plus
 } from "lucide-react";
 
 import {
@@ -34,6 +35,7 @@ const navigation = [
   { title: "Alumni Directory", url: "/alumni", icon: Users },
   { title: "Events", url: "/events", icon: Calendar },
   { title: "Jobs & Mentorship", url: "/jobs", icon: Briefcase },
+  { title: "Post Job", url: "/jobs?tab=post", icon: Plus },
   { title: "Donations", url: "/donations", icon: Heart },
   { title: "Personal Messages", url: "/messages", icon: MessageCircle },
   { title: "Communications", url: "/communications", icon: MessageSquare },

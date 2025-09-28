@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Search,
   MapPin,
@@ -27,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PostJobDialog } from "@/components/jobs/PostJobDialog";
 
 const jobs = [
   {
@@ -129,6 +130,18 @@ export default function Jobs() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [appliedJobs, setAppliedJobs] = useState<Set<number>>(new Set());
   const [requestedMentorships, setRequestedMentorships] = useState<Set<number>>(new Set());
+  const [activeTab, setActiveTab] = useState("jobs");
+
+  // Check URL params to determine if should open post job dialog
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('tab') === 'post') {
+      // You could trigger the post job dialog here or set a specific tab
+      setActiveTab("jobs");
+      // Clear the URL parameter
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
 
   const handleApply = (jobId: number) => {
     setAppliedJobs((prev) => new Set(prev).add(jobId));
@@ -159,13 +172,13 @@ export default function Jobs() {
             Discover career opportunities and connect with alumni mentors
           </p>
         </div>
-        {/* <Button className="gap-2">
-          <Plus className="w-4 h-4" />
-          Post Job
-        </Button> */}
+        <PostJobDialog onJobPosted={() => {
+          // Optionally refresh jobs or show success message
+          console.log("Job posted successfully");
+        }} />
       </div>
 
-      <Tabs defaultValue="jobs" className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full max-w-md grid-cols-2">
           <TabsTrigger value="jobs">Job Opportunities</TabsTrigger>
           <TabsTrigger value="mentorship">Mentorship</TabsTrigger>
