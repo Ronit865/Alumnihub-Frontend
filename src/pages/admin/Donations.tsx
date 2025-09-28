@@ -149,7 +149,19 @@ export function Donations() {
         category: ""
     });
     const [formErrors, setFormErrors] = useState<Partial<CreateCampaignForm>>({});
-    const { toast: toastHook } = useToast(); // Renamed to avoid conflict
+    const { toast: toastHook } = useToast();
+
+    // Get featured campaigns (campaigns that need the least amount to reach their goal)
+    const getFeaturedCampaigns = () => {
+        return campaigns
+            .filter(campaign => (campaign.raised || 0) < campaign.goal) // Only incomplete campaigns
+            .sort((a, b) => {
+                const remainingA = a.goal - (a.raised || 0);
+                const remainingB = b.goal - (b.raised || 0);
+                return remainingA - remainingB; // Sort by least remaining amount
+            })
+            .slice(0, 3); // Take top 3
+    };
 
     // Fetch campaigns from database
     useEffect(() => {
@@ -376,6 +388,83 @@ export function Donations() {
 
     return (
         <div className="space-y-8">
+            {/* Custom Scrollbar Styles */}
+            <style>{`
+                /* Webkit Scrollbars */
+                .custom-scrollbar::-webkit-scrollbar {
+                    width: 6px;
+                    height: 6px;
+                }
+
+                .custom-scrollbar::-webkit-scrollbar-track {
+                    background: hsl(var(--muted) / 0.3);
+                    border-radius: 10px;
+                }
+
+                .custom-scrollbar::-webkit-scrollbar-thumb {
+                    background: hsl(var(--primary) / 0.5);
+                    border-radius: 10px;
+                    transition: background 0.2s ease;
+                }
+
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                    background: hsl(var(--primary) / 0.7);
+                }
+
+                .custom-scrollbar::-webkit-scrollbar-corner {
+                    background: hsl(var(--muted) / 0.3);
+                }
+
+                /* Firefox Scrollbars */
+                .custom-scrollbar {
+                    scrollbar-width: thin;
+                    scrollbar-color: hsl(var(--primary) / 0.5) hsl(var(--muted) / 0.3);
+                }
+
+                /* Thin Scrollbar Variant */
+                .custom-scrollbar-thin::-webkit-scrollbar {
+                    width: 4px;
+                    height: 4px;
+                }
+
+                .custom-scrollbar-thin::-webkit-scrollbar-track {
+                    background: hsl(var(--border) / 0.2);
+                    border-radius: 8px;
+                }
+
+                .custom-scrollbar-thin::-webkit-scrollbar-thumb {
+                    background: hsl(var(--accent-foreground) / 0.4);
+                    border-radius: 8px;
+                    transition: all 0.2s ease;
+                }
+
+                .custom-scrollbar-thin::-webkit-scrollbar-thumb:hover {
+                    background: hsl(var(--accent-foreground) / 0.6);
+                }
+
+                /* Table Scrollbar */
+                .table-scrollbar::-webkit-scrollbar {
+                    height: 8px;
+                }
+
+                .table-scrollbar::-webkit-scrollbar-track {
+                    background: hsl(var(--muted) / 0.2);
+                    border-radius: 4px;
+                    margin: 0 8px;
+                }
+
+                .table-scrollbar::-webkit-scrollbar-thumb {
+                    background: linear-gradient(90deg, hsl(var(--primary) / 0.6), hsl(var(--primary) / 0.4));
+                    border-radius: 4px;
+                    transition: all 0.3s ease;
+                }
+
+                .table-scrollbar::-webkit-scrollbar-thumb:hover {
+                    background: linear-gradient(90deg, hsl(var(--primary) / 0.8), hsl(var(--primary) / 0.6));
+                    box-shadow: 0 0 8px hsl(var(--primary) / 0.3);
+                }
+            `}</style>
+
             {/* Header */}
             <div className="flex justify-between items-start animate-fade-in">
                 <div>
@@ -594,10 +683,155 @@ export function Donations() {
                 </div>
             </div>
 
+            {/* Featured Campaigns Section */}
+            <Card className="bento-card gradient-surface border-card-border/50 animate-fade-in">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <Trophy className="h-5 w-5 text-primary" />
+                        Featured Campaigns
+                        <Badge variant="secondary" className="ml-2">
+                            Priority
+                        </Badge>
+                    </CardTitle>
+                    <CardDescription>
+                        Campaigns closest to reaching their goals - need your immediate attention
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {loading ? (
+                        <div className="flex items-center justify-center h-40">
+                            <div className="text-center">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+                                <p className="text-muted-foreground">Loading featured campaigns...</p>
+                            </div>
+                        </div>
+                    ) : getFeaturedCampaigns().length === 0 ? (
+                        <div className="flex items-center justify-center h-40">
+                            <div className="text-center">
+                                <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                                <p className="text-muted-foreground mb-2">No featured campaigns</p>
+                                <p className="text-sm text-muted-foreground">All campaigns are either completed or no active campaigns available.</p>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {getFeaturedCampaigns().map((campaign, index) => {
+                                const remaining = campaign.goal - (campaign.raised || 0);
+                                const daysLeft = campaign.endDate 
+                                    ? Math.max(0, Math.ceil((new Date(campaign.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
+                                    : null;
+
+                                return (
+                                    <div
+                                        key={`featured-${campaign._id}`}
+                                        className="relative group overflow-hidden rounded-lg border border-card-border/50 bg-gradient-to-br from-card/50 to-card/30 hover:from-card/70 hover:to-card/50 transition-all duration-300 animate-fade-in hover:shadow-lg hover:shadow-primary/10"
+                                        style={{ animationDelay: `${index * 200}ms` }}
+                                    >
+                                        {/* Header with badges */}
+                                        <div className="relative p-6 pb-4">
+                                            <div className="flex justify-between items-start mb-4">
+                                                <Badge className="bg-primary/90 text-primary-foreground">
+                                                    Featured
+                                                </Badge>
+                                                {campaign.category && (
+                                                    <Badge variant="secondary" className="bg-background/90">
+                                                        {campaign.category}
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                            
+                                            <h3 className="font-semibold text-lg text-foreground mb-2 group-hover:text-primary transition-colors">
+                                                {campaign.name}
+                                            </h3>
+                                            <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+                                                {campaign.description}
+                                            </p>
+
+                                            {/* Key highlight - remaining amount */}
+                                            <div className="bg-primary/5 rounded-lg p-3 border border-primary/20">
+                                                <p className="text-xs text-muted-foreground mb-1">Only needs</p>
+                                                <p className="font-bold text-lg text-primary">
+                                                    {formatCurrency(remaining)}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground">to reach the goal</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Progress Section */}
+                                        <div className="px-6 pb-4 space-y-3">
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-sm text-muted-foreground">Progress</span>
+                                                <span className="text-sm font-medium text-foreground">
+                                                    {getProgressPercentage(campaign.raised, campaign.goal)}%
+                                                </span>
+                                            </div>
+                                            
+                                            {/* Progress Bar */}
+                                            <div className="w-full bg-secondary rounded-full h-2">
+                                                <div
+                                                    className="bg-gradient-to-r from-primary to-primary/80 h-2 rounded-full transition-all duration-500"
+                                                    style={{ width: `${getProgressPercentage(campaign.raised, campaign.goal)}%` }}
+                                                />
+                                            </div>
+
+                                            {/* Stats Grid */}
+                                            <div className="grid grid-cols-2 gap-4 pt-2">
+                                                <div>
+                                                    <p className="font-semibold text-foreground">
+                                                        {formatCurrency(campaign.raised || 0)}
+                                                    </p>
+                                                    <p className="text-xs text-muted-foreground">raised</p>
+                                                </div>
+                                                <div>
+                                                    <p className="font-semibold text-primary">
+                                                        {getDonorCount(campaign)}
+                                                    </p>
+                                                    <p className="text-xs text-muted-foreground">donors</p>
+                                                </div>
+                                            </div>
+
+                                            {daysLeft !== null && (
+                                                <div className="pt-2">
+                                                    <Badge 
+                                                        variant="outline" 
+                                                        className={`${daysLeft < 10 ? 'border-destructive text-destructive' : 'border-primary/50 text-primary'}`}
+                                                    >
+                                                        {daysLeft} days left
+                                                    </Badge>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Action Buttons */}
+                                        <div className="px-6 pb-6">
+                                            <div className="flex gap-2">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="flex-1 border-card-border/50 hover:bg-accent"
+                                                >
+                                                    View Details
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    className="flex-1 gradient-primary text-primary-foreground hover:shadow-purple"
+                                                >
+                                                    Promote
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+
             {/* Main Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Active Campaigns */}
-                <Card className="bento-card gradient-surface border-card-border/50">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Active Campaigns - Now takes 2/3 width */}
+                <Card className="bento-card gradient-surface border-card-border/50 lg:col-span-2">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Target className="h-5 w-5 text-primary" />
@@ -638,10 +872,10 @@ export function Donations() {
                                 </div>
                             </div>
                         ) : (
-                            <div className="h-full overflow-y-auto pr-2 space-y-6 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
+                            <div className="h-full overflow-y-auto pr-2 space-y-6 custom-scrollbar">
                                 {campaigns.map((campaign, index) => (
                                     <div
-                                        key={`campaign-${campaign._id}-${index}`} // Add index for extra uniqueness if needed
+                                        key={`campaign-${campaign._id}-${index}`}
                                         className="p-4 rounded-lg border border-card-border/50 hover:bg-accent/30 transition-smooth animate-fade-in"
                                         style={{ animationDelay: `${index * 150}ms` }}
                                     >
@@ -685,7 +919,7 @@ export function Donations() {
                     </CardContent>
                 </Card>
 
-                {/* Top Donors Card */}
+                {/* Top Donors Card - Now takes 1/3 width */}
                 <Card className="bento-card gradient-surface border-card-border/50">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
@@ -697,13 +931,13 @@ export function Donations() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="h-[600px] overflow-hidden">
-                        <div className="h-full overflow-y-auto pr-2 space-y-4 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
+                        <div className="h-full overflow-y-auto pr-2 space-y-4 custom-scrollbar-thin">
                             {recentDonations
                                 .sort((a, b) => b.amount - a.amount)
                                 .slice(0, 10)
                                 .map((donation, index) => (
                                 <div
-                                    key={`top-donor-${donation.id}-${index}`} // Make key more unique
+                                    key={`top-donor-${donation.id}-${index}`}
                                     className="flex items-center justify-between p-4 rounded-lg border border-card-border/50 hover:bg-accent/30 transition-smooth animate-fade-in"
                                     style={{ animationDelay: `${index * 100}ms` }}
                                 >
@@ -758,7 +992,7 @@ export function Donations() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="overflow-x-auto">
+                    <div className="overflow-x-auto table-scrollbar">
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -772,7 +1006,7 @@ export function Donations() {
                             <TableBody>
                                 {recentDonations.map((donation, index) => (
                                     <TableRow 
-                                        key={`recent-donation-${donation.id}-${index}`} // Make key more unique
+                                        key={`recent-donation-${donation.id}-${index}`}
                                         className="animate-fade-in hover:bg-accent/30"
                                         style={{ animationDelay: `${index * 100}ms` }}
                                     >
