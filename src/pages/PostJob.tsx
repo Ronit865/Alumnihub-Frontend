@@ -80,7 +80,7 @@ export default function PostJob() {
       </div>
 
       {/* Form */}
-      <Card className="max-w-4xl">
+      <Card className="max-w-4xl mx-auto">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Briefcase className="w-5 h-5" />
