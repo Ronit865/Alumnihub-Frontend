@@ -62,13 +62,13 @@ export default function PostJob() {
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button 
+        {/* <Button 
           variant="outline" 
           size="icon"
           onClick={() => navigate("/jobs")}
         >
           <ArrowLeft className="w-4 h-4" />
-        </Button>
+        </Button> */}
         <div>
           <h1 className="text-3xl font-bold gradient-text mb-2">
             Post a Job Opportunity
