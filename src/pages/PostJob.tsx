@@ -59,7 +59,7 @@ export default function PostJob() {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-4 animate-fade-in pb-4">
       {/* Header */}
       <div className="flex items-center gap-4">
         {/* <Button 
@@ -206,7 +206,7 @@ export default function PostJob() {
               />
             </div>
 
-            <div className="flex justify-end gap-4 pt-6">
+            <div className="flex justify-end gap-4 pt-4">
               <Button type="button" variant="outline" onClick={() => navigate("/jobs")}>
                 Cancel
               </Button>
