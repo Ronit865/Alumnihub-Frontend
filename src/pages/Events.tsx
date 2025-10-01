@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { eventService } from "@/services/ApiServices";
 
@@ -130,10 +131,24 @@ export default function Events() {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-[400px]">
-                <div className="flex items-center gap-2">
-                    <Loader2 className="w-6 h-6 animate-spin" />
-                    <span>Loading events...</span>
+            <div className="space-y-6 animate-fade-in">
+                {/* Header Skeleton */}
+                <div>
+                    <Skeleton className="h-9 w-48 mb-2" />
+                    <Skeleton className="h-5 w-96" />
+                </div>
+
+                {/* Search Skeleton */}
+                <Skeleton className="h-10 max-w-md" />
+
+                {/* Events Count Skeleton */}
+                <Skeleton className="h-7 w-56" />
+
+                {/* Events Grid Skeleton */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[...Array(6)].map((_, i) => (
+                        <Skeleton key={i} className="h-96 rounded-lg" />
+                    ))}
                 </div>
             </div>
         );

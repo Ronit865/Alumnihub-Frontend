@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminService } from "@/services/ApiServices";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Card,
   CardContent,
@@ -384,9 +385,34 @@ export function Alumni() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <Loader2 className="h-8 w-8 animate-spin" />
-        <span className="ml-2">Loading user data...</span>
+      <div className="space-y-8">
+        {/* Header Skeleton */}
+        <div className="flex justify-between items-start animate-fade-in">
+          <div>
+            <Skeleton className="h-9 w-56 mb-2" />
+            <Skeleton className="h-5 w-96" />
+          </div>
+          <Skeleton className="h-10 w-32" />
+        </div>
+
+        {/* Stats Cards Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-slide-up">
+          {[...Array(3)].map((_, i) => (
+            <Skeleton key={i} className="h-32 rounded-lg" />
+          ))}
+        </div>
+
+        {/* Search and Filters Skeleton */}
+        <div className="flex flex-col md:flex-row gap-4">
+          <Skeleton className="h-10 flex-1" />
+          <div className="flex gap-3">
+            <Skeleton className="h-10 w-[140px]" />
+            <Skeleton className="h-10 w-10" />
+          </div>
+        </div>
+
+        {/* Table Skeleton */}
+        <Skeleton className="h-[600px] rounded-lg" />
       </div>
     );
   }

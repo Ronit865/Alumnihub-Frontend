@@ -2,6 +2,7 @@ import { Calendar, Users, Briefcase, TrendingUp, Heart, MessageCircle, Loader2 }
 import { BentoCard } from "@/components/ui/bento-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { adminService, eventService, userService } from "@/services/ApiServices";
@@ -138,10 +139,41 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="flex items-center gap-2">
-          <Loader2 className="w-6 h-6 animate-spin" />
-          <span>Loading dashboard...</span>
+      <div className="space-y-6 animate-fade-in">
+        {/* Hero Section Skeleton */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary/90 to-primary/80 p-8">
+          <div className="space-y-4">
+            <Skeleton className="h-10 w-3/4 bg-white/20" />
+            <Skeleton className="h-6 w-full max-w-2xl bg-white/20" />
+            <div className="flex gap-4">
+              <Skeleton className="h-12 w-40 bg-white/20" />
+              <Skeleton className="h-12 w-32 bg-white/20" />
+            </div>
+          </div>
+        </div>
+
+        {/* Stats Grid Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-32 rounded-lg" />
+          ))}
+        </div>
+
+        {/* Bento Grid Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <Skeleton className="h-96 rounded-2xl" />
+          </div>
+          <div className="lg:col-span-1">
+            <Skeleton className="h-96 rounded-2xl" />
+          </div>
+        </div>
+
+        {/* Bottom Grid Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-80 rounded-2xl" />
+          ))}
         </div>
       </div>
     );

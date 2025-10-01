@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 import { BentoCard } from "@/components/ui/bento-card";
 import { useEffect, useState } from "react";
 import { donationService, handleApiError } from "@/services/ApiServices";
@@ -129,18 +130,34 @@ export default function Donations() {
   if (loading) {
     return (
       <div className="space-y-6 animate-fade-in">
+        {/* Header Skeleton */}
         <div>
-          <h1 className="text-3xl font-bold gradient-text mb-2">Donations & Impact</h1>
-          <p className="text-muted-foreground">
-            Make a difference in the lives of current and future students
-          </p>
+          <Skeleton className="h-9 w-64 mb-2" />
+          <Skeleton className="h-5 w-96" />
         </div>
-        <div className="flex items-center justify-center h-96">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading campaigns...</p>
+
+        {/* Stats Grid Skeleton */}
+        <div className="grid grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-32 rounded-lg" />
+          ))}
+        </div>
+
+        {/* Featured Campaign Skeleton */}
+        <Skeleton className="h-64 rounded-2xl" />
+
+        {/* Active Campaigns Skeleton */}
+        <div>
+          <Skeleton className="h-7 w-48 mb-4" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={i} className="h-80 rounded-lg" />
+            ))}
           </div>
         </div>
+
+        {/* Impact Stories Skeleton */}
+        <Skeleton className="h-96 rounded-lg" />
       </div>
     );
   }

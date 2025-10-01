@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 // import { Calendar } from "@/components/ui/calendar";
 import { CalendarDays, Clock, MapPin, Users, Plus, Eye, Edit, Trash2, Loader2, X } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -248,9 +249,37 @@ export function Events() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin" />
-        <span className="ml-2">Loading events...</span>
+      <div className="space-y-8">
+        {/* Header Skeleton */}
+        <div className="flex justify-between items-start animate-fade-in">
+          <div>
+            <Skeleton className="h-9 w-56 mb-2" />
+            <Skeleton className="h-5 w-96" />
+          </div>
+          <Skeleton className="h-10 w-32" />
+        </div>
+
+        {/* Stats Cards Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 animate-slide-up">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-32 rounded-lg" />
+          ))}
+        </div>
+
+        {/* Filters Skeleton */}
+        <div className="flex items-center gap-4">
+          <Skeleton className="h-9 w-24" />
+          {[...Array(3)].map((_, i) => (
+            <Skeleton key={i} className="h-9 w-20" />
+          ))}
+        </div>
+
+        {/* Events Grid Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) => (
+            <Skeleton key={i} className="h-80 rounded-lg" />
+          ))}
+        </div>
       </div>
     );
   }

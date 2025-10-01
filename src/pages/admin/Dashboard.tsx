@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Users, Calendar, DollarSign, TrendingUp, UserCheck, Mail, Award, ArrowUpRight, Loader2, GraduationCap } from "lucide-react";
 import { useState, useEffect } from "react";
 import { adminService, eventService, handleApiError } from "@/services/ApiServices";
@@ -225,9 +226,36 @@ export function Dashboard() {
   // Loading state
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin" />
-        <span className="ml-2">Loading dashboard...</span>
+      <div className="space-y-8 pb-0">
+        {/* Header Skeleton */}
+        <div className="animate-fade-in">
+          <Skeleton className="h-9 w-48 mb-2" />
+          <Skeleton className="h-5 w-96" />
+        </div>
+
+        {/* KPI Grid Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-slide-up">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-32 rounded-lg" />
+          ))}
+        </div>
+
+        {/* Main Content Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          <div className="lg:col-span-2 space-y-6">
+            <Skeleton className="h-64 rounded-lg" />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Skeleton className="h-96 rounded-lg" />
+              <Skeleton className="h-96 rounded-lg" />
+            </div>
+          </div>
+          <div className="lg:col-span-1">
+            <Skeleton className="h-[700px] rounded-lg" />
+          </div>
+        </div>
+
+        {/* Bottom Section Skeleton */}
+        <Skeleton className="h-96 rounded-lg" />
       </div>
     );
   }

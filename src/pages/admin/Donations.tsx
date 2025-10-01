@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { IndianRupee, TrendingUp, Users, Target, ArrowUpRight, ArrowDownRight, Trophy, Clock, Plus, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -385,6 +386,47 @@ export function Donations() {
         });
         setFormErrors({});
     };
+
+    if (loading) {
+        return (
+            <div className="space-y-8">
+                {/* Header Skeleton */}
+                <div className="flex justify-between items-start animate-fade-in">
+                    <div>
+                        <Skeleton className="h-9 w-56 mb-2" />
+                        <Skeleton className="h-5 w-96" />
+                    </div>
+                    <Skeleton className="h-10 w-40" />
+                </div>
+
+                {/* Stats Cards Skeleton */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    {[...Array(4)].map((_, i) => (
+                        <Skeleton key={i} className="h-32 rounded-lg" />
+                    ))}
+                </div>
+
+                {/* Featured Campaigns Skeleton */}
+                <div>
+                    <Skeleton className="h-7 w-48 mb-4" />
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {[...Array(3)].map((_, i) => (
+                            <Skeleton key={i} className="h-64 rounded-lg" />
+                        ))}
+                    </div>
+                </div>
+
+                {/* Campaigns Table Skeleton */}
+                <div>
+                    <Skeleton className="h-7 w-56 mb-4" />
+                    <Skeleton className="h-96 rounded-lg" />
+                </div>
+
+                {/* Recent Donations Skeleton */}
+                <Skeleton className="h-96 rounded-lg" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-8">

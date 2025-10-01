@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Select,
@@ -152,9 +153,31 @@ export default function Alumni() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <Loader2 className="h-8 w-8 animate-spin" />
-        <span className="ml-2">Loading alumni data...</span>
+      <div className="space-y-6 animate-fade-in">
+        {/* Header Skeleton */}
+        <div>
+          <Skeleton className="h-9 w-64 mb-2" />
+          <Skeleton className="h-5 w-96" />
+        </div>
+
+        {/* Search and Filters Skeleton */}
+        <div className="flex flex-col sm:flex-row gap-4 items-center">
+          <Skeleton className="h-10 flex-1" />
+          <div className="flex gap-3">
+            <Skeleton className="h-10 w-[160px]" />
+            <Skeleton className="h-10 w-[140px]" />
+            <Skeleton className="h-10 w-10" />
+          </div>
+        </div>
+
+        <Skeleton className="h-5 w-48" />
+
+        {/* Alumni Grid Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) => (
+            <Skeleton key={i} className="h-80 rounded-lg" />
+          ))}
+        </div>
       </div>
     );
   }
