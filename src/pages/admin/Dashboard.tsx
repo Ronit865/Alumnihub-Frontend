@@ -100,7 +100,6 @@ export function Dashboard() {
         // Fetch alumni data with proper response handling
         try {
           const alumniResponse = await adminService.getAllUsers();
-          console.log('Full alumni response:', alumniResponse); // Debug log
           
           // Extract data from the response object
           const alumni = Array.isArray(alumniResponse?.data) 
