@@ -12,7 +12,6 @@ import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
 import { donationService, handleApiError, handleApiSuccess } from "@/services/ApiServices";
 import { useToast } from "@/hooks/use-toast";
-import { toast } from "sonner";
 
 // Keep the static data for stats and recent donations
 const donationStats = [
@@ -350,7 +349,11 @@ export function Donations() {
             const response = await donationService.createCampaign(campaignData);
             
             if (response.success) {
-                toast.success("Campaign created successfully");
+                toastHook({
+                    title: "Campaign created",
+                    description: "Campaign has been successfully created",
+                    variant: "success",
+                });
                 
                 // Reset form and close dialog
                 setFormData({
@@ -366,11 +369,19 @@ export function Donations() {
                 // Refresh campaigns list
                 window.location.reload();
             } else {
-                toast.error(`Failed to create campaign: ${response.message}`);
+                toastHook({
+                    title: "Error",
+                    description: `Failed to create campaign: ${response.message}`,
+                    variant: "destructive",
+                });
             }
         } catch (err: any) {
             const errorInfo = handleApiError(err);
-            toast.error(`Failed to create campaign: ${errorInfo.message}`);
+            toastHook({
+                title: "Error",
+                description: `Failed to create campaign: ${errorInfo.message}`,
+                variant: "destructive",
+            });
         } finally {
             setIsCreating(false);
         }

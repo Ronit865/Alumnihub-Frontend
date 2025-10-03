@@ -15,17 +15,30 @@ import { AdminToggle } from "./admin-toggle";
 import { useAuth } from "@/context/AuthContext";
 import { authService } from "@/services/ApiServices";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 export function AppHeader() {
   const { user, admin, logout, userType, isLoading, isInitialized } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleLogout = async () => {
     try {
       await authService.logout();
+      logout();
+      toast({
+        title: "Logged out successfully",
+        description: "See you next time!",
+        variant: "info",
+      });
+      navigate('/auth/login');
     } catch (error) {
       console.error('Logout error:', error);
-    } finally {
+      toast({
+        title: "Logout failed",
+        description: "An error occurred during logout",
+        variant: "destructive",
+      });
       logout();
       navigate('/auth/login');
     }
