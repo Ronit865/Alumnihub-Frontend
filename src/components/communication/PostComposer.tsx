@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
 const categories = [
   "General",
@@ -26,10 +27,16 @@ const categories = [
 export function PostComposer() {
   const [content, setContent] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const { toast } = useToast();
 
   const handleSubmit = () => {
     if (content.trim() && selectedCategory) {
       // Handle post submission
+      toast({
+        title: "Post published!",
+        description: "Your post has been shared with the community.",
+        variant: "success",
+      });
       setContent("");
       setSelectedCategory("");
     }

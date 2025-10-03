@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { authService, handleApiError, handleApiSuccess } from "@/services/ApiServices";
 import { useAuth } from "@/context/AuthContext";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -25,6 +25,7 @@ export const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
+  const { toast } = useToast();
 
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -55,16 +56,11 @@ export const Login = () => {
         // Update AuthContext with user data
         login(response.data);
         
-        // Enhanced success toast with green styling
-        toast.success("Login successful!", {
-          style: {
-            background: '#10b981',
-            color: '#ffffff',
-            border: '1px solid #059669',
-          },
-          duration: 1000,
+        // Success toast
+        toast({
+          title: "Login successful!",
           description: successData.message || "Welcome back to AllyNet!",
-          descriptionClassName: "text-white",
+          variant: "success",
         });
         
         // Get intended destination or default route
@@ -82,8 +78,10 @@ export const Login = () => {
       console.error('Login error:', error);
       const apiError = handleApiError(error);
       
-      toast.error("Login failed", {
+      toast({
+        title: "Login failed",
         description: apiError.message,
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);

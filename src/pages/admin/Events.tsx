@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { eventService, handleApiError } from "@/services/ApiServices";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 
 interface Event {
   _id: string;
@@ -50,6 +50,7 @@ export function Events() {
     location: ""
   });
   const [formErrors, setFormErrors] = useState<Partial<CreateEventForm>>({});
+  const { toast } = useToast();
 
   // Fetch events from backend
   useEffect(() => {
@@ -65,7 +66,11 @@ export function Events() {
     } catch (err: any) {
       const errorInfo = handleApiError(err);
       setError(errorInfo.message);
-      toast.error(`Failed to fetch events: ${errorInfo.message}`);
+      toast({
+        title: "Error",
+        description: `Failed to fetch events: ${errorInfo.message}`,
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -74,11 +79,19 @@ export function Events() {
   const handleDeleteEvent = async (eventId: string) => {
     try {
       await eventService.deleteEvent(eventId);
-      toast.success("Event deleted successfully");
+      toast({
+        title: "Event deleted",
+        description: "Event has been successfully deleted",
+        variant: "success",
+      });
       fetchEvents(); // Refresh the events list
     } catch (err: any) {
       const errorInfo = handleApiError(err);
-      toast.error(`Failed to delete event: ${errorInfo.message}`);
+      toast({
+        title: "Error",
+        description: `Failed to delete event: ${errorInfo.message}`,
+        variant: "destructive",
+      });
     }
   };
 
@@ -128,7 +141,11 @@ export function Events() {
       };
 
       await eventService.createEvent(eventData);
-      toast.success("Event created successfully");
+      toast({
+        title: "Event created",
+        description: "Event has been successfully created",
+        variant: "success",
+      });
       
       // Reset form and close dialog
       setFormData({
@@ -145,7 +162,11 @@ export function Events() {
       fetchEvents();
     } catch (err: any) {
       const errorInfo = handleApiError(err);
-      toast.error(`Failed to create event: ${errorInfo.message}`);
+      toast({
+        title: "Error",
+        description: `Failed to create event: ${errorInfo.message}`,
+        variant: "destructive",
+      });
     } finally {
       setIsCreating(false);
     }
