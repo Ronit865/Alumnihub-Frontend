@@ -242,7 +242,7 @@ export function Events() {
             }`} />
             {/* Multiple events indicator */}
             {dayEvents.length > 1 && (
-              <div className={`absolute bottom-0.5 left-1/2 transform -translate-x-1/2 translate-x-2 w-1 h-1 rounded-full ${
+              <div className={`absolute bottom-0.5 left-1/2 transform translate-x-0.5 w-1 h-1 rounded-full ${
                 hasActiveEvents ? 'bg-primary' : 'bg-muted-foreground'
               }`} />
             )}
