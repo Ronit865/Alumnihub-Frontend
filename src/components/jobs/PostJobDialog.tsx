@@ -1,202 +1,149 @@
 import { useState } from "react";
-import { Plus, MapPin, Building, DollarSign, Clock } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
+import { jobService } from "@/services/ApiServices";
+import { toast } from "sonner";
+import { Loader2, Plus, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface PostJobDialogProps {
-  onJobPosted?: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
 }
 
-export function PostJobDialog({ onJobPosted }: PostJobDialogProps) {
-  const { toast } = useToast();
-  const [open, setOpen] = useState(false);
+export function PostJobDialog({ open, onOpenChange, onSuccess }: PostJobDialogProps) {
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
+    description: "",
     company: "",
     location: "",
-    type: "Full-time",
-    category: "",
     salary: "",
-    experience: "",
-    description: "",
   });
+  const [requirements, setRequirements] = useState<string[]>([]);
+  const [currentRequirement, setCurrentRequirement] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Basic validation
-    if (!formData.title || !formData.company || !formData.location || !formData.description) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in all required fields.",
-        variant: "destructive",
-      });
+
+    if (!formData.title || !formData.description) {
+      toast.error("Please fill in all required fields");
       return;
     }
 
-    // Here you would normally send the data to your API
-    console.log("Job posting data:", formData);
-    
-    toast({
-      title: "Job Posted Successfully!",
-      description: "Your job posting has been published and is now visible to alumni.",
-    });
+    try {
+      setLoading(true);
 
-    // Reset form and close dialog
-    setFormData({
-      title: "",
-      company: "",
-      location: "",
-      type: "Full-time",
-      category: "",
-      salary: "",
-      experience: "",
-      description: "",
-    });
-    setOpen(false);
-    onJobPosted?.();
+      const jobData = {
+        title: formData.title,
+        description: formData.description,
+        company: formData.company || undefined,
+        location: formData.location || undefined,
+        salary: formData.salary ? Number(formData.salary) : undefined,
+        requirements: requirements.length > 0 ? requirements : undefined,
+      };
+
+      const response = await jobService.postJob(jobData);
+
+      if (response.success) {
+        toast.success("Job posted successfully!");
+        resetForm();
+        onSuccess?.();
+      } else {
+        toast.error(response.message || "Failed to post job");
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to post job");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const addRequirement = () => {
+    if (currentRequirement.trim()) {
+      setRequirements([...requirements, currentRequirement.trim()]);
+      setCurrentRequirement("");
+    }
+  };
+
+  const removeRequirement = (index: number) => {
+    setRequirements(requirements.filter((_, i) => i !== index));
+  };
+
+  const resetForm = () => {
+    setFormData({
+      title: "",
+      description: "",
+      company: "",
+      location: "",
+      salary: "",
+    });
+    setRequirements([]);
+    setCurrentRequirement("");
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="gap-2">
-          <Plus className="w-4 h-4" />
-          Post Job
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Building className="w-5 h-5" />
-            Post a Job Opportunity
-          </DialogTitle>
+          <DialogTitle>Post a New Job</DialogTitle>
           <DialogDescription>
-            Share job opportunities with fellow alumni and help them advance their careers.
+            Share job opportunities with the alumni network. Your post will be verified by admins.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">Job Title *</Label>
-              <Input
-                id="title"
-                placeholder="e.g. Senior Software Engineer"
-                value={formData.title}
-                onChange={(e) => handleInputChange("title", e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="company">Company *</Label>
-              <Input
-                id="company"
-                placeholder="e.g. Tech Corp"
-                value={formData.company}
-                onChange={(e) => handleInputChange("company", e.target.value)}
-                required
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="location">Location *</Label>
-              <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                <Input
-                  id="location"
-                  placeholder="e.g. Bengaluru, Karnataka"
-                  value={formData.location}
-                  onChange={(e) => handleInputChange("location", e.target.value)}
-                  className="pl-10"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="type">Job Type</Label>
-              <Select value={formData.type} onValueChange={(value) => handleInputChange("type", value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Full-time">Full-time</SelectItem>
-                  <SelectItem value="Part-time">Part-time</SelectItem>
-                  <SelectItem value="Contract">Contract</SelectItem>
-                  <SelectItem value="Internship">Internship</SelectItem>
-                  <SelectItem value="Remote">Remote</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
-              <Select value={formData.category} onValueChange={(value) => handleInputChange("category", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Technology">Technology</SelectItem>
-                  <SelectItem value="Product">Product</SelectItem>
-                  <SelectItem value="Data">Data Science</SelectItem>
-                  <SelectItem value="Marketing">Marketing</SelectItem>
-                  <SelectItem value="Finance">Finance</SelectItem>
-                  <SelectItem value="Operations">Operations</SelectItem>
-                  <SelectItem value="Sales">Sales</SelectItem>
-                  <SelectItem value="Design">Design</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="experience">Experience Required</Label>
-              <Input
-                id="experience"
-                placeholder="e.g. 3+ years"
-                value={formData.experience}
-                onChange={(e) => handleInputChange("experience", e.target.value)}
-              />
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="title">Job Title *</Label>
+            <Input
+              id="title"
+              placeholder="e.g., Senior Software Engineer"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              required
+            />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="salary">Salary Range</Label>
-            <div className="relative">
-              <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <Label htmlFor="company">Company Name</Label>
+            <Input
+              id="company"
+              placeholder="e.g., Tech Corp Inc."
+              value={formData.company}
+              onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="location">Location</Label>
+              <Input
+                id="location"
+                placeholder="e.g., San Francisco, CA"
+                value={formData.location}
+                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="salary">Annual Salary ($)</Label>
               <Input
                 id="salary"
-                placeholder="e.g. ₹15,00,000 - ₹20,00,000"
+                type="number"
+                placeholder="e.g., 120000"
                 value={formData.salary}
-                onChange={(e) => handleInputChange("salary", e.target.value)}
-                className="pl-10"
+                onChange={(e) => setFormData({ ...formData, salary: e.target.value })}
               />
             </div>
           </div>
@@ -205,22 +152,61 @@ export function PostJobDialog({ onJobPosted }: PostJobDialogProps) {
             <Label htmlFor="description">Job Description *</Label>
             <Textarea
               id="description"
-              placeholder="Provide a detailed description of the role, responsibilities, requirements, and benefits..."
+              placeholder="Describe the role, responsibilities, and qualifications..."
               value={formData.description}
-              onChange={(e) => handleInputChange("description", e.target.value)}
-              rows={4}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              rows={5}
               required
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+          <div className="space-y-2">
+            <Label htmlFor="requirements">Requirements</Label>
+            <div className="flex gap-2">
+              <Input
+                id="requirements"
+                placeholder="Add a requirement and press Enter"
+                value={currentRequirement}
+                onChange={(e) => setCurrentRequirement(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addRequirement();
+                  }
+                }}
+              />
+              <Button type="button" onClick={addRequirement} variant="outline" size="icon">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {requirements.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {requirements.map((req, index) => (
+                  <Badge key={index} variant="secondary" className="gap-1">
+                    {req}
+                    <button
+                      type="button"
+                      onClick={() => removeRequirement(index)}
+                      className="ml-1 hover:text-destructive"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit">
+            <Button type="submit" disabled={loading}>
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Post Job
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

@@ -1,17 +1,16 @@
-import axios from "axios";
+import axios from 'axios';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
   withCredentials: true,
   timeout: 60000,
 });
-// baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api || "https://sih-project-pojd.onrender.com/api",
-  // baseURL: import.meta.env.VITE_API_URL || "https://sih-project-pojd.onrender.com/api",
 
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('accessToken');
+    
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -36,31 +35,47 @@ api.interceptors.response.use(
       const apiError = error.response.data;
       
       // Check if it's a 401 unauthorized error and attempt token refresh
-      // Skip refresh for login and other auth endpoints
       if (error.response.status === 401 && 
           !originalRequest._retry && 
           !originalRequest.url?.includes('/login') &&
           !originalRequest.url?.includes('/refresh-token')) {
+        
         originalRequest._retry = true;
         
         try {
-          const refreshResponse = await api.post('/users/refresh-token');
+          const refreshToken = localStorage.getItem('refreshToken');
           
-          // Handle your ApiResponse format
-          if (refreshResponse.data.success && refreshResponse.data?.accessToken) {
-            localStorage.setItem('accessToken', refreshResponse.data.accessToken);
-            originalRequest.headers.Authorization = `Bearer ${refreshResponse.data.accessToken}`;
+          if (!refreshToken) {
+            localStorage.clear();
+            window.location.href = '/auth/login';
+            return Promise.reject(apiError);
+          }
+
+          const refreshResponse = await axios.post(
+            `${api.defaults.baseURL}/login/refresh-token`,
+            { refreshToken },
+            { withCredentials: true }
+          );
+          
+          if (refreshResponse.data?.success && refreshResponse.data?.data?.accessToken) {
+            const newAccessToken = refreshResponse.data.data.accessToken;
+            localStorage.setItem('accessToken', newAccessToken);
+            
+            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+            
             return api(originalRequest);
+          } else {
+            localStorage.clear();
+            window.location.href = '/auth/login';
+            return Promise.reject(apiError);
           }
         } catch (refreshError) {
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('userType');
+          localStorage.clear();
           window.location.href = '/auth/login';
           return Promise.reject(refreshError);
         }
       }
       
-       // Create a structured error object matching your ApiError format
       const structuredError = {
         statusCode: apiError.statusCode || error.response.status,
         message: apiError.message || "Something went wrong",
@@ -71,7 +86,6 @@ api.interceptors.response.use(
       return Promise.reject(structuredError);
     }
     
-    // Handle network errors or other issues
     return Promise.reject({
       statusCode: 500,
       message: error.message || "Network error occurred",

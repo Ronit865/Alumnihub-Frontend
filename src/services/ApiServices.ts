@@ -20,11 +20,17 @@ export const authService = {
  login: async (credentials: { email: string; password: string }): Promise<ApiResponse> => {
     const response = await api.post('/login', credentials);
     
-    // Store userType based on response
+    // Store tokens
+    if (response.data?.accessToken) {
+      localStorage.setItem('accessToken', response.data.accessToken);
+    }
+    if (response.data?.refreshToken) {
+      localStorage.setItem('refreshToken', response.data.refreshToken);
+    }
+    
+    // Store userType
     if (response.data?.userType) {
       localStorage.setItem('userType', response.data.userType);
-    } else if (response.data?.user?.role) {
-      localStorage.setItem('userType', response.data.user.role === 'admin' ? 'admin' : 'user');
     }
     
     return response || response.data;
@@ -204,6 +210,33 @@ export const donationService = {
   
   deleteCampaign: async (id: string): Promise<ApiResponse> => {
     return await api.delete(`/donations/deleteDonation/${id}`);
+  }
+};
+
+// Job Services
+export const jobService = {
+  getAllJobs: async (): Promise<ApiResponse> => {
+    return await api.get('/jobs/getAllJobs');
+  },
+  
+  addJob: async (jobData: any): Promise<ApiResponse> => {
+    return await api.post('/jobs/addJob', jobData);
+  },
+  
+  editJob: async (id: string, jobData: any): Promise<ApiResponse> => {
+    return await api.patch(`/jobs/editJob/${id}`, jobData);
+  },
+  
+  deleteJob: async (id: string): Promise<ApiResponse> => {
+    return await api.delete(`/jobs/deleteJob/${id}`);
+  },
+  
+  verifyJob: async (id: string): Promise<ApiResponse> => {
+    return await api.patch(`/jobs/verifyJob/${id}`);
+  },
+  
+  applyForJob: async (id: string): Promise<ApiResponse> => {
+    return await api.post(`/jobs/jobApply/${id}`);
   }
 };
 

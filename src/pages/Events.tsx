@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { eventService } from "@/services/ApiServices";
+import { userService } from "@/services/ApiServices";
 
 interface Event {
     _id: string;
@@ -17,7 +18,7 @@ interface Event {
     location?: string;
     type?: string;
     category?: string;
-    participants: string[];
+    participants: any[]; // Changed from string[] to any[] to handle both objects and strings
     maxAttendees?: number;
     image?: string;
     isactive: boolean;
@@ -49,6 +50,9 @@ export default function Events() {
                     (event: Event) => event.isactive
                 );
                 setEvents(activeEvents);
+                
+                // Get current user to check registered events
+                await checkRegisteredEvents(activeEvents);
             } else {
                 setError(response.message || "Failed to fetch events");
                 toast.error("Failed to fetch events");
@@ -62,20 +66,65 @@ export default function Events() {
         }
     };
 
+    const checkRegisteredEvents = async (events: Event[]) => {
+        try {
+            const userResponse = await userService.getCurrentUser();
+            
+            if (userResponse.success && userResponse.data) {
+                const userId = userResponse.data._id;
+                console.log("Current User ID:", userId);
+                
+                const registered = new Set<string>();
+                events.forEach(event => {
+                    console.log(`Event ${event.title} participants:`, event.participants);
+                    // Check if participants array contains objects or strings
+                    const isRegistered = event.participants.some((participant: any) => {
+                        // Handle both object format {_id: "..."} and string format
+                        const participantId = typeof participant === 'string' 
+                            ? participant 
+                            : participant._id || participant.userId || participant.user;
+                        return participantId === userId;
+                    });
+                    
+                    if (isRegistered) {
+                        registered.add(event._id);
+                    }
+                });
+                
+                console.log("Registered Events:", Array.from(registered));
+                setRegisteredEvents(registered);
+            }
+        } catch (error) {
+            console.error("Error checking registered events:", error);
+        }
+    };
+
+    // Optional: Add a helper function to get userId once to avoid repetition
+    const getCurrentUserId = async (): Promise<string | undefined> => {
+        try {
+            const userResponse = await userService.getCurrentUser();
+            return userResponse.data?._id;
+        } catch (error) {
+            console.error("Error getting current user:", error);
+            return undefined;
+        }
+    };
+
     const handleJoinEvent = async (eventId: string) => {
         try {
             setJoiningEvent(eventId);
             
-            // Simulate successful registration without API call
-            // Remove the actual API call to avoid authentication issues
-            // const response = await eventService.joinEvent(eventId);
+            const userId = await getCurrentUserId();
+            if (!userId) {
+                toast.error("Please login to join events");
+                return;
+            }
             
-            // Simulate a successful response
-            const response = { success: true };
+            const response = await eventService.joinEvent(eventId);
 
             if (response.success) {
                 // Enhanced success toast with green styling
-                toast.success("Successfully registered for event!", {
+                toast.success("Successfully joined the event!", {
                     style: {
                         background: '#10b981',
                         color: '#ffffff',
@@ -91,16 +140,61 @@ export default function Events() {
                 setEvents(prevEvents => 
                     prevEvents.map(event => 
                         event._id === eventId 
-                            ? { ...event, participants: [...event.participants, 'current-user'] }
+                            ? { ...event, participants: [...event.participants, userId] }
                             : event
                     )
                 );
             } else {
-                toast.error("Failed to join event");
+                toast.error(response.message || "Failed to join event");
             }
         } catch (error: any) {
             console.error("Error joining event:", error);
-            toast.error("Failed to join event");
+            toast.error(error.message || "Failed to join event");
+        } finally {
+            setJoiningEvent(null);
+        }
+    };
+
+    const handleLeaveEvent = async (eventId: string) => {
+        try {
+            setJoiningEvent(eventId);
+            
+            const userId = await getCurrentUserId();
+            if (!userId) {
+                toast.error("Unable to leave event");
+                return;
+            }
+            
+            const response = await eventService.leaveEvent(eventId);
+
+            if (response.success) {
+                toast.success("Successfully left the event", {
+                    duration: 3000,
+                });
+                
+                setRegisteredEvents(prev => {
+                    const newSet = new Set(prev);
+                    newSet.delete(eventId);
+                    return newSet;
+                });
+                
+                // Update the event's participants count locally
+                setEvents(prevEvents => 
+                    prevEvents.map(event => 
+                        event._id === eventId 
+                            ? { 
+                                ...event, 
+                                participants: event.participants.filter(p => p !== userId)
+                              }
+                            : event
+                    )
+                );
+            } else {
+                toast.error(response.message || "Failed to leave event");
+            }
+        } catch (error: any) {
+            console.error("Error leaving event:", error);
+            toast.error(error.message || "Failed to leave event");
         } finally {
             setJoiningEvent(null);
         }
@@ -308,28 +402,30 @@ export default function Events() {
                                     <Button
                                         size="sm"
                                         className="w-full"
-                                        onClick={() => handleJoinEvent(event._id)}
+                                        onClick={() => registeredEvents.has(event._id) 
+                                            ? handleLeaveEvent(event._id) 
+                                            : handleJoinEvent(event._id)
+                                        }
                                         disabled={
                                             joiningEvent === event._id ||
-                                            registeredEvents.has(event._id) ||
-                                            (event.maxAttendees && event.participants.length >= event.maxAttendees)
+                                            (!registeredEvents.has(event._id) && event.maxAttendees && event.participants.length >= event.maxAttendees)
                                         }
                                         variant={registeredEvents.has(event._id) ? "secondary" : "default"}
                                     >
                                         {joiningEvent === event._id ? (
                                             <>
                                                 <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                                                Joining...
+                                                {registeredEvents.has(event._id) ? "Leaving..." : "Joining..."}
                                             </>
                                         ) : registeredEvents.has(event._id) ? (
                                             <>
                                                 <Check className="w-4 h-4 mr-2" />
-                                                Registered
+                                                Leave Event
                                             </>
                                         ) : (event.maxAttendees && event.participants.length >= event.maxAttendees) ? (
                                             "Event Full"
                                         ) : (
-                                            "Register"
+                                            "Join Event"
                                         )}
                                     </Button>
                                 </div>

@@ -1,399 +1,258 @@
 import { useState, useEffect } from "react";
-import {
-  Search,
-  MapPin,
-  Clock,
-  DollarSign,
-  Building,
-  Plus,
-  Filter,
-  Check,
-} from "lucide-react";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { jobService } from "@/services/ApiServices";
+import { toast } from "sonner";
+import { Briefcase, MapPin, DollarSign, Clock, CheckCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PostJobDialog from "@/components/PostJobDialog";
 
-const jobs = [
-  {
-    id: 1,
-    title: "Senior Software Engineer",
-    company: "Infosys",
-    location: "Bengaluru, Karnataka",
-    type: "Full-time",
-    salary: "₹22,00,000 - ₹28,00,000",
-    posted: "2 days ago",
-    category: "Technology",
-    experience: "5+ years",
-    description:
-      "Work on large-scale enterprise cloud solutions and cutting-edge AI tools.",
-    alumni: "Rahul Sharma '18",
-  },
-  {
-    id: 2,
-    title: "Product Manager",
-    company: "Flipkart",
-    location: "Bengaluru, Karnataka",
-    type: "Full-time",
-    salary: "₹18,00,000 - ₹25,00,000",
-    posted: "1 week ago",
-    category: "Product",
-    experience: "3+ years",
-    description:
-      "Lead product strategy and innovation for India’s top e-commerce platform.",
-    alumni: "Priya Mehta '15",
-  },
-  {
-    id: 3,
-    title: "Data Scientist",
-    company: "Zomato",
-    location: "Gurugram, Haryana",
-    type: "Full-time",
-    salary: "₹15,00,000 - ₹20,00,000",
-    posted: "3 days ago",
-    category: "Data",
-    experience: "4+ years",
-    description:
-      "Develop advanced ML models to improve food delivery recommendations and customer insights.",
-    alumni: "Amit Verma '20",
-  },
-  {
-    id: 4,
-    title: "Marketing Director",
-    company: "Ola",
-    location: "Mumbai, Maharashtra",
-    type: "Full-time",
-    salary: "₹20,00,000 - ₹27,00,000",
-    posted: "5 days ago",
-    category: "Marketing",
-    experience: "7+ years",
-    description:
-      "Drive national-level marketing campaigns and brand growth strategies.",
-    alumni: "Sneha Iyer '16",
-  },
-];
-
-const mentorships = [
-  {
-    id: 1,
-    mentor: "Rahul Sharma '18",
-    title: "Senior Software Engineer at Infosys",
-    expertise: ["Software Engineering", "Career Growth", "System Design"],
-    experience: "6 years",
-    availability: "2 hours/week",
-    rating: 4.9,
-    sessions: 45,
-  },
-  {
-    id: 2,
-    mentor: "Priya Mehta '15",
-    title: "VP at HDFC Bank",
-    expertise: ["Finance", "Banking", "Career Transition" , "Leadership"],
-    experience: "9 years",
-    availability: "1 hour/week",
-    rating: 4.8,
-    sessions: 32,
-  },
-  {
-    id: 3,
-    mentor: "Amit Verma '20",
-    title: "Research Scientist at Zomato",
-    expertise: [
-      "Pharmaceutical Research",
-      "PhD Guidance",
-      "Industry Transition",
-    ],
-    experience: "4 years",
-    availability: "3 hours/week",
-    rating: 4.9,
-    sessions: 28,
-  },
-];
+interface Job {
+  _id: string;
+  title: string;
+  description: string;
+  company?: string;
+  location?: string;
+  salary?: number;
+  requirements?: string[];
+  isVerified: boolean;
+  jobType?: string;
+  category?: string;
+  experienceRequired?: string;
+  postedBy: {
+    name: string;
+    email: string;
+  };
+  createdAt: string;
+}
 
 export default function Jobs() {
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [appliedJobs, setAppliedJobs] = useState<Set<number>>(new Set());
-  const [requestedMentorships, setRequestedMentorships] = useState<Set<number>>(new Set());
-  const [activeTab, setActiveTab] = useState("jobs");
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [applyingJobId, setApplyingJobId] = useState<string | null>(null);
+  const [postJobOpen, setPostJobOpen] = useState(false);
 
-  // Check URL params to determine if should open post job dialog
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('tab') === 'post') {
-      // You could trigger the post job dialog here or set a specific tab
-      setActiveTab("jobs");
-      // Clear the URL parameter
-      window.history.replaceState({}, '', window.location.pathname);
+  const fetchJobs = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await jobService.getAllJobs();
+
+      if (response.success) {
+        const jobsData = Array.isArray(response.data)
+          ? response.data
+          : Array.isArray(response.message)
+          ? response.message
+          : [];
+
+        // Filter only verified jobs for regular users
+        const verifiedJobs = jobsData.filter((job: Job) => job.isVerified);
+        setJobs(verifiedJobs);
+      } else {
+        const errorMsg = response.message || "Failed to fetch jobs";
+        setError(errorMsg);
+        toast.error(errorMsg);
+      }
+    } catch (error: any) {
+      const errorMsg =
+        error.message || "Failed to load jobs";
+      setError(errorMsg);
+      toast.error(errorMsg);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    fetchJobs();
   }, []);
 
-  const handleApply = (jobId: number) => {
-    setAppliedJobs((prev) => new Set(prev).add(jobId));
+  const handleApply = async (jobId: string) => {
+    try {
+      setApplyingJobId(jobId);
+      const response = await jobService.applyForJob(jobId);
+
+      if (response.success) {
+        toast.success("Application submitted successfully!");
+        fetchJobs(); // Refresh to get updated data
+      } else {
+        toast.error(response.message || "Failed to apply for job");
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to apply for job");
+    } finally {
+      setApplyingJobId(null);
+    }
   };
 
-  const handleMentorshipRequest = (mentorId: number) => {
-    setRequestedMentorships((prev) => new Set(prev).add(mentorId));
-  };
+  if (loading) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="flex justify-between items-center mb-6">
+          <Skeleton className="h-10 w-64" />
+          <Skeleton className="h-10 w-32" />
+        </div>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-20 w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
-  const filteredJobs = jobs.filter((job) => {
-    const matchesSearch =
-      job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.company.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory =
-      selectedCategory === "all" || job.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  if (error) {
+    return (
+      <div className="container mx-auto p-6">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+        <div className="mt-4">
+          <Button onClick={fetchJobs}>Try Again</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Header */}
-      <div className="flex justify-between items-center">
+    <div className="container mx-auto p-6">
+      <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold gradient-text mb-2">
-            Jobs & Mentorship
-          </h1>
+          <h1 className="text-3xl font-bold">Job Opportunities</h1>
           <p className="text-muted-foreground">
-            Discover career opportunities and connect with alumni mentors
+            Browse and apply for job opportunities
           </p>
         </div>
-      
+        <Button onClick={() => setPostJobOpen(true)}>Post a Job</Button>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full max-w-md grid-cols-2">
-          <TabsTrigger 
-            value="jobs"
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-          >
-            Job Opportunities
-          </TabsTrigger>
-          <TabsTrigger 
-            value="mentorship"
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-          >
-            Mentorship
-          </TabsTrigger>
-        </TabsList>
+      {jobs.length === 0 ? (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-16">
+            <Briefcase className="h-16 w-16 text-muted-foreground mb-4" />
+            <h3 className="text-xl font-semibold mb-2">No Jobs Available</h3>
+            <p className="text-muted-foreground mb-4">
+              Be the first to post a job opportunity!
+            </p>
+            <Button onClick={() => navigate("/post-job")}>Post a Job</Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {jobs.map((job) => (
+            <Card key={job._id} className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <CardTitle className="text-xl">{job.title}</CardTitle>
+                  <Badge variant="default" className="bg-green-500">
+                    <CheckCircle className="h-3 w-3 mr-1" />
+                    Verified
+                  </Badge>
+                </div>
+                <CardDescription>
+                  {job.company || "Company Not Specified"}
+                </CardDescription>
+              </CardHeader>
 
-        <TabsContent value="jobs" className="space-y-6">
-          {/* Search and Filters */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Input
-                placeholder="Search jobs by title or company..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
+              <CardContent className="space-y-3">
+                <p className="text-sm line-clamp-3">{job.description}</p>
 
-            <div className="flex gap-3">
-              <Select
-                value={selectedCategory}
-                onValueChange={setSelectedCategory}
-              >
-                <SelectTrigger className="w-[150px]">
-                  <SelectValue placeholder="Category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="Technology">Technology</SelectItem>
-                  <SelectItem value="Product">Product</SelectItem>
-                  <SelectItem value="Data">Data Science</SelectItem>
-                  <SelectItem value="Marketing">Marketing</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Button variant="outline" size="icon">
-                <Filter className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-
-          {/* Jobs Grid */}
-          <div className="grid gap-6">
-            {filteredJobs.map((job) => (
-              <Card key={job.id} className="hover-lift group">
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-2">
-                      <CardTitle className="text-xl group-hover:text-primary transition-colors">
-                        {job.title}
-                      </CardTitle>
-                      <div className="flex items-center gap-4 text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <Building className="w-4 h-4" />
-                          <span className="font-medium">{job.company}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <MapPin className="w-4 h-4" />
-                          <span>{job.location}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-4 h-4" />
-                          <span>{job.posted}</span>
-                        </div>
-                      </div>
+                <div className="space-y-2">
+                  {job.location && (
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <MapPin className="h-4 w-4 mr-2" />
+                      {job.location}
                     </div>
-                    <Badge variant="secondary">{job.category}</Badge>
-                  </div>
-                </CardHeader>
+                  )}
 
-                <CardContent className="space-y-4">
-                  <p className="text-muted-foreground">{job.description}</p>
-
-                  <div className="flex flex-wrap gap-4 text-sm">
-                    <div className="flex items-center gap-1">
-                      <DollarSign className="w-4 h-4 text-muted-foreground" />
-                      <span className="font-medium">{job.salary}</span>
+                  {job.salary && (
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <DollarSign className="h-4 w-4 mr-2" />
+                      ${job.salary.toLocaleString()} / year
                     </div>
-                    <Badge variant="outline">{job.type}</Badge>
-                    <Badge variant="outline">{job.experience}</Badge>
+                  )}
+
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <Clock className="h-4 w-4 mr-2" />
+                    {new Date(job.createdAt).toLocaleDateString()}
                   </div>
 
-                  <div className="flex items-center justify-between pt-4 border-t">
-                    <div className="text-sm text-muted-foreground">
-                      Posted by{" "}
-                      <span className="font-medium text-primary">
-                        {job.alumni}
-                      </span>
+                  {job.jobType && (
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <Briefcase className="h-4 w-4 mr-2" />
+                      {job.jobType}
                     </div>
-                    <Button
-                      size="sm"
-                      onClick={() => handleApply(job.id)}
-                      disabled={appliedJobs.has(job.id)}
-                      variant={appliedJobs.has(job.id) ? "secondary" : "default"}
-                      className={appliedJobs.has(job.id) ? "gap-2 bg-[#00FFAB] text-black hover:bg-[#00FFAB]/80" : ""}
-                    >
-                      {appliedJobs.has(job.id) ? (
-                        <>
-                          <Check className="w-4 h-4" />
-                          Applied
-                        </>
-                      ) : (
-                        "Apply Now"
-                      )}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
+                  )}
+                </div>
 
-        <TabsContent value="mentorship" className="space-y-6">
-          {/* Mentorship Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {mentorships.map((mentor) => (
-              <Card key={mentor.id} className="hover-lift group">
-                <CardHeader>
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center">
-                      <span className="font-medium text-primary">
-                        {mentor.mentor
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
-                      </span>
-                    </div>
-                    <div className="flex-1">
-                      <CardTitle className="text-lg group-hover:text-primary transition-colors">
-                        {mentor.mentor}
-                      </CardTitle>
-                      <CardDescription className="mt-1">
-                        {mentor.title}
-                      </CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
+                {job.category && (
+                  <Badge variant="outline" className="text-xs">
+                    {job.category}
+                  </Badge>
+                )}
 
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium">Expertise</p>
-                    <div className="flex flex-wrap gap-1">
-                      {mentor.expertise.map((skill) => (
-                        <Badge
-                          key={skill}
-                          variant="outline"
-                          className="text-xs"
-                        >
-                          {skill}
+                {job.requirements && job.requirements.length > 0 && (
+                  <div>
+                    <p className="text-sm font-semibold mb-2">Requirements:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {job.requirements.slice(0, 3).map((req, idx) => (
+                        <Badge key={idx} variant="outline" className="text-xs">
+                          {req}
                         </Badge>
                       ))}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-muted-foreground">Experience</p>
-                      <p className="font-medium">{mentor.experience}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Availability</p>
-                      <p className="font-medium">{mentor.availability}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between text-sm">
-                    <div>
-                      <span className="text-muted-foreground">Rating: </span>
-                      <span className="font-medium">{mentor.rating}/5.0</span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">
-                        {mentor.sessions} sessions
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2 pt-2">
-                    <Button 
-                      size="sm" 
-                      className={requestedMentorships.has(mentor.id) 
-                        ? "flex-1 bg-[#00FFAB] text-black hover:bg-[#00FFAB]/80" 
-                        : "flex-1"
-                      }
-                      onClick={() => handleMentorshipRequest(mentor.id)}
-                      disabled={requestedMentorships.has(mentor.id)}
-                      variant={requestedMentorships.has(mentor.id) ? "secondary" : "default"}
-                    >
-                      {requestedMentorships.has(mentor.id) ? (
-                        <>
-                          <Check className="w-4 h-4 mr-1" />
-                          Requested
-                        </>
-                      ) : (
-                        "Request Mentorship"
+                      {job.requirements.length > 3 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{job.requirements.length - 3} more
+                        </Badge>
                       )}
-                    </Button>
-                    <Button size="sm" variant="outline" className="flex-1">
-                      View Profile
-                    </Button>
+                    </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-      </Tabs>
+                )}
+              </CardContent>
+
+              <CardFooter>
+                <Button 
+                  className="w-full" 
+                  onClick={() => handleApply(job._id)}
+                  disabled={applyingJobId === job._id}
+                >
+                  {applyingJobId === job._id ? "Applying..." : "Apply Now"}
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      <PostJobDialog 
+        open={postJobOpen} 
+        onOpenChange={setPostJobOpen}
+        onSuccess={fetchJobs}
+      />
     </div>
   );
 }

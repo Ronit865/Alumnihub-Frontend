@@ -1,323 +1,450 @@
-import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Briefcase, MapPin, Clock, IndianRupee, Search, Plus, CheckCircle, XCircle, Eye } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { jobService } from '@/services/ApiServices';
+import { toast } from 'sonner';
+import { Briefcase, MapPin, DollarSign, Check, Trash2, Clock, AlertCircle, CheckCircle, Calendar } from 'lucide-react';
 
-const jobsData = [
- {
-    "id": 1,
-    "title": "Senior Software Engineer",
-    "company": "Infosys Technologies",
-    "location": "Bengaluru, Karnataka",
-    "type": "Full-time",
-    "salary": "₹12,00,000 - ₹18,00,000 per annum",
-    "postedBy": "Rohit Sharma (Class of 2019)",
-    "postedDate": "2024-01-15",
-    "status": "pending",
-    "applications": 23,
-    "description": "Join our team to develop enterprise-scale AI-powered solutions.",
-    "category": "job"
-  },
-  {
-    "id": 2,
-    "title": "Marketing Manager",
-    "company": "Hindustan Unilever Ltd.",
-    "location": "Mumbai, Maharashtra",
-    "type": "Full-time",
-    "salary": "₹8,00,000 - ₹12,00,000 per annum",
-    "postedBy": "Ananya Mehta (Class of 2018)",
-    "postedDate": "2024-01-12",
-    "status": "approved",
-    "applications": 15,
-    "description": "Lead marketing initiatives for FMCG products across India.",
-    "category": "job"
-  },
-  {
-    "id": 3,
-    "title": "Mentorship: Product Management",
-    "company": "Various Indian Startups",
-    "location": "Remote",
-    "type": "Mentorship",
-    "salary": "Pro Bono",
-    "postedBy": "Arjun Verma (Class of 2020)",
-    "postedDate": "2024-01-10",
-    "status": "approved",
-    "applications": 8,
-    "description": "1-on-1 mentorship for alumni transitioning into product management roles in Indian startups.",
-    "category": "mentorship"
-  },
-  {
-    "id": 4,
-    "title": "Data Scientist",
-    "company": "TCS Analytics",
-    "location": "Hyderabad, Telangana",
-    "type": "Contract",
-    "salary": "₹3,000 - ₹5,000 per day",
-    "postedBy": "Neha Gupta (Class of 2017)",
-    "postedDate": "2024-01-08",
-    "status": "pending",
-    "applications": 31,
-    "description": "6-month contract to build predictive models for retail and e-commerce clients.",
-    "category": "job"
-  },
-  {
-    "id": 5,
-    "title": "Career Coaching Sessions",
-    "company": "Alumni Connect India",
-    "location": "Virtual",
-    "type": "Mentorship",
-    "salary": "Free",
-    "postedBy": "Karan Patel (Class of 2021)",
-    "postedDate": "2024-01-05",
-    "status": "approved",
-    "applications": 12,
-    "description": "Weekly online career coaching sessions for fresh graduates in India.",
-    "category": "mentorship"
-  }
-];
+interface Job {
+  _id: string;
+  title: string;
+  description: string;
+  company?: string;
+  location?: string;
+  salary?: number;
+  requirements?: string[];
+  isVerified: boolean;
+  jobType?: string;
+  category?: string;
+  experienceRequired?: string;
+  applicants?: any[];
+  postedBy?: {
+    name: string;
+    email: string;
+  };
+  createdAt: string;
+  updatedAt?: string;
+}
 
 export function Jobs() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [jobToDelete, setJobToDelete] = useState<string | null>(null);
 
-  const filteredJobs = jobsData.filter(job => {
-    const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         job.location.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === "all" || job.category === selectedCategory;
-    const matchesStatus = selectedStatus === "all" || job.status === selectedStatus;
-    return matchesSearch && matchesCategory && matchesStatus;
-  });
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "approved":
-        return <Badge className="bg-success/10 text-success border-success/20">Approved</Badge>;
-      case "pending":
-        return <Badge variant="outline" className="border-warning text-warning">Pending Review</Badge>;
-      case "rejected":
-        return <Badge variant="destructive">Rejected</Badge>;
-      default:
-        return <Badge variant="secondary">Unknown</Badge>;
+  const fetchJobs = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await jobService.getAllJobs(); // Changed from getJobs to getAllJobs
+      
+      if (response.success) {
+        const jobsData = Array.isArray(response.data) 
+          ? response.data 
+          : Array.isArray(response.message) 
+          ? response.message 
+          : [];
+        
+        setJobs(jobsData);
+      } else {
+        const errorMsg = response.message || 'Failed to fetch jobs';
+        setError(errorMsg);
+        toast.error(errorMsg);
+      }
+    } catch (error: any) {
+      const errorMsg = error.message || 'Failed to load jobs';
+      setError(errorMsg);
+      toast.error(errorMsg);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const getCategoryBadge = (category: string) => {
-    switch (category) {
-      case "job":
-        return <Badge className="bg-primary/10 text-primary border-primary/20">Job</Badge>;
-      case "mentorship":
-        return <Badge className="bg-secondary/50 text-secondary-foreground border-secondary">Mentorship</Badge>;
-      default:
-        return <Badge variant="secondary">Other</Badge>;
+  useEffect(() => {
+    fetchJobs();
+  }, []);
+
+  const handleVerifyJob = async (jobId: string) => {
+    try {
+      setActionLoading(jobId);
+      const response = await jobService.verifyJob(jobId);
+      
+      if (response.success) {
+        toast.success('Job verified successfully');
+        fetchJobs();
+      } else {
+        toast.error(response.message || 'Failed to verify job');
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to verify job');
+    } finally {
+      setActionLoading(null);
     }
   };
+
+  const handleDeleteJob = async () => {
+    if (!jobToDelete) return;
+
+    try {
+      setActionLoading(jobToDelete);
+      const response = await jobService.deleteJob(jobToDelete);
+      
+      if (response.success) {
+        toast.success('Job deleted successfully');
+        fetchJobs();
+      } else {
+        toast.error(response.message || 'Failed to delete job');
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete job');
+    } finally {
+      setActionLoading(null);
+      setDeleteDialogOpen(false);
+      setJobToDelete(null);
+    }
+  };
+
+  const pendingJobs = jobs.filter(job => !job.isVerified);
+  const verifiedJobs = jobs.filter(job => job.isVerified);
+
+  if (loading) {
+    return (
+      <div className="container mx-auto p-6">
+        <Skeleton className="h-10 w-64 mb-6" />
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3].map((i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-20 w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto p-6">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+        <div className="mt-4">
+          <Button onClick={fetchJobs}>Try Again</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="flex justify-between items-start animate-fade-in">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Jobs & Mentorship</h1>
-          <p className="text-muted-foreground mt-2">
-            Moderate job postings and mentorship opportunities shared by alumni.
-          </p>
-        </div>
-        <Button className="gradient-primary text-primary-foreground hover:shadow-purple">
-          <Plus className="h-4 w-4 mr-2" />
-          Add Opportunity
-        </Button>
+    <div className="container mx-auto p-6 space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Job Management</h1>
+        <p className="text-muted-foreground mt-2">Verify and manage job postings</p>
       </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 animate-slide-up">
-        <div className="stats-card-blue">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="stats-card-label">Total Listings</p>
-              <p className="stats-card-number">127</p>
-            </div>
-            <Briefcase className="stats-card-icon" />
-          </div>
-        </div>
-        
-        <div className="stats-card-orange">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="stats-card-label">Pending Review</p>
-              <p className="stats-card-number">23</p>
-            </div>
-            <Clock className="stats-card-icon" />
-          </div>
-        </div>
-        
-        <div className="stats-card-teal">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="stats-card-label">Applications</p>
-              <p className="stats-card-number">1,247</p>
-            </div>
-            <CheckCircle className="stats-card-icon" />
-          </div>
-        </div>
-        
-        <div className="stats-card-pink">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="stats-card-label">Mentorship</p>
-              <p className="stats-card-number">34</p>
-            </div>
-            <Briefcase className="stats-card-icon" />
-          </div>
-        </div>
-      </div>
-
-      {/* Filters and Search */}
-      <Card className="bento-card gradient-surface border-card-border/50">
-        <CardHeader>
-          <div className="flex flex-col sm:flex-row gap-4 justify-between">
-            <div>
-              <CardTitle>Opportunity Listings</CardTitle>
-              <CardDescription>
-                Review and moderate job postings and mentorship opportunities
-              </CardDescription>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Search opportunities..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 w-64"
-                />
+      
+      {/* Summary Stats */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200 dark:border-blue-800">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Total Jobs</p>
+                <p className="text-3xl font-bold text-blue-900 dark:text-blue-100 mt-2">{jobs.length}</p>
               </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline">
-                    Category: {selectedCategory === "all" ? "All" : selectedCategory}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => setSelectedCategory("all")}>All</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSelectedCategory("job")}>Jobs</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSelectedCategory("mentorship")}>Mentorship</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline">
-                    Status: {selectedStatus === "all" ? "All" : selectedStatus}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => setSelectedStatus("all")}>All</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSelectedStatus("pending")}>Pending</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSelectedStatus("approved")}>Approved</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSelectedStatus("rejected")}>Rejected</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <div className="h-12 w-12 rounded-full bg-blue-200 dark:bg-blue-800 flex items-center justify-center">
+                <Briefcase className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              </div>
             </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {filteredJobs.map((job, index) => (
-              <Card 
-                key={job.id} 
-                className="bento-card hover:shadow-md border-card-border/50 animate-fade-in"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-semibold text-foreground">{job.title}</h3>
-                        {getCategoryBadge(job.category)}
-                        {getStatusBadge(job.status)}
-                      </div>
-                      
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
-                        <div className="flex items-center gap-1">
-                          <Briefcase className="h-4 w-4" />
-                          {job.company}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <MapPin className="h-4 w-4" />
-                          {job.location}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-4 w-4" />
-                          {job.type}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <IndianRupee className="h-4 w-4" />
-                          {job.salary}
-                        </div>
-                      </div>
-                      
-                      <p className="text-muted-foreground mb-4">{job.description}</p>
-                      
-                      <div className="flex items-center justify-between text-sm">
-                        <div>
-                          <span className="text-muted-foreground">Posted by: </span>
-                          <span className="font-medium text-foreground">{job.postedBy}</span>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <span className="text-muted-foreground">
-                            {job.applications} applications
-                          </span>
-                          <span className="text-muted-foreground">
-                            {new Date(job.postedDate).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex gap-2 ml-4">
-                      {job.status === "pending" && (
-                        <>
-                          <Button size="sm" className="bg-success hover:bg-success/90 text-success-foreground">
-                            <CheckCircle className="h-4 w-4" />
-                          </Button>
-                          <Button size="sm" variant="destructive">
-                            <XCircle className="h-4 w-4" />
-                          </Button>
-                        </>
-                      )}
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem>
-                            <Eye className="h-4 w-4 mr-2" />
-                            View Details
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            Contact Poster
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-destructive">
-                            Remove Listing
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950 dark:to-amber-900 border-amber-200 dark:border-amber-800">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-amber-600 dark:text-amber-400">Pending</p>
+                <p className="text-3xl font-bold text-amber-900 dark:text-amber-100 mt-2">{pendingJobs.length}</p>
+              </div>
+              <div className="h-12 w-12 rounded-full bg-amber-200 dark:bg-amber-800 flex items-center justify-center">
+                <Clock className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border-green-200 dark:border-green-800">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-green-600 dark:text-green-400">Verified</p>
+                <p className="text-3xl font-bold text-green-900 dark:text-green-100 mt-2">{verifiedJobs.length}</p>
+              </div>
+              <div className="h-12 w-12 rounded-full bg-green-200 dark:bg-green-800 flex items-center justify-center">
+                <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Tabs */}
+      <Tabs defaultValue="pending" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="pending" className="relative">
+            <Clock className="h-4 w-4 mr-2" />
+            Pending Verification
+            {pendingJobs.length > 0 && (
+              <Badge variant="secondary" className="ml-2 bg-amber-500 text-white hover:bg-amber-600">
+                {pendingJobs.length}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="verified">
+            <CheckCircle className="h-4 w-4 mr-2" />
+            Verified Jobs
+            {verifiedJobs.length > 0 && (
+              <Badge variant="secondary" className="ml-2 bg-green-500 text-white hover:bg-green-600">
+                {verifiedJobs.length}
+              </Badge>
+            )}
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Pending Jobs Tab */}
+        <TabsContent value="pending" className="mt-6">
+          {pendingJobs.length === 0 ? (
+            <Card className="border-dashed">
+              <CardContent className="flex flex-col items-center justify-center py-16">
+                <div className="h-20 w-20 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center mb-4">
+                  <CheckCircle className="h-10 w-10 text-green-600 dark:text-green-400" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">All Caught Up!</h3>
+                <p className="text-muted-foreground text-center">No pending jobs to verify</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {pendingJobs.map((job) => (
+                <JobCard
+                  key={job._id}
+                  job={job}
+                  onVerify={handleVerifyJob}
+                  onDelete={(id) => {
+                    setJobToDelete(id);
+                    setDeleteDialogOpen(true);
+                  }}
+                  actionLoading={actionLoading}
+                />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        {/* Verified Jobs Tab */}
+        <TabsContent value="verified" className="mt-6">
+          {verifiedJobs.length === 0 ? (
+            <Card className="border-dashed">
+              <CardContent className="flex flex-col items-center justify-center py-16">
+                <div className="h-20 w-20 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+                  <Briefcase className="h-10 w-10 text-gray-400" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">No Verified Jobs</h3>
+                <p className="text-muted-foreground text-center">Verified jobs will appear here</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {verifiedJobs.map((job) => (
+                <JobCard
+                  key={job._id}
+                  job={job}
+                  onDelete={(id) => {
+                    setJobToDelete(id);
+                    setDeleteDialogOpen(true);
+                  }}
+                  actionLoading={actionLoading}
+                />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Job Posting?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the job posting.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteJob} className="bg-destructive hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
+
+interface JobCardProps {
+  job: Job;
+  onVerify?: (id: string) => void;
+  onDelete: (id: string) => void;
+  actionLoading: string | null;
+}
+
+function JobCard({ job, onVerify, onDelete, actionLoading }: JobCardProps) {
+  return (
+    <Card className="group hover:shadow-xl hover:scale-[1.02] transition-all duration-300 border-2">
+      <CardHeader className="space-y-3">
+        <div className="flex justify-between items-start gap-2">
+          <CardTitle className="text-xl line-clamp-2 group-hover:text-primary transition-colors">
+            {job.title}
+          </CardTitle>
+          {job.isVerified ? (
+            <Badge className="bg-green-500 hover:bg-green-600 shrink-0 shadow-sm">
+              <Check className="h-3 w-3 mr-1" />
+              Verified
+            </Badge>
+          ) : (
+            <Badge className="bg-amber-500 hover:bg-amber-600 text-white shrink-0 shadow-sm">
+              <Clock className="h-3 w-3 mr-1" />
+              Pending
+            </Badge>
+          )}
+        </div>
+        <CardDescription className="line-clamp-1 text-base font-medium">
+          {job.company || 'Company Not Specified'}
+        </CardDescription>
+      </CardHeader>
+      
+      <CardContent className="space-y-4">
+        <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
+          {job.description}
+        </p>
+        
+        <div className="space-y-2.5">
+          {job.location && (
+            <div className="flex items-center gap-2 text-sm">
+              <div className="h-8 w-8 rounded-lg bg-blue-100 dark:bg-blue-900 flex items-center justify-center shrink-0">
+                <MapPin className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              </div>
+              <span className="truncate font-medium">{job.location}</span>
+            </div>
+          )}
+          
+          {job.salary && (
+            <div className="flex items-center gap-2 text-sm">
+              <div className="h-8 w-8 rounded-lg bg-green-100 dark:bg-green-900 flex items-center justify-center shrink-0">
+                <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
+              </div>
+              <span className="font-medium">${job.salary.toLocaleString()} / year</span>
+            </div>
+          )}
+          
+          <div className="flex items-center gap-2 text-sm">
+            <div className="h-8 w-8 rounded-lg bg-purple-100 dark:bg-purple-900 flex items-center justify-center shrink-0">
+              <Calendar className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+            </div>
+            <span className="font-medium">{new Date(job.createdAt).toLocaleDateString()}</span>
+          </div>
+
+          {job.jobType && (
+            <div className="flex items-center gap-2 text-sm">
+              <div className="h-8 w-8 rounded-lg bg-orange-100 dark:bg-orange-900 flex items-center justify-center shrink-0">
+                <Briefcase className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+              </div>
+              <span className="font-medium">{job.jobType}</span>
+            </div>
+          )}
+        </div>
+
+        {job.category && (
+          <Badge variant="outline" className="text-xs font-medium">
+            {job.category}
+          </Badge>
+        )}
+
+        {job.requirements && job.requirements.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-sm font-semibold">Requirements:</p>
+            <div className="flex flex-wrap gap-2">
+              {job.requirements.slice(0, 2).map((req, idx) => (
+                <Badge key={idx} variant="secondary" className="text-xs">
+                  {req}
+                </Badge>
+              ))}
+              {job.requirements.length > 2 && (
+                <Badge variant="secondary" className="text-xs">
+                  +{job.requirements.length - 2} more
+                </Badge>
+              )}
+            </div>
+          </div>
+        )}
+
+        {job.applicants && job.applicants.length > 0 && (
+          <div className="pt-3 border-t">
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
+                <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                  {job.applicants.length}
+                </span>
+              </div>
+              <p className="text-sm font-medium text-muted-foreground">
+                Applicant{job.applicants.length !== 1 ? 's' : ''}
+              </p>
+            </div>
+          </div>
+        )}
+      </CardContent>
+      
+      <CardFooter className="gap-2 pt-4 border-t">
+        {!job.isVerified && onVerify && (
+          <Button 
+            onClick={() => onVerify(job._id)} 
+            disabled={actionLoading === job._id}
+            className="flex-1 bg-green-600 hover:bg-green-700 shadow-sm"
+            size="sm"
+          >
+            <Check className="h-4 w-4 mr-2" />
+            Verify
+          </Button>
+        )}
+        <Button 
+          onClick={() => onDelete(job._id)} 
+          disabled={actionLoading === job._id}
+          variant="destructive"
+          size="sm"
+          className={`shadow-sm ${!job.isVerified && onVerify ? "" : "flex-1"}`}
+        >
+          <Trash2 className="h-4 w-4 mr-2" />
+          Delete
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+}
+
+export default Jobs;

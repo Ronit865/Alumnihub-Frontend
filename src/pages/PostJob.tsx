@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, MapPin, Building, DollarSign, Briefcase } from "lucide-react";
+import { MapPin, DollarSign, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,45 +13,71 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
+import { jobService } from "@/services/ApiServices";
+import { toast } from "sonner"; // Changed to use sonner consistently
 
 export default function PostJob() {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     company: "",
     location: "",
-    type: "Full-time",
+    jobType: "Full-time",
     category: "",
     salary: "",
-    experience: "",
+    experienceRequired: "",
     description: "",
+    requirements: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Basic validation
     if (!formData.title || !formData.company || !formData.location || !formData.description) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in all required fields.",
-        variant: "destructive",
-      });
+      toast.error("Please fill in all required fields");
       return;
     }
 
-    // Here you would normally send the data to your API
-    console.log("Job posting data:", formData);
-    
-    toast({
-      title: "Job Posted Successfully!",
-      description: "Your job posting has been published and is now visible to alumni.",
-    });
+    try {
+      setLoading(true);
 
-    // Navigate back to jobs page
-    navigate("/jobs");
+      // Convert requirements string to array
+      const requirementsArray = formData.requirements
+        ? formData.requirements.split(',').map(r => r.trim()).filter(r => r)
+        : [];
+
+      const jobData = {
+        title: formData.title,
+        company: formData.company,
+        location: formData.location,
+        jobType: formData.jobType,
+        category: formData.category || undefined,
+        salary: formData.salary ? Number(formData.salary) : undefined,
+        experienceRequired: formData.experienceRequired || undefined,
+        description: formData.description,
+        requirements: requirementsArray.length > 0 ? requirementsArray : undefined,
+      };
+
+      console.log('Submitting job data:', jobData); // Debug log
+
+      const response = await jobService.addJob(jobData);
+
+      console.log('Job post response:', response); // Debug log
+
+      if (response.success) {
+        toast.success("Job posted successfully! Pending admin verification.");
+        navigate("/jobs");
+      } else {
+        toast.error(response.message || "Failed to post job");
+      }
+    } catch (error: any) {
+      console.error('Job posting error:', error); // Debug log
+      toast.error(error.message || "Failed to post job. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -62,13 +88,6 @@ export default function PostJob() {
     <div className="space-y-4 animate-fade-in pb-4">
       {/* Header */}
       <div className="flex items-center gap-4">
-        {/* <Button 
-          variant="outline" 
-          size="icon"
-          onClick={() => navigate("/jobs")}
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </Button> */}
         <div>
           <h1 className="text-3xl font-bold gradient-text mb-2">
             Post a Job Opportunity
@@ -133,8 +152,8 @@ export default function PostJob() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="type">Job Type</Label>
-                <Select value={formData.type} onValueChange={(value) => handleInputChange("type", value)}>
+                <Label htmlFor="jobType">Job Type</Label>
+                <Select value={formData.jobType} onValueChange={(value) => handleInputChange("jobType", value)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -170,28 +189,41 @@ export default function PostJob() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="experience">Experience Required</Label>
+                <Label htmlFor="experienceRequired">Experience Required</Label>
                 <Input
-                  id="experience"
+                  id="experienceRequired"
                   placeholder="e.g. 3+ years"
-                  value={formData.experience}
-                  onChange={(e) => handleInputChange("experience", e.target.value)}
+                  value={formData.experienceRequired}
+                  onChange={(e) => handleInputChange("experienceRequired", e.target.value)}
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="salary">Salary Range</Label>
+              <Label htmlFor="salary">Salary (Annual)</Label>
               <div className="relative">
                 <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
                   id="salary"
-                  placeholder="e.g. ₹15,00,000 - ₹20,00,000"
+                  type="number"
+                  placeholder="e.g. 1500000"
                   value={formData.salary}
                   onChange={(e) => handleInputChange("salary", e.target.value)}
                   className="pl-10"
                 />
               </div>
+              <p className="text-xs text-muted-foreground">Enter annual salary in numbers only</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="requirements">Requirements (comma separated)</Label>
+              <Input
+                id="requirements"
+                placeholder="e.g. React, Node.js, MongoDB"
+                value={formData.requirements}
+                onChange={(e) => handleInputChange("requirements", e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">Separate each requirement with a comma</p>
             </div>
 
             <div className="space-y-2">
@@ -207,11 +239,11 @@ export default function PostJob() {
             </div>
 
             <div className="flex justify-end gap-4 pt-4">
-              <Button type="button" variant="outline" onClick={() => navigate("/jobs")}>
+              <Button type="button" variant="outline" onClick={() => navigate("/jobs")} disabled={loading}>
                 Cancel
               </Button>
-              <Button type="submit">
-                Post Job
+              <Button type="submit" disabled={loading}>
+                {loading ? "Posting..." : "Post Job"}
               </Button>
             </div>
           </form>
