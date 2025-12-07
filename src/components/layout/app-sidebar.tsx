@@ -13,7 +13,6 @@ import {
   Moon,
   BarChart3,
   Mail,
-  Plus
 } from "lucide-react";
 
 import {
@@ -35,19 +34,10 @@ const baseNavigation = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Alumni Directory", url: "/alumni", icon: Users },
   { title: "Events", url: "/events", icon: Calendar },
+  { title: "Jobs & Mentorship", url: "/jobs", icon: Briefcase },
   { title: "Donations", url: "/donations", icon: Heart },
   { title: "Personal Messages", url: "/messages", icon: MessageCircle },
   { title: "Communications", url: "/communications", icon: MessageSquare },
-];
-
-// Student-specific navigation
-const studentNavigation = [
-  { title: "Jobs & Mentorship", url: "/jobs", icon: Briefcase },
-];
-
-// Alumni-specific navigation
-const alumniNavigation = [
-  { title: "Post Job", url: "/jobs/post", icon: Plus },
 ];
 
 const adminNavigation = [
@@ -79,25 +69,6 @@ export function AppSidebar() {
 
   // Determine if we're in admin mode
   const isAdminMode = location.pathname.startsWith('/admin');
-
-  // Get navigation items based on role
-  const getNavigationItems = () => {
-    let navItems = [...baseNavigation];
-    
-    // Insert role-specific items after "Events" (at index 2)
-    const insertIndex = 3; // After "Events"
-    
-    // Check user role from auth context first, then fall back to user.role
-    const currentUserRole = user?.role || userType;
-    
-    if (currentUserRole === "student") {
-      navItems.splice(insertIndex, 0, ...studentNavigation);
-    } else if (currentUserRole === "alumni") {
-      navItems.splice(insertIndex, 0, ...alumniNavigation);
-    }
-    
-    return navItems;
-  };
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
@@ -166,7 +137,7 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-0.5 sm:space-y-1">
-              {(isAdminMode ? adminNavigation : getNavigationItems()).map((item) => (
+              {(isAdminMode ? adminNavigation : baseNavigation).map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <Link to={item.url} className={getNavClasses(item.url)}>
