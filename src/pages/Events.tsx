@@ -253,7 +253,7 @@ export default function Events() {
             <div className="space-y-6 animate-fade-in">
                 <div>
                     <h1 className="text-3xl font-bold gradient-text mb-2">
-                        Alumni Events
+                        Events
                     </h1>
                     <p className="text-muted-foreground">
                         Discover upcoming events and connect with fellow alumni
