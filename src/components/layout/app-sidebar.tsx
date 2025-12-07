@@ -11,11 +11,9 @@ import {
   Settings,
   Sun,
   Moon,
-  GraduationCap,
   BarChart3,
   Mail,
-  Plus,
-  Type
+  Plus
 } from "lucide-react";
 
 import {
@@ -78,15 +76,6 @@ export function AppSidebar() {
     return false;
   });
 
-  type FontType = "normal" | "sonder" | "aqua";
-  
-  const [currentFont, setCurrentFont] = useState<FontType>(() => {
-    if (typeof window !== "undefined") {
-      const savedFont = localStorage.getItem("font") as FontType;
-      return savedFont || "normal";
-    }
-    return "normal";
-  });
 
   // Determine if we're in admin mode
   const isAdminMode = location.pathname.startsWith('/admin');
@@ -121,10 +110,6 @@ export function AppSidebar() {
       setIsDark(isDarkMode);
       localStorage.setItem("theme", isDarkMode ? "dark" : "light");
     }
-
-    // Initialize font preference
-    const savedFont = localStorage.getItem("font") as FontType;
-    applyFont(savedFont || "normal");
   }, []);
 
   const toggleTheme = () => {
@@ -134,27 +119,6 @@ export function AppSidebar() {
     localStorage.setItem("theme", newTheme ? "dark" : "light");
   };
 
-  const applyFont = (font: FontType) => {
-    document.body.classList.remove("font-aqua", "font-sonder", "font-normal");
-    document.body.classList.add(`font-${font}`);
-    setCurrentFont(font);
-    localStorage.setItem("font", font);
-  };
-
-  const toggleFont = () => {
-    const fontOrder: FontType[] = ["normal", "sonder", "aqua"];
-    const currentIndex = fontOrder.indexOf(currentFont);
-    const nextFont = fontOrder[(currentIndex + 1) % fontOrder.length];
-    applyFont(nextFont);
-  };
-
-  const getFontLabel = () => {
-    switch (currentFont) {
-      case "normal": return "Normal Font";
-      case "sonder": return "Sonder Font";
-      case "aqua": return "Aqua Font";
-    }
-  };
 
   const isActive = (path: string) => {
     if (path === "/") {
@@ -228,20 +192,6 @@ export function AppSidebar() {
               </SidebarMenuButton>
             </SidebarMenuItem>
 
-            {/* Font Toggle */}
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <Button
-                  variant="ghost"
-                  size={!open ? "icon" : "default"}
-                  onClick={toggleFont}
-                  className={`${!open ? "w-9 h-9 sm:w-11 sm:h-11 justify-center" : "w-full justify-start gap-2 sm:gap-3 h-9 sm:h-11"} text-muted-foreground hover:text-foreground hover:bg-accent`}
-                >
-                  <Type className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
-                  {open && <span className="truncate text-sm sm:text-base">{getFontLabel()}</span>}
-                </Button>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
 
             {/* Theme Toggle */}
             <SidebarMenuItem>
