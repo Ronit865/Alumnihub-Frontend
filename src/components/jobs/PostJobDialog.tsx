@@ -54,7 +54,7 @@ export function PostJobDialog({ open, onOpenChange, onSuccess }: PostJobDialogPr
         requirements: requirements.length > 0 ? requirements : undefined,
       };
 
-      const response = await jobService.postJob(jobData);
+      const response = await jobService.addJob(jobData as any);
 
       if (response.success) {
         toast.success("Job posted successfully!");
