@@ -1,138 +1,231 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { jobService } from "@/services/ApiServices";
 import { toast } from "sonner";
-import { Briefcase, MapPin, DollarSign, Clock, CheckCircle } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { jobService } from "@/services/ApiServices";
 import PostJobDialog from "@/components/PostJobDialog";
+import {
+  Briefcase,
+  MapPin,
+  DollarSign,
+  Users,
+  Edit,
+  Trash2,
+  Eye,
+  Building2,
+  Calendar,
+  CheckCircle,
+  Clock,
+  Plus
+} from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Job {
   _id: string;
   title: string;
   description: string;
-  company?: string;
-  location?: string;
-  salary?: number;
-  requirements?: string[];
+  location: string;
+  company: string;
+  jobType: string;
+  category: string;
+  experienceRequired: string;
+  salary: number;
   isVerified: boolean;
-  jobType?: string;
-  category?: string;
-  experienceRequired?: string;
-  postedBy: {
-    name: string;
-    email: string;
-  };
+  applicants?: any[];
+  postedBy?: string;
   createdAt: string;
 }
 
 export default function Jobs() {
-  const navigate = useNavigate();
-  const [jobs, setJobs] = useState<Job[]>([]);
+  const [allJobs, setAllJobs] = useState<Job[]>([]);
+  const [postedJobs, setPostedJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [applyingJobId, setApplyingJobId] = useState<string | null>(null);
-  const [postJobOpen, setPostJobOpen] = useState(false);
+  const [postDialogOpen, setPostDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [jobToDelete, setJobToDelete] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [applicantsDialogOpen, setApplicantsDialogOpen] = useState(false);
+  const [applicants, setApplicants] = useState<any[]>([]);
+  const [loadingApplicants, setLoadingApplicants] = useState(false);
+  const [activeTab, setActiveTab] = useState("all");
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  const fetchJobs = async () => {
+  // Add this useEffect to get current user ID from localStorage/auth context
+  useEffect(() => {
+    // Assuming you store user data in localStorage or have an auth context
+    const userData = JSON.parse(localStorage.getItem('user') || '{}');
+    setCurrentUserId(userData.id || userData._id);
+  }, []);
+
+  const fetchAllJobs = async () => {
     try {
-      setLoading(true);
-      setError(null);
-
       const response = await jobService.getAllJobs();
 
       if (response.success) {
-        const jobsData = Array.isArray(response.data)
-          ? response.data
-          : Array.isArray(response.message)
-          ? response.message
-          : [];
-
-        // Filter only verified jobs for regular users
-        const verifiedJobs = jobsData.filter((job: Job) => job.isVerified);
-        setJobs(verifiedJobs);
+        // Ensure data is an array and filter only verified jobs
+        const jobsData = Array.isArray(response.data) ? response.data : [];
+        const verifiedJobs = jobsData.filter((job: Job) => job.isVerified === true);
+        setAllJobs(verifiedJobs);
       } else {
-        const errorMsg = response.message || "Failed to fetch jobs";
-        setError(errorMsg);
-        toast.error(errorMsg);
+        toast.error(response.message || "Failed to fetch jobs");
+        setAllJobs([]);
       }
     } catch (error: any) {
-      const errorMsg =
-        error.message || "Failed to load jobs";
-      setError(errorMsg);
-      toast.error(errorMsg);
+      toast.error(error.message || "Failed to load jobs");
+      setAllJobs([]);
+    }
+  };
+
+  const fetchPostedJobs = async () => {
+    try {
+      const response = await jobService.getMyPostedJobs();
+
+      if (response.success) {
+        // Ensure data is an array
+        const jobsData = Array.isArray(response.data) ? response.data : [];
+        setPostedJobs(jobsData);
+      } else {
+        toast.error(response.message || "Failed to fetch posted jobs");
+        setPostedJobs([]);
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to load posted jobs");
+      setPostedJobs([]);
+    }
+  };
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      await Promise.all([fetchAllJobs(), fetchPostedJobs()]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchJobs();
+    fetchData();
   }, []);
 
   const handleApply = async (jobId: string) => {
     try {
-      setApplyingJobId(jobId);
       const response = await jobService.applyForJob(jobId);
 
       if (response.success) {
-        toast.success("Application submitted successfully!");
-        fetchJobs(); // Refresh to get updated data
+        toast.success("Application submitted successfully");
+        fetchAllJobs();
       } else {
         toast.error(response.message || "Failed to apply for job");
       }
     } catch (error: any) {
       toast.error(error.message || "Failed to apply for job");
-    } finally {
-      setApplyingJobId(null);
     }
+  };
+
+  const handleEdit = (job: Job) => {
+    setSelectedJob(job);
+    setEditDialogOpen(true);
+  };
+
+  const handleDelete = (jobId: string) => {
+    setJobToDelete(jobId);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!jobToDelete) return;
+
+    try {
+      setDeleting(true);
+      const response = await jobService.deleteJob(jobToDelete);
+
+      if (response.success) {
+        toast.success("Job deleted successfully");
+        fetchPostedJobs();
+      } else {
+        toast.error(response.message || "Failed to delete job");
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to delete job");
+    } finally {
+      setDeleting(false);
+      setDeleteDialogOpen(false);
+      setJobToDelete(null);
+    }
+  };
+
+  const viewApplicants = async (job: Job) => {
+    setSelectedJob(job);
+    setApplicantsDialogOpen(true);
+
+    try {
+      setLoadingApplicants(true);
+      const response = await jobService.getJobApplicants(job._id);
+
+      console.log('Applicants API Response:', response); // Debug log
+
+      if (response.success) {
+        // The backend returns job.applicants as response.data directly
+        const applicantsData = Array.isArray(response.data) ? response.data : [];
+        console.log('Processed Applicants:', applicantsData); // Debug log
+        setApplicants(applicantsData);
+      } else {
+        toast.error(response.message || "Failed to fetch applicants");
+        setApplicants([]);
+      }
+    } catch (error: any) {
+      console.error('Error fetching applicants:', error); // Debug log
+      toast.error(error.message || "Failed to load applicants");
+      setApplicants([]);
+    } finally {
+      setLoadingApplicants(false);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric"
+    });
+  };
+
+  const hasApplied = (job: Job) => {
+    if (!currentUserId || !job.applicants) return false;
+    return job.applicants.some((applicant: any) => 
+      (typeof applicant === 'string' ? applicant : applicant._id) === currentUserId
+    );
   };
 
   if (loading) {
     return (
       <div className="container mx-auto p-6">
-        <div className="flex justify-between items-center mb-6">
-          <Skeleton className="h-10 w-64" />
-          <Skeleton className="h-10 w-32" />
-        </div>
+        <Skeleton className="h-10 w-64 mb-6" />
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Card key={i}>
-              <CardHeader>
-                <Skeleton className="h-6 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-20 w-full" />
-              </CardContent>
-            </Card>
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-64" />
           ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container mx-auto p-6">
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-        <div className="mt-4">
-          <Button onClick={fetchJobs}>Try Again</Button>
         </div>
       </div>
     );
@@ -140,119 +233,308 @@ export default function Jobs() {
 
   return (
     <div className="container mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold">Job Opportunities</h1>
+          <h1 className="text-3xl font-bold mb-2">Job Opportunities</h1>
           <p className="text-muted-foreground">
-            Browse and apply for job opportunities
+            Browse and apply for jobs or manage your postings
           </p>
         </div>
-        <Button onClick={() => setPostJobOpen(true)}>Post a Job</Button>
+        <Button onClick={() => setPostDialogOpen(true)}>
+          <Plus className="w-4 h-4 mr-2" />
+          Post a Job
+        </Button>
       </div>
 
-      {jobs.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-16">
-            <Briefcase className="h-16 w-16 text-muted-foreground mb-4" />
-            <h3 className="text-xl font-semibold mb-2">No Jobs Available</h3>
-            <p className="text-muted-foreground mb-4">
-              Be the first to post a job opportunity!
-            </p>
-            <Button onClick={() => navigate("/post-job")}>Post a Job</Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {jobs.map((job) => (
-            <Card key={job._id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <CardTitle className="text-xl">{job.title}</CardTitle>
-                  <Badge variant="default" className="bg-green-500">
-                    <CheckCircle className="h-3 w-3 mr-1" />
-                    Verified
-                  </Badge>
-                </div>
-                <CardDescription>
-                  {job.company || "Company Not Specified"}
-                </CardDescription>
-              </CardHeader>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsTrigger value="all">All Jobs ({allJobs.length})</TabsTrigger>
+          <TabsTrigger value="posted">My Posted Jobs ({postedJobs.length})</TabsTrigger>
+        </TabsList>
 
-              <CardContent className="space-y-3">
-                <p className="text-sm line-clamp-3">{job.description}</p>
-
-                <div className="space-y-2">
-                  {job.location && (
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <MapPin className="h-4 w-4 mr-2" />
-                      {job.location}
-                    </div>
-                  )}
-
-                  {job.salary && (
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <DollarSign className="h-4 w-4 mr-2" />
-                      ${job.salary.toLocaleString()} / year
-                    </div>
-                  )}
-
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <Clock className="h-4 w-4 mr-2" />
-                    {new Date(job.createdAt).toLocaleDateString()}
-                  </div>
-
-                  {job.jobType && (
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <Briefcase className="h-4 w-4 mr-2" />
-                      {job.jobType}
-                    </div>
-                  )}
-                </div>
-
-                {job.category && (
-                  <Badge variant="outline" className="text-xs">
-                    {job.category}
-                  </Badge>
-                )}
-
-                {job.requirements && job.requirements.length > 0 && (
-                  <div>
-                    <p className="text-sm font-semibold mb-2">Requirements:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {job.requirements.slice(0, 3).map((req, idx) => (
-                        <Badge key={idx} variant="outline" className="text-xs">
-                          {req}
-                        </Badge>
-                      ))}
-                      {job.requirements.length > 3 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{job.requirements.length - 3} more
+        <TabsContent value="all" className="mt-6">
+          {allJobs.length === 0 ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <Briefcase className="w-12 h-12 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No Jobs Available</h3>
+                <p className="text-muted-foreground text-center">
+                  There are no job postings at the moment. Check back later!
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {allJobs.map((job) => (
+                <Card key={job._id} className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <CardTitle className="text-xl mb-2">{job.title}</CardTitle>
+                        <CardDescription className="flex items-center gap-2 mb-1">
+                          <Building2 className="w-4 h-4" />
+                          {job.company}
+                        </CardDescription>
+                      </div>
+                      {job.isVerified && (
+                        <Badge variant="default" className="flex items-center gap-1">
+                          <CheckCircle className="w-3 h-3" />
+                          Verified
                         </Badge>
                       )}
                     </div>
-                  </div>
-                )}
-              </CardContent>
+                  </CardHeader>
 
-              <CardFooter>
-                <Button 
-                  className="w-full" 
-                  onClick={() => handleApply(job._id)}
-                  disabled={applyingJobId === job._id}
-                >
-                  {applyingJobId === job._id ? "Applying..." : "Apply Now"}
+                  <CardContent className="space-y-4">
+                    <p className="text-sm text-muted-foreground line-clamp-3">
+                      {job.description}
+                    </p>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <MapPin className="w-4 h-4" />
+                        {job.location}
+                      </div>
+
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <DollarSign className="w-4 h-4" />
+                        ${job.salary.toLocaleString()}/year
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="outline">{job.jobType}</Badge>
+                      <Badge variant="outline">{job.experienceRequired}</Badge>
+                      <Badge variant="secondary">{job.category}</Badge>
+                    </div>
+
+                    <Button
+                      className="w-full"
+                      onClick={() => handleApply(job._id)}
+                      disabled={hasApplied(job)}
+                      variant={hasApplied(job) ? "secondary" : "default"}
+                    >
+                      {hasApplied(job) ? (
+                        <>
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Applied
+                        </>
+                      ) : (
+                        "Apply Now"
+                      )}
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="posted" className="mt-6">
+          {postedJobs.length === 0 ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <Briefcase className="w-12 h-12 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No Jobs Posted Yet</h3>
+                <p className="text-muted-foreground text-center mb-4">
+                  You haven't posted any jobs yet. Start by creating your first job posting.
+                </p>
+                <Button onClick={() => setPostDialogOpen(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Post Your First Job
                 </Button>
-              </CardFooter>
+              </CardContent>
             </Card>
-          ))}
-        </div>
-      )}
+          ) : (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {postedJobs.map((job) => (
+                <Card key={job._id} className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <CardTitle className="text-xl mb-2">{job.title}</CardTitle>
+                        <CardDescription className="flex items-center gap-2 mb-1">
+                          <Building2 className="w-4 h-4" />
+                          {job.company}
+                        </CardDescription>
+                      </div>
+                      <div className="flex gap-2">
+                        {job.isVerified ? (
+                          <Badge variant="default" className="flex items-center gap-1">
+                            <CheckCircle className="w-3 h-3" />
+                            Verified
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary" className="flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            Pending
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </CardHeader>
 
-      <PostJobDialog 
-        open={postJobOpen} 
-        onOpenChange={setPostJobOpen}
-        onSuccess={fetchJobs}
+                  <CardContent className="space-y-4">
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {job.description}
+                    </p>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <MapPin className="w-4 h-4" />
+                        {job.location}
+                      </div>
+
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <DollarSign className="w-4 h-4" />
+                        ${job.salary.toLocaleString()}/year
+                      </div>
+
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Calendar className="w-4 h-4" />
+                        Posted {formatDate(job.createdAt)}
+                      </div>
+
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Users className="w-4 h-4" />
+                        {job.applicants?.length || 0} Applicants
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="outline">{job.jobType}</Badge>
+                      <Badge variant="outline">{job.experienceRequired}</Badge>
+                    </div>
+
+                    <div className="flex gap-2 pt-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => viewApplicants(job)}
+                      >
+                        <Eye className="w-4 h-4 mr-1" />
+                        View Applicants
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEdit(job)}
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDelete(job._id)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
+
+      {/* Post Job Dialog */}
+      <PostJobDialog
+        open={postDialogOpen}
+        onOpenChange={setPostDialogOpen}
+        onSuccess={fetchPostedJobs}
       />
+
+      {/* Edit Job Dialog */}
+      <PostJobDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        onSuccess={fetchPostedJobs}
+        jobData={selectedJob ? {
+          id: selectedJob._id,
+          title: selectedJob.title,
+          description: selectedJob.description,
+          location: selectedJob.location,
+          company: selectedJob.company,
+          jobType: selectedJob.jobType,
+          category: selectedJob.category,
+          experienceRequired: selectedJob.experienceRequired,
+          salary: selectedJob.salary,
+        } : undefined}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the job posting
+              and remove all applicant data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Applicants Dialog */}
+      <Dialog open={applicantsDialogOpen} onOpenChange={setApplicantsDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Job Applicants</DialogTitle>
+            <DialogDescription>
+              {selectedJob?.title} - {applicants.length} applicant(s)
+            </DialogDescription>
+          </DialogHeader>
+
+          {loadingApplicants ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-20" />
+              ))}
+            </div>
+          ) : applicants.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              No applicants yet
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {applicants.map((applicant, index) => (
+                <Card key={index}>
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h4 className="font-semibold">{applicant.name}</h4>
+                        <p className="text-sm text-muted-foreground">{applicant.email}</p>
+                        {applicant.resume && (
+                          <a
+                            href={applicant.resume}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-primary hover:underline mt-2 inline-block"
+                          >
+                            View Resume
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

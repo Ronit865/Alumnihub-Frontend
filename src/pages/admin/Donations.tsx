@@ -135,6 +135,16 @@ interface CreateCampaignForm {
     category: string;
 }
 
+// Add new interface for donor data
+interface Donor {
+    _id: string;
+    name: string;
+    email: string;
+    amount: number;
+    date: string;
+    avatar?: string;
+}
+
 export function Donations() {
     const [campaigns, setCampaigns] = useState<Campaign[]>([]);
     const [loading, setLoading] = useState(true);
@@ -149,6 +159,10 @@ export function Donations() {
         category: ""
     });
     const [formErrors, setFormErrors] = useState<Partial<CreateCampaignForm>>({});
+    const [selectedCampaignDonors, setSelectedCampaignDonors] = useState<Donor[]>([]);
+    const [loadingDonors, setLoadingDonors] = useState(false);
+    const [isDonorsDialogOpen, setIsDonorsDialogOpen] = useState(false);
+    const [selectedCampaignName, setSelectedCampaignName] = useState("");
     const { toast: toastHook } = useToast();
 
     // Get featured campaigns (campaigns that need the least amount to reach their goal)
@@ -387,6 +401,64 @@ export function Donations() {
         }
     };
 
+    const fetchCampaignDonors = async (campaignId: string, campaignName: string) => {
+        try {
+            // Reset state first
+            setSelectedCampaignDonors([]);
+            setLoadingDonors(true);
+            setSelectedCampaignName(campaignName);
+            setIsDonorsDialogOpen(true);
+            
+            const response = await donationService.getCampaignDonors(campaignId);
+            
+            console.log("Full Response:", response); // Debug log
+            console.log("Response.data:", response?.data); // Debug log
+            console.log("Response.success:", response?.success); // Debug log
+            
+            // Handle the response - check multiple possible formats
+            const responseData = response?.data || response;
+            const isSuccess = response?.success ?? (responseData && Array.isArray(responseData));
+            
+            if (isSuccess && Array.isArray(responseData)) {
+                if (responseData.length > 0) {
+                    // Transform the donor data - data is now flattened
+                    const transformedDonors = responseData.map((donor: any) => ({
+                        _id: donor._id || '',
+                        name: donor.name || 'Anonymous',
+                        email: donor.email || 'No email',
+                        amount: Number(donor.amount) || 0,
+                        date: donor.donatedAt || new Date().toISOString(),
+                        avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(donor.name || 'Anonymous')}`
+                    }));
+                    
+                    console.log("Transformed Donors:", transformedDonors); // Debug log
+                    setSelectedCampaignDonors(transformedDonors);
+                } else {
+                    setSelectedCampaignDonors([]);
+                }
+            } else {
+                console.error("Unexpected response format:", response);
+                toastHook({
+                    title: "Error",
+                    description: "Unexpected response format from server",
+                    variant: "destructive",
+                });
+                setSelectedCampaignDonors([]);
+            }
+        } catch (err: any) {
+            const apiError = handleApiError(err);
+            toastHook({
+                title: "Error",
+                description: apiError.message || "Failed to load donors",
+                variant: "destructive",
+            });
+            setSelectedCampaignDonors([]);
+            console.error("Error fetching campaign donors:", err);
+        } finally {
+            setLoadingDonors(false);
+        }
+    };
+
     const resetForm = () => {
         setFormData({
             name: "",
@@ -538,7 +610,7 @@ export function Donations() {
                             Create Campaign
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-[500px] bento-card gradient-surface border-card-border/50" style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+                    <DialogContent className="sm:max-w-[500px] bento-card gradient-surface border-card-border/50">
                         <DialogHeader>
                             <DialogTitle className="text-xl font-semibold text-foreground">Create New Campaign</DialogTitle>
                             <DialogDescription className="text-muted-foreground">
@@ -862,8 +934,9 @@ export function Donations() {
                                                     variant="outline"
                                                     size="sm"
                                                     className="flex-1 border-card-border/50 hover:bg-accent"
+                                                    onClick={() => fetchCampaignDonors(campaign._id, campaign.name)}
                                                 >
-                                                    View Details
+                                                    View Donors
                                                 </Button>
                                                 <Button
                                                     size="sm"
@@ -964,6 +1037,18 @@ export function Donations() {
                                                 <span>{getProgressPercentage(campaign.raised, campaign.goal)}% complete</span>
                                                 <span>{formatCurrency(campaign.goal - (campaign.raised || 0))} remaining</span>
                                             </div>
+                                        </div>
+
+                                        {/* Action Buttons - View Donors button added */}
+                                        <div className="flex gap-2 mt-4">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="flex-1"
+                                                onClick={() => fetchCampaignDonors(campaign._id, campaign.name)}
+                                            >
+                                                View Donors
+                                            </Button>
                                         </div>
                                     </div>
                                 ))}
@@ -1110,6 +1195,89 @@ export function Donations() {
                     </div>
                 </CardContent>
             </Card>
+
+            {/* Campaign Donors Dialog */}
+            <Dialog open={isDonorsDialogOpen} onOpenChange={setIsDonorsDialogOpen}>
+                <DialogContent 
+                    key={selectedCampaignDonors.length} // Add this to force re-render
+                    className="sm:max-w-[700px] max-w-[95vw] bento-card gradient-surface border-card-border/50" 
+                    style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
+                >
+                    <DialogHeader>
+                        <DialogTitle className="text-xl font-semibold text-foreground flex items-center gap-2">
+                            <Users className="h-5 w-5 text-primary" />
+                            Campaign Donors
+                        </DialogTitle>
+                        <DialogDescription className="text-muted-foreground">
+                            {selectedCampaignName}
+                        </DialogDescription>
+                    </DialogHeader>
+                    
+                    <div className="mt-4">
+                        {loadingDonors ? (
+                            <div className="flex items-center justify-center py-12">
+                                <div className="text-center">
+                                    <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-2" />
+                                    <p className="text-muted-foreground">Loading donors...</p>
+                                </div>
+                            </div>
+                        ) : selectedCampaignDonors.length === 0 ? (
+                            <div className="flex items-center justify-center py-12">
+                                <div className="text-center">
+                                    <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                                    <p className="text-muted-foreground mb-2">No donors yet</p>
+                                    <p className="text-sm text-muted-foreground">This campaign hasn't received any donations.</p>
+                                </div>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                                    {selectedCampaignDonors.map((donor, index) => (
+                                        <div
+                                            key={`donor-${donor._id}-${index}`}
+                                            className="flex items-center justify-between p-4 rounded-lg border border-card-border/50 hover:bg-accent/30 transition-smooth"
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <Avatar className="w-12 h-12">
+                                                    <AvatarImage 
+                                                        src={donor.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${donor.name}`} 
+                                                        alt={donor.name} 
+                                                    />
+                                                    <AvatarFallback className="bg-primary/10 text-primary">
+                                                        {donor.name.split(' ').map(n => n[0]).join('')}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <div>
+                                                    <h4 className="font-semibold text-foreground">{donor.name}</h4>
+                                                    <p className="text-sm text-muted-foreground">{donor.email}</p>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        {formatDate(donor.date)}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="font-semibold text-lg text-primary">
+                                                    {formatCurrency(donor.amount)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                
+                                <div className="flex justify-end gap-3 pt-4 mt-4 border-t border-card-border/20">
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => setIsDonorsDialogOpen(false)}
+                                        className="border-card-border/50"
+                                    >
+                                        Close
+                                    </Button>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

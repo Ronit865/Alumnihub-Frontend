@@ -15,8 +15,8 @@ interface DonationCampaign {
   name: string;
   description: string;
   goal: number;
-  raised: number;
-  contributors: number;
+  raisedAmount: number;
+  donors: any[];
   createdAt: string;
 }
 
@@ -74,6 +74,7 @@ export default function Donations() {
       if (response.success) {
         toast.success(`Successfully contributed $${amount}!`);
         setContributeDialogOpen(false);
+        setContributionAmount('');
         fetchCampaigns();
       } else {
         toast.error(response.message || 'Failed to contribute');
@@ -124,8 +125,8 @@ export default function Donations() {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {campaigns.map((campaign) => {
-            const progress = ((campaign.raised ?? 0) / (campaign.goal ?? 1)) * 100;
-            const remaining = (campaign.goal ?? 0) - (campaign.raised ?? 0);
+            const progress = ((campaign.raisedAmount ?? 0) / (campaign.goal ?? 1)) * 100;
+            const remaining = (campaign.goal ?? 0) - (campaign.raisedAmount ?? 0);
             
             return (
               <Card key={campaign._id} className="hover:shadow-lg transition-shadow">
@@ -142,7 +143,7 @@ export default function Donations() {
                 <CardContent className="space-y-4">
                   <div>
                     <div className="flex justify-between text-sm mb-2">
-                      <span className="font-semibold">${(campaign.raised ?? 0).toLocaleString()}</span>
+                      <span className="font-semibold">${(campaign.raisedAmount ?? 0).toLocaleString()}</span>
                       <span className="text-muted-foreground">
                         of ${(campaign.goal ?? 0).toLocaleString()}
                       </span>
@@ -165,7 +166,7 @@ export default function Donations() {
                       <TrendingUp className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <p className="text-xs text-muted-foreground">Contributors</p>
-                        <p className="text-sm font-semibold">{campaign.contributors || 0}</p>
+                        <p className="text-sm font-semibold">{campaign.donors?.length || 0}</p>
                       </div>
                     </div>
                   </div>
@@ -218,12 +219,12 @@ export default function Donations() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Amount Raised:</span>
-                  <span className="font-semibold">${(selectedCampaign.raised ?? 0).toLocaleString()}</span>
+                  <span className="font-semibold">${(selectedCampaign.raisedAmount ?? 0).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Remaining:</span>
                   <span className="font-semibold text-orange-600">
-                    ${((selectedCampaign.goal ?? 0) - (selectedCampaign.raised ?? 0)).toLocaleString()}
+                    ${((selectedCampaign.goal ?? 0) - (selectedCampaign.raisedAmount ?? 0)).toLocaleString()}
                   </span>
                 </div>
               </div>

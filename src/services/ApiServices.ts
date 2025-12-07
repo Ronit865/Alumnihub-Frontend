@@ -210,7 +210,20 @@ export const donationService = {
   
   deleteCampaign: async (id: string): Promise<ApiResponse> => {
     return await api.delete(`/donations/deleteDonation/${id}`);
-  }
+  },
+  
+  contributeToCampaign: async (campaignId: string, amount: number): Promise<ApiResponse> => {
+    return await api.post(`/donations/donationAmount/${campaignId}`, { amount });
+  },
+  
+  getCampaignDonors: async (campaignId: string) => {
+    try {
+        const response = await api.get(`/donations/getDonors/${campaignId}`);
+        return response.data || response;
+    } catch (error) {
+        throw error;
+    }
+  },
 };
 
 // Job Services
@@ -219,11 +232,33 @@ export const jobService = {
     return await api.get('/jobs/getAllJobs');
   },
   
-  addJob: async (jobData: any): Promise<ApiResponse> => {
+  getMyPostedJobs: async (): Promise<ApiResponse> => {
+    return await api.get('/jobs/getMyPostedJobs');
+  },
+  
+  addJob: async (jobData: {
+    title: string;
+    description: string;
+    location: string;
+    company: string;
+    jobType: string;
+    category: string;
+    experienceRequired: string;
+    salary: number;
+  }): Promise<ApiResponse> => {
     return await api.post('/jobs/addJob', jobData);
   },
   
-  editJob: async (id: string, jobData: any): Promise<ApiResponse> => {
+  updateJob: async (id: string, jobData: {
+    title: string;
+    description: string;
+    location: string;
+    company: string;
+    jobType: string;
+    category: string;
+    experienceRequired: string;
+    salary: number;
+  }): Promise<ApiResponse> => {
     return await api.patch(`/jobs/editJob/${id}`, jobData);
   },
   
@@ -237,7 +272,15 @@ export const jobService = {
   
   applyForJob: async (id: string): Promise<ApiResponse> => {
     return await api.post(`/jobs/jobApply/${id}`);
-  }
+  },
+  
+  getJobApplicants: async (id: string): Promise<ApiResponse> => {
+    return await api.get(`/jobs/jobApplicants/${id}`);
+  },
+
+  rejectJob: async (jobId: string) => {
+    return await api.delete(`/jobs/rejectJob/${jobId}`);
+  },
 };
 
 // Error handler utility

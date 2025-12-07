@@ -95,16 +95,16 @@ export function Jobs() {
 
     try {
       setActionLoading(jobToDelete);
-      const response = await jobService.deleteJob(jobToDelete);
-      
-      if (response.success) {
-        toast.success('Job deleted successfully');
+      const response = await jobService.rejectJob(jobToDelete);
+  
+      if (response.data.success) {
+        toast.success('Job rejected successfully');
         fetchJobs();
       } else {
-        toast.error(response.message || 'Failed to delete job');
+        toast.error(response.data.message || 'Failed to reject job');
       }
     } catch (error: any) {
-      toast.error(error.message || 'Failed to delete job');
+      toast.error(error.message || 'Failed to reject job');
     } finally {
       setActionLoading(null);
       setDeleteDialogOpen(false);
@@ -290,15 +290,15 @@ export function Jobs() {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Job Posting?</AlertDialogTitle>
+            <AlertDialogTitle>Reject Job Posting?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the job posting.
+              This action cannot be undone. This will permanently reject and delete the job posting.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteJob} className="bg-destructive hover:bg-destructive/90">
-              Delete
+              Reject
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -440,7 +440,7 @@ function JobCard({ job, onVerify, onDelete, actionLoading }: JobCardProps) {
           className={`shadow-sm ${!job.isVerified && onVerify ? "" : "flex-1"}`}
         >
           <Trash2 className="h-4 w-4 mr-2" />
-          Delete
+          Reject
         </Button>
       </CardFooter>
     </Card>

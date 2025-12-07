@@ -31,6 +31,7 @@ interface PostJobDialogProps {
     title?: string;
     description?: string;
     location?: string;
+    company?: string;
     jobType?: string;
     category?: string;
     experienceRequired?: string;
@@ -44,6 +45,7 @@ export default function PostJobDialog({ open, onOpenChange, onSuccess, jobData }
     title: "",
     description: "",
     location: "",
+    company: "",
     jobType: "Full-time",
     category: "",
     experienceRequired: "",
@@ -56,6 +58,7 @@ export default function PostJobDialog({ open, onOpenChange, onSuccess, jobData }
         title: jobData.title || "",
         description: jobData.description || "",
         location: jobData.location || "",
+        company: jobData.company || "",
         jobType: jobData.jobType || "Full-time",
         category: jobData.category || "",
         experienceRequired: jobData.experienceRequired || "",
@@ -69,6 +72,7 @@ export default function PostJobDialog({ open, onOpenChange, onSuccess, jobData }
       title: "",
       description: "",
       location: "",
+      company: "",
       jobType: "Full-time",
       category: "",
       experienceRequired: "",
@@ -79,7 +83,7 @@ export default function PostJobDialog({ open, onOpenChange, onSuccess, jobData }
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.title || !formData.description || !formData.location || !formData.category || !formData.experienceRequired || !formData.salary) {
+    if (!formData.title || !formData.description || !formData.location || !formData.company || !formData.category || !formData.experienceRequired || !formData.salary) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -91,6 +95,7 @@ export default function PostJobDialog({ open, onOpenChange, onSuccess, jobData }
         title: formData.title,
         description: formData.description,
         location: formData.location,
+        company: formData.company,
         jobType: formData.jobType,
         category: formData.category,
         experienceRequired: formData.experienceRequired,
@@ -144,6 +149,17 @@ export default function PostJobDialog({ open, onOpenChange, onSuccess, jobData }
               placeholder="e.g. Senior Software Engineer"
               value={formData.title}
               onChange={(e) => handleInputChange("title", e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="company">Company *</Label>
+            <Input
+              id="company"
+              placeholder="e.g. Tech Corp"
+              value={formData.company}
+              onChange={(e) => handleInputChange("company", e.target.value)}
               required
             />
           </div>
