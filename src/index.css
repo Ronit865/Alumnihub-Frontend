@@ -2,8 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Alumni Portal Design System - Modern, community-driven with purple theme */
+/* Custom Font Faces */
+@font-face {
+  font-family: 'SonderSans';
+  src: url('/fonts/SonderSans-Black.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
 
+@font-face {
+  font-family: 'Aqua';
+  src: url('/fonts/aqua.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Alumni Portal Design System - Modern, community-driven with purple theme */
 @layer base {
   :root {
     /* Base colors */
@@ -137,6 +153,15 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'SonderSans', sans-serif;
+  }
+
+  body.font-aqua {
+    font-family: 'Aqua', sans-serif;
+  }
+
+  body.font-sonder {
+    font-family: 'SonderSans', sans-serif;
   }
 }
 
