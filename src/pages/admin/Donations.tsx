@@ -939,12 +939,6 @@ export function Donations() {
                                             >
                                                 View Donors
                                             </Button>
-                                            <Button
-                                                size="sm"
-                                                className="flex-1 gradient-primary text-primary-foreground hover:shadow-purple h-8 text-xs"
-                                            >
-                                                Promote
-                                            </Button>
                                         </div>
                                     </CardContent>
                                 </Card>
