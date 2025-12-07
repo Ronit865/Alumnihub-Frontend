@@ -14,7 +14,8 @@ import {
   GraduationCap,
   BarChart3,
   Mail,
-  Plus
+  Plus,
+  Type
 } from "lucide-react";
 
 import {
@@ -77,6 +78,13 @@ export function AppSidebar() {
     return false;
   });
 
+  const [isAquaFont, setIsAquaFont] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("font") === "aqua";
+    }
+    return false;
+  });
+
   // Determine if we're in admin mode
   const isAdminMode = location.pathname.startsWith('/admin');
 
@@ -110,6 +118,18 @@ export function AppSidebar() {
       setIsDark(isDarkMode);
       localStorage.setItem("theme", isDarkMode ? "dark" : "light");
     }
+
+    // Initialize font preference
+    const savedFont = localStorage.getItem("font");
+    if (savedFont === "aqua") {
+      document.body.classList.add("font-aqua");
+      document.body.classList.remove("font-sonder");
+      setIsAquaFont(true);
+    } else {
+      document.body.classList.add("font-sonder");
+      document.body.classList.remove("font-aqua");
+      setIsAquaFont(false);
+    }
   }, []);
 
   const toggleTheme = () => {
@@ -117,6 +137,20 @@ export function AppSidebar() {
     setIsDark(newTheme);
     document.documentElement.classList.toggle("dark", newTheme);
     localStorage.setItem("theme", newTheme ? "dark" : "light");
+  };
+
+  const toggleFont = () => {
+    const newFont = !isAquaFont;
+    setIsAquaFont(newFont);
+    if (newFont) {
+      document.body.classList.add("font-aqua");
+      document.body.classList.remove("font-sonder");
+      localStorage.setItem("font", "aqua");
+    } else {
+      document.body.classList.add("font-sonder");
+      document.body.classList.remove("font-aqua");
+      localStorage.setItem("font", "sonder");
+    }
   };
 
   const isActive = (path: string) => {
@@ -188,6 +222,21 @@ export function AppSidebar() {
                   <Settings className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
                   {open && <span className="truncate text-sm sm:text-base">Settings</span>}
                 </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+
+            {/* Font Toggle */}
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <Button
+                  variant="ghost"
+                  size={!open ? "icon" : "default"}
+                  onClick={toggleFont}
+                  className={`${!open ? "w-9 h-9 sm:w-11 sm:h-11 justify-center" : "w-full justify-start gap-2 sm:gap-3 h-9 sm:h-11"} text-muted-foreground hover:text-foreground hover:bg-accent`}
+                >
+                  <Type className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+                  {open && <span className="truncate text-sm sm:text-base">{isAquaFont ? "Sonder Font" : "Aqua Font"}</span>}
+                </Button>
               </SidebarMenuButton>
             </SidebarMenuItem>
 
