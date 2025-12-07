@@ -78,11 +78,14 @@ export function AppSidebar() {
     return false;
   });
 
-  const [isAquaFont, setIsAquaFont] = useState(() => {
+  type FontType = "normal" | "sonder" | "aqua";
+  
+  const [currentFont, setCurrentFont] = useState<FontType>(() => {
     if (typeof window !== "undefined") {
-      return localStorage.getItem("font") === "aqua";
+      const savedFont = localStorage.getItem("font") as FontType;
+      return savedFont || "normal";
     }
-    return false;
+    return "normal";
   });
 
   // Determine if we're in admin mode
@@ -120,16 +123,8 @@ export function AppSidebar() {
     }
 
     // Initialize font preference
-    const savedFont = localStorage.getItem("font");
-    if (savedFont === "aqua") {
-      document.body.classList.add("font-aqua");
-      document.body.classList.remove("font-sonder");
-      setIsAquaFont(true);
-    } else {
-      document.body.classList.add("font-sonder");
-      document.body.classList.remove("font-aqua");
-      setIsAquaFont(false);
-    }
+    const savedFont = localStorage.getItem("font") as FontType;
+    applyFont(savedFont || "normal");
   }, []);
 
   const toggleTheme = () => {
@@ -139,17 +134,25 @@ export function AppSidebar() {
     localStorage.setItem("theme", newTheme ? "dark" : "light");
   };
 
+  const applyFont = (font: FontType) => {
+    document.body.classList.remove("font-aqua", "font-sonder", "font-normal");
+    document.body.classList.add(`font-${font}`);
+    setCurrentFont(font);
+    localStorage.setItem("font", font);
+  };
+
   const toggleFont = () => {
-    const newFont = !isAquaFont;
-    setIsAquaFont(newFont);
-    if (newFont) {
-      document.body.classList.add("font-aqua");
-      document.body.classList.remove("font-sonder");
-      localStorage.setItem("font", "aqua");
-    } else {
-      document.body.classList.add("font-sonder");
-      document.body.classList.remove("font-aqua");
-      localStorage.setItem("font", "sonder");
+    const fontOrder: FontType[] = ["normal", "sonder", "aqua"];
+    const currentIndex = fontOrder.indexOf(currentFont);
+    const nextFont = fontOrder[(currentIndex + 1) % fontOrder.length];
+    applyFont(nextFont);
+  };
+
+  const getFontLabel = () => {
+    switch (currentFont) {
+      case "normal": return "Normal Font";
+      case "sonder": return "Sonder Font";
+      case "aqua": return "Aqua Font";
     }
   };
 
@@ -235,7 +238,7 @@ export function AppSidebar() {
                   className={`${!open ? "w-9 h-9 sm:w-11 sm:h-11 justify-center" : "w-full justify-start gap-2 sm:gap-3 h-9 sm:h-11"} text-muted-foreground hover:text-foreground hover:bg-accent`}
                 >
                   <Type className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
-                  {open && <span className="truncate text-sm sm:text-base">{isAquaFont ? "Sonder Font" : "Aqua Font"}</span>}
+                  {open && <span className="truncate text-sm sm:text-base">{getFontLabel()}</span>}
                 </Button>
               </SidebarMenuButton>
             </SidebarMenuItem>
