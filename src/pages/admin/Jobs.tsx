@@ -7,7 +7,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { jobService } from '@/services/ApiServices';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 import { Briefcase, MapPin, DollarSign, Check, Trash2, Clock, AlertCircle, CheckCircle, Calendar } from 'lucide-react';
 
 interface Job {
@@ -38,13 +38,14 @@ export function Jobs() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [jobToDelete, setJobToDelete] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const fetchJobs = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      const response = await jobService.getAllJobs(); // Changed from getJobs to getAllJobs
+      const response = await jobService.getAllJobs();
       
       if (response.success) {
         const jobsData = Array.isArray(response.data) 
@@ -57,12 +58,20 @@ export function Jobs() {
       } else {
         const errorMsg = response.message || 'Failed to fetch jobs';
         setError(errorMsg);
-        toast.error(errorMsg);
+        toast({
+          title: "Error",
+          description: errorMsg,
+          variant: "destructive",
+        });
       }
     } catch (error: any) {
       const errorMsg = error.message || 'Failed to load jobs';
       setError(errorMsg);
-      toast.error(errorMsg);
+      toast({
+        title: "Error",
+        description: errorMsg,
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -78,13 +87,25 @@ export function Jobs() {
       const response = await jobService.verifyJob(jobId);
       
       if (response.success) {
-        toast.success('Job verified successfully');
+        toast({
+          title: "Job verified",
+          description: "Job has been successfully verified",
+          variant: "success",
+        });
         fetchJobs();
       } else {
-        toast.error(response.message || 'Failed to verify job');
+        toast({
+          title: "Error",
+          description: response.message || 'Failed to verify job',
+          variant: "destructive",
+        });
       }
     } catch (error: any) {
-      toast.error(error.message || 'Failed to verify job');
+      toast({
+        title: "Error",
+        description: error.message || 'Failed to verify job',
+        variant: "destructive",
+      });
     } finally {
       setActionLoading(null);
     }
@@ -98,13 +119,25 @@ export function Jobs() {
       const response = await jobService.rejectJob(jobToDelete);
   
       if (response.data.success) {
-        toast.success('Job rejected successfully');
+        toast({
+          title: "Job rejected",
+          description: "Job has been successfully rejected",
+          variant: "success",
+        });
         fetchJobs();
       } else {
-        toast.error(response.data.message || 'Failed to reject job');
+        toast({
+          title: "Error",
+          description: response.data.message || 'Failed to reject job',
+          variant: "destructive",
+        });
       }
     } catch (error: any) {
-      toast.error(error.message || 'Failed to reject job');
+      toast({
+        title: "Error",
+        description: error.message || 'Failed to reject job',
+        variant: "destructive",
+      });
     } finally {
       setActionLoading(null);
       setDeleteDialogOpen(false);
@@ -115,92 +148,97 @@ export function Jobs() {
   const pendingJobs = jobs.filter(job => !job.isVerified);
   const verifiedJobs = jobs.filter(job => job.isVerified);
 
+  // Calculate stats
+  const totalJobs = jobs.length;
+  const pendingCount = pendingJobs.length;
+  const verifiedCount = verifiedJobs.length;
+
   if (loading) {
     return (
-      <div className="container mx-auto p-6">
-        <Skeleton className="h-10 w-64 mb-6" />
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <Card key={i}>
-              <CardHeader>
-                <Skeleton className="h-6 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-20 w-full" />
-              </CardContent>
-            </Card>
+      <div className="space-y-8">
+        {/* Header Skeleton */}
+        <div className="flex justify-between items-start animate-fade-in">
+          <div>
+            <Skeleton className="h-9 w-56 mb-2" />
+            <Skeleton className="h-5 w-96" />
+          </div>
+        </div>
+
+        {/* Stats Cards Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-slide-up">
+          {[...Array(3)].map((_, i) => (
+            <Skeleton key={i} className="h-32 rounded-lg" />
+          ))}
+        </div>
+
+        {/* Tabs Skeleton */}
+        <Skeleton className="h-10 w-full" />
+
+        {/* Events Grid Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) => (
+            <Skeleton key={i} className="h-80 rounded-lg" />
           ))}
         </div>
       </div>
     );
   }
 
-  if (error) {
-    return (
-      <div className="container mx-auto p-6">
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-        <div className="mt-4">
-          <Button onClick={fetchJobs}>Try Again</Button>
+  return (
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="flex justify-between items-start animate-fade-in">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Job Management</h1>
+          <p className="text-muted-foreground mt-2">
+            Verify and manage job postings from the alumni network.
+          </p>
         </div>
       </div>
-    );
-  }
 
-  return (
-    <div className="container mx-auto p-6 space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Job Management</h1>
-        <p className="text-muted-foreground mt-2">Verify and manage job postings</p>
-      </div>
-      
-      {/* Summary Stats */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200 dark:border-blue-800">
+      {/* Error Message */}
+      {error && (
+        <Card className="border-destructive/50 bg-destructive/10">
           <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Total Jobs</p>
-                <p className="text-3xl font-bold text-blue-900 dark:text-blue-100 mt-2">{jobs.length}</p>
-              </div>
-              <div className="h-12 w-12 rounded-full bg-blue-200 dark:bg-blue-800 flex items-center justify-center">
-                <Briefcase className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-              </div>
-            </div>
+            <p className="text-destructive">{error}</p>
+            <Button onClick={fetchJobs} variant="outline" size="sm" className="mt-2">
+              Retry
+            </Button>
           </CardContent>
         </Card>
+      )}
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-slide-up">
+        <div className="stats-card-blue">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="stats-card-label">Total Jobs</p>
+              <p className="stats-card-number">{totalJobs}</p>
+            </div>
+            <Briefcase className="stats-card-icon" />
+          </div>
+        </div>
         
-        <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950 dark:to-amber-900 border-amber-200 dark:border-amber-800">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-amber-600 dark:text-amber-400">Pending</p>
-                <p className="text-3xl font-bold text-amber-900 dark:text-amber-100 mt-2">{pendingJobs.length}</p>
-              </div>
-              <div className="h-12 w-12 rounded-full bg-amber-200 dark:bg-amber-800 flex items-center justify-center">
-                <Clock className="h-6 w-6 text-amber-600 dark:text-amber-400" />
-              </div>
+        <div className="stats-card-orange">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="stats-card-label">Pending</p>
+              <p className="stats-card-number">{pendingCount}</p>
             </div>
-          </CardContent>
-        </Card>
+            <Clock className="stats-card-icon" />
+          </div>
+        </div>
         
-        <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border-green-200 dark:border-green-800">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-green-600 dark:text-green-400">Verified</p>
-                <p className="text-3xl font-bold text-green-900 dark:text-green-100 mt-2">{verifiedJobs.length}</p>
-              </div>
-              <div className="h-12 w-12 rounded-full bg-green-200 dark:bg-green-800 flex items-center justify-center">
-                <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
-              </div>
+        <div className="stats-card-teal">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="stats-card-label">Verified</p>
+              <p className="stats-card-number">{verifiedCount}</p>
             </div>
-          </CardContent>
-        </Card>
+            <CheckCircle className="stats-card-icon" />
+          </div>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -210,7 +248,7 @@ export function Jobs() {
             <Clock className="h-4 w-4 mr-2" />
             Pending Verification
             {pendingJobs.length > 0 && (
-              <Badge variant="secondary" className="ml-2 bg-amber-500 text-white hover:bg-amber-600">
+              <Badge variant="secondary" className="ml-2 bg-primary text-primary-foreground hover:bg-primary/90">
                 {pendingJobs.length}
               </Badge>
             )}
@@ -219,7 +257,7 @@ export function Jobs() {
             <CheckCircle className="h-4 w-4 mr-2" />
             Verified Jobs
             {verifiedJobs.length > 0 && (
-              <Badge variant="secondary" className="ml-2 bg-green-500 text-white hover:bg-green-600">
+              <Badge variant="secondary" className="ml-2 bg-success/10 text-success hover:bg-success/20">
                 {verifiedJobs.length}
               </Badge>
             )}
@@ -229,12 +267,12 @@ export function Jobs() {
         {/* Pending Jobs Tab */}
         <TabsContent value="pending" className="mt-6">
           {pendingJobs.length === 0 ? (
-            <Card className="border-dashed">
+            <Card className="border-dashed bento-card">
               <CardContent className="flex flex-col items-center justify-center py-16">
-                <div className="h-20 w-20 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center mb-4">
-                  <CheckCircle className="h-10 w-10 text-green-600 dark:text-green-400" />
+                <div className="h-20 w-20 rounded-full bg-success/10 flex items-center justify-center mb-4">
+                  <CheckCircle className="h-10 w-10 text-success" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">All Caught Up!</h3>
+                <h3 className="text-xl font-semibold mb-2 text-foreground">All Caught Up!</h3>
                 <p className="text-muted-foreground text-center">No pending jobs to verify</p>
               </CardContent>
             </Card>
@@ -259,12 +297,12 @@ export function Jobs() {
         {/* Verified Jobs Tab */}
         <TabsContent value="verified" className="mt-6">
           {verifiedJobs.length === 0 ? (
-            <Card className="border-dashed">
+            <Card className="border-dashed bento-card">
               <CardContent className="flex flex-col items-center justify-center py-16">
-                <div className="h-20 w-20 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
-                  <Briefcase className="h-10 w-10 text-gray-400" />
+                <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center mb-4">
+                  <Briefcase className="h-10 w-10 text-muted-foreground" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">No Verified Jobs</h3>
+                <h3 className="text-xl font-semibold mb-2 text-foreground">No Verified Jobs</h3>
                 <p className="text-muted-foreground text-center">Verified jobs will appear here</p>
               </CardContent>
             </Card>
@@ -288,7 +326,7 @@ export function Jobs() {
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="bento-card">
           <AlertDialogHeader>
             <AlertDialogTitle>Reject Job Posting?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -316,19 +354,19 @@ interface JobCardProps {
 
 function JobCard({ job, onVerify, onDelete, actionLoading }: JobCardProps) {
   return (
-    <Card className="group hover:shadow-xl hover:scale-[1.02] transition-all duration-300 border-2">
+    <Card className="bento-card hover-lift border-card-border/50 overflow-hidden">
       <CardHeader className="space-y-3">
         <div className="flex justify-between items-start gap-2">
-          <CardTitle className="text-xl line-clamp-2 group-hover:text-primary transition-colors">
+          <CardTitle className="text-lg line-clamp-2 text-foreground">
             {job.title}
           </CardTitle>
           {job.isVerified ? (
-            <Badge className="bg-green-500 hover:bg-green-600 shrink-0 shadow-sm">
+            <Badge className="bg-success/10 text-success border-success/20 shrink-0">
               <Check className="h-3 w-3 mr-1" />
               Verified
             </Badge>
           ) : (
-            <Badge className="bg-amber-500 hover:bg-amber-600 text-white shrink-0 shadow-sm">
+            <Badge variant="outline" className="border-warning text-warning shrink-0">
               <Clock className="h-3 w-3 mr-1" />
               Pending
             </Badge>
@@ -347,35 +385,35 @@ function JobCard({ job, onVerify, onDelete, actionLoading }: JobCardProps) {
         <div className="space-y-2.5">
           {job.location && (
             <div className="flex items-center gap-2 text-sm">
-              <div className="h-8 w-8 rounded-lg bg-blue-100 dark:bg-blue-900 flex items-center justify-center shrink-0">
-                <MapPin className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <MapPin className="h-4 w-4 text-primary" />
               </div>
-              <span className="truncate font-medium">{job.location}</span>
+              <span className="truncate font-medium text-foreground">{job.location}</span>
             </div>
           )}
           
           {job.salary && (
             <div className="flex items-center gap-2 text-sm">
-              <div className="h-8 w-8 rounded-lg bg-green-100 dark:bg-green-900 flex items-center justify-center shrink-0">
-                <DollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
+              <div className="h-8 w-8 rounded-lg bg-success/10 flex items-center justify-center shrink-0">
+                <DollarSign className="h-4 w-4 text-success" />
               </div>
-              <span className="font-medium">${job.salary.toLocaleString()} / year</span>
+              <span className="font-medium text-foreground">${job.salary.toLocaleString()} / year</span>
             </div>
           )}
           
           <div className="flex items-center gap-2 text-sm">
-            <div className="h-8 w-8 rounded-lg bg-purple-100 dark:bg-purple-900 flex items-center justify-center shrink-0">
-              <Calendar className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+            <div className="h-8 w-8 rounded-lg bg-accent flex items-center justify-center shrink-0">
+              <Calendar className="h-4 w-4 text-accent-foreground" />
             </div>
-            <span className="font-medium">{new Date(job.createdAt).toLocaleDateString()}</span>
+            <span className="font-medium text-foreground">{new Date(job.createdAt).toLocaleDateString()}</span>
           </div>
 
           {job.jobType && (
             <div className="flex items-center gap-2 text-sm">
-              <div className="h-8 w-8 rounded-lg bg-orange-100 dark:bg-orange-900 flex items-center justify-center shrink-0">
-                <Briefcase className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+              <div className="h-8 w-8 rounded-lg bg-warning/10 flex items-center justify-center shrink-0">
+                <Briefcase className="h-4 w-4 text-warning" />
               </div>
-              <span className="font-medium">{job.jobType}</span>
+              <span className="font-medium text-foreground">{job.jobType}</span>
             </div>
           )}
         </div>
@@ -388,7 +426,7 @@ function JobCard({ job, onVerify, onDelete, actionLoading }: JobCardProps) {
 
         {job.requirements && job.requirements.length > 0 && (
           <div className="space-y-2">
-            <p className="text-sm font-semibold">Requirements:</p>
+            <p className="text-sm font-semibold text-foreground">Requirements:</p>
             <div className="flex flex-wrap gap-2">
               {job.requirements.slice(0, 2).map((req, idx) => (
                 <Badge key={idx} variant="secondary" className="text-xs">
@@ -405,10 +443,10 @@ function JobCard({ job, onVerify, onDelete, actionLoading }: JobCardProps) {
         )}
 
         {job.applicants && job.applicants.length > 0 && (
-          <div className="pt-3 border-t">
+          <div className="pt-3 border-t border-card-border/20">
             <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
-                <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
+              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                <span className="text-xs font-bold text-primary">
                   {job.applicants.length}
                 </span>
               </div>
@@ -420,12 +458,12 @@ function JobCard({ job, onVerify, onDelete, actionLoading }: JobCardProps) {
         )}
       </CardContent>
       
-      <CardFooter className="gap-2 pt-4 border-t">
+      <CardFooter className="gap-2 pt-4 border-t border-card-border/20">
         {!job.isVerified && onVerify && (
           <Button 
             onClick={() => onVerify(job._id)} 
             disabled={actionLoading === job._id}
-            className="flex-1 bg-green-600 hover:bg-green-700 shadow-sm"
+            className="flex-1 gradient-primary text-primary-foreground hover:shadow-purple"
             size="sm"
           >
             <Check className="h-4 w-4 mr-2" />
@@ -437,7 +475,7 @@ function JobCard({ job, onVerify, onDelete, actionLoading }: JobCardProps) {
           disabled={actionLoading === job._id}
           variant="destructive"
           size="sm"
-          className={`shadow-sm ${!job.isVerified && onVerify ? "" : "flex-1"}`}
+          className={!job.isVerified && onVerify ? "" : "flex-1"}
         >
           <Trash2 className="h-4 w-4 mr-2" />
           Reject
