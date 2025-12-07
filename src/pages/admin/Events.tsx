@@ -3,7 +3,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-// import { Calendar } from "@/components/ui/calendar";
 import { CalendarDays, Clock, MapPin, Users, Plus, Eye, Edit, Trash2, Loader2, X } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -34,6 +33,14 @@ interface CreateEventForm {
   location: string;
 }
 
+interface Participant {
+  _id: string;
+  name: string;
+  email: string;
+  avatar?: string;
+  course?: string;
+}
+
 export function Events() {
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [selectedFilter, setSelectedFilter] = useState("all");
@@ -50,6 +57,10 @@ export function Events() {
     location: ""
   });
   const [formErrors, setFormErrors] = useState<Partial<CreateEventForm>>({});
+  const [selectedEventParticipants, setSelectedEventParticipants] = useState<Participant[]>([]);
+  const [isParticipantsDialogOpen, setIsParticipantsDialogOpen] = useState(false);
+  const [loadingParticipants, setLoadingParticipants] = useState(false);
+  const [selectedEventTitle, setSelectedEventTitle] = useState("");
   const { toast } = useToast();
 
   // Fetch events from backend
@@ -181,6 +192,30 @@ export function Events() {
       location: ""
     });
     setFormErrors({});
+  };
+
+  const handleViewParticipants = async (eventId: string, eventTitle: string) => {
+    try {
+      setLoadingParticipants(true);
+      setSelectedEventTitle(eventTitle);
+      setIsParticipantsDialogOpen(true);
+      
+      const response = await eventService.getEventParticipants(eventId);
+      
+      // Handle the response - response.data should contain the participants array
+      const participants = response.data || [];
+      setSelectedEventParticipants(participants);
+    } catch (err: any) {
+      const errorInfo = handleApiError(err);
+      toast({
+        title: "Error",
+        description: `Failed to fetch participants: ${errorInfo.message}`,
+        variant: "destructive",
+      });
+      setSelectedEventParticipants([]);
+    } finally {
+      setLoadingParticipants(false);
+    }
   };
 
   const filteredEvents = events.filter(event => {
@@ -664,8 +699,7 @@ export function Events() {
                           <DropdownMenuTrigger asChild>
                             <Button 
                               variant="ghost" 
-                              size="sm" 
-                              className="opacity-0 group-hover:opacity-100 transition-opacity"
+                              size="sm"
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
@@ -680,9 +714,9 @@ export function Events() {
                               <Edit className="h-4 w-4 mr-2" />
                               Edit Event
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleViewParticipants(event._id, event.title)}>
                               <Users className="h-4 w-4 mr-2" />
-                              Manage Participants
+                              View Participants
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem 
@@ -734,11 +768,18 @@ export function Events() {
 
                       {/* Event Footer */}
                       <div className="mt-4 pt-3 border-t border-card-border/20">
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          <span>Created: {new Date(event.createdAt).toLocaleDateString()}</span>
-                          {event.updatedAt !== event.createdAt && (
-                            <span>Updated: {new Date(event.updatedAt).toLocaleDateString()}</span>
-                          )}
+                      
+                        {/* Action Buttons */}
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 border-card-border/50 hover:bg-accent h-8 text-xs"
+                            onClick={() => handleViewParticipants(event._id, event.title)}
+                          >
+                            <Users className="h-3 w-3 mr-1" />
+                            View Participants
+                          </Button>
                         </div>
                       </div>
                     </CardContent>
@@ -749,6 +790,87 @@ export function Events() {
           </CardContent>
         </Card>
       {/* </div> */}
+
+      {/* Participants Dialog */}
+      <Dialog open={isParticipantsDialogOpen} onOpenChange={setIsParticipantsDialogOpen}>
+        <DialogContent 
+          className="sm:max-w-[700px] max-w-[95vw] bento-card gradient-surface border-card-border/50" 
+          style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
+        >
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" />
+              Event Participants
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              {selectedEventTitle}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="mt-4">
+            {loadingParticipants ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-2" />
+                  <p className="text-muted-foreground">Loading participants...</p>
+                </div>
+              </div>
+            ) : selectedEventParticipants.length === 0 ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-center">
+                  <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground mb-2">No participants yet</p>
+                  <p className="text-sm text-muted-foreground">This event hasn't received any registrations.</p>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                {selectedEventParticipants.map((participant, index) => (
+                  <div 
+                    key={`participant-${participant._id}-${index}`}
+                    className="flex items-center justify-between p-4 rounded-lg border border-card-border/50 hover:bg-accent/30 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+                        {participant.avatar ? (
+                          <img 
+                            src={participant.avatar} 
+                            alt={participant.name}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <Users className="h-6 w-6 text-primary" />
+                        )}
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-foreground">{participant.name}</h4>
+                        <p className="text-sm text-muted-foreground">{participant.email}</p>
+                        {participant.course && (
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {participant.course}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {!loadingParticipants && (
+            <div className="flex justify-end gap-3 pt-4 mt-4 border-t border-card-border/20">
+              <Button
+                variant="outline"
+                onClick={() => setIsParticipantsDialogOpen(false)}
+                className="border-card-border/50"
+              >
+                Close
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

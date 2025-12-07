@@ -183,7 +183,11 @@ export const eventService = {
   
   leaveEvent: async (eventId: string): Promise<ApiResponse> => {
     return await api.post(`/events/removeUserFromEvent/${eventId}`);
-  }
+  },
+
+  getEventParticipants: async (eventId: string): Promise<ApiResponse> => {
+    return await api.get(`/events/getEventParticipants/${eventId}`);
+  },
 };
 
 // Donation Services
@@ -281,6 +285,17 @@ export const jobService = {
   rejectJob: async (jobId: string) => {
     return await api.delete(`/jobs/rejectJob/${jobId}`);
   },
+};
+
+// Email Services
+export const emailService = {
+  sendBulkEmails: async (emailData: {
+    subject: string;
+    body: string;
+    filter: string;
+  }): Promise<ApiResponse> => {
+    return await api.post('/emails/sendEmail', emailData);
+  }
 };
 
 // Error handler utility

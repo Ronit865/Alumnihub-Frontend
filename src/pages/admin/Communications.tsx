@@ -7,6 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Mail, Send, Users, MessageSquare, Bell, Plus, Eye, Edit, Trash2, TrendingUp } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { emailService } from "@/services/ApiServices";
+import { toast } from "sonner"; // or your toast library
 
 const communicationStats = [
   {
@@ -131,6 +133,12 @@ const notifications = [
 
 export function Communications() {
   const [selectedCampaign, setSelectedCampaign] = useState(null);
+  const [emailForm, setEmailForm] = useState({
+    subject: "",
+    body: "",
+    filter: ""
+  });
+  const [isSending, setIsSending] = useState(false);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -153,6 +161,39 @@ export function Communications() {
       announcement: "bg-orange-100 text-orange-800 border-orange-200",
     };
     return <Badge className={variants[type as keyof typeof variants] || ""}>{type}</Badge>;
+  };
+
+  const handleSendEmail = async () => {
+    if (!emailForm.subject || !emailForm.body || !emailForm.filter) {
+      toast.error("Please fill in all fields and select recipients");
+      return;
+    }
+
+    setIsSending(true);
+    try {
+      const response = await emailService.sendBulkEmails({
+        subject: emailForm.subject,
+        body: emailForm.body,
+        filter: emailForm.filter
+      });
+      
+      toast.success(response.message || "Emails sent successfully!");
+      
+      // Reset form
+      setEmailForm({
+        subject: "",
+        body: "",
+        filter: ""
+      });
+    } catch (error: any) {
+      toast.error(error.message || "Failed to send emails");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleRecipientSelect = (type: string) => {
+    setEmailForm(prev => ({ ...prev, filter: type }));
   };
 
   return (
@@ -233,7 +274,7 @@ export function Communications() {
       {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Quick Compose */}
-        <Card className="bento-card gradient-surface border-card-border/50">
+        <Card className="bento-card gradient-surface border-card-border/50 lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Send className="h-5 w-5 text-primary" />
@@ -246,32 +287,72 @@ export function Communications() {
           <CardContent className="space-y-4">
             <div>
               <label className="text-sm font-medium text-foreground">Subject</label>
-              <Input placeholder="Enter email subject..." className="mt-1" />
+              <Input 
+                placeholder="Enter email subject..." 
+                className="mt-1"
+                value={emailForm.subject}
+                onChange={(e) => setEmailForm(prev => ({ ...prev, subject: e.target.value }))}
+              />
             </div>
             <div>
               <label className="text-sm font-medium text-foreground">Message</label>
               <Textarea 
                 placeholder="Write your message..." 
                 className="mt-1 min-h-[100px]"
+                value={emailForm.body}
+                onChange={(e) => setEmailForm(prev => ({ ...prev, body: e.target.value }))}
               />
             </div>
             <div>
               <label className="text-sm font-medium text-foreground">Recipients</label>
               <div className="flex gap-2 mt-2">
-                <Button variant="outline" size="sm">All Alumni</Button>
-                <Button variant="outline" size="sm">Recent Grads</Button>
-                <Button variant="outline" size="sm">Donors</Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => handleRecipientSelect("alumni")}
+                  className={emailForm.filter === "alumni" ? "bg-primary/10 border-primary" : ""}
+                >
+                  <Users className="h-4 w-4 mr-1" />
+                  Alumni
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => handleRecipientSelect("student")}
+                  className={emailForm.filter === "student" ? "bg-primary/10 border-primary" : ""}
+                >
+                  <Users className="h-4 w-4 mr-1" />
+                  Students
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => handleRecipientSelect("donors")}
+                  className={emailForm.filter === "donors" ? "bg-primary/10 border-primary" : ""}
+                >
+                  <Users className="h-4 w-4 mr-1" />
+                  Donors
+                </Button>
               </div>
+              {emailForm.filter && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  Selected: {emailForm.filter}
+                </p>
+              )}
             </div>
-            <Button className="w-full bg-primary hover:bg-primary/90">
+            <Button 
+              className="w-full bg-primary hover:bg-primary/90"
+              onClick={handleSendEmail}
+              disabled={isSending}
+            >
               <Send className="h-4 w-4 mr-2" />
-              Send Message
+              {isSending ? "Sending..." : "Send Message"}
             </Button>
           </CardContent>
         </Card>
 
         {/* Notifications */}
-        <Card className="lg:col-span-2 bento-card gradient-surface border-card-border/50">
+        <Card className="bento-card gradient-surface border-card-border/50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Bell className="h-5 w-5 text-primary" />

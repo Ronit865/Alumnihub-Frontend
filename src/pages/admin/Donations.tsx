@@ -3,14 +3,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { IndianRupee, TrendingUp, Users, Target, ArrowUpRight, ArrowDownRight, Trophy, Clock, Plus, Loader2 } from "lucide-react";
+import { IndianRupee, TrendingUp, Users, Target, ArrowUpRight, Clock, Plus, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
-import { donationService, handleApiError, handleApiSuccess } from "@/services/ApiServices";
+import { donationService, handleApiError } from "@/services/ApiServices";
 import { useToast } from "@/hooks/use-toast";
 
 // Keep the static data for stats and recent donations
@@ -489,20 +489,14 @@ export function Donations() {
                     ))}
                 </div>
 
-                {/* Featured Campaigns Skeleton */}
+                {/* Campaigns Cards Skeleton */}
                 <div>
                     <Skeleton className="h-7 w-48 mb-4" />
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {[...Array(3)].map((_, i) => (
+                        {[...Array(6)].map((_, i) => (
                             <Skeleton key={i} className="h-64 rounded-lg" />
                         ))}
                     </div>
-                </div>
-
-                {/* Campaigns Table Skeleton */}
-                <div>
-                    <Skeleton className="h-7 w-56 mb-4" />
-                    <Skeleton className="h-96 rounded-lg" />
                 </div>
 
                 {/* Recent Donations Skeleton */}
@@ -808,317 +802,159 @@ export function Donations() {
                 </div>
             </div>
 
-            {/* Featured Campaigns Section */}
-            <Card className="bento-card gradient-surface border-card-border/50 animate-fade-in">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Trophy className="h-5 w-5 text-primary" />
-                        Featured Campaigns
-                        <Badge variant="secondary" className="ml-2">
-                            Priority
-                        </Badge>
-                    </CardTitle>
-                    <CardDescription>
-                        Campaigns closest to reaching their goals - need your immediate attention
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {loading ? (
-                        <div className="flex items-center justify-center h-40">
+            {/* Active Campaigns - Card Layout */}
+            <div>
+                <div className="flex items-center gap-2 mb-6">
+                    <Target className="h-6 w-6 text-primary" />
+                    <h2 className="text-2xl font-bold text-foreground">Active Campaigns</h2>
+                </div>
+                
+                {loading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {[...Array(6)].map((_, i) => (
+                            <Skeleton key={i} className="h-64 rounded-lg" />
+                        ))}
+                    </div>
+                ) : error ? (
+                    <Card className="bento-card gradient-surface border-card-border/50">
+                        <CardContent className="flex items-center justify-center py-12">
                             <div className="text-center">
-                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
-                                <p className="text-muted-foreground">Loading featured campaigns...</p>
+                                <p className="text-destructive mb-2">Error loading campaigns</p>
+                                <p className="text-sm text-muted-foreground">{error}</p>
+                                <Button 
+                                    variant="outline" 
+                                    onClick={() => window.location.reload()}
+                                    className="mt-4"
+                                >
+                                    Retry
+                                </Button>
                             </div>
-                        </div>
-                    ) : getFeaturedCampaigns().length === 0 ? (
-                        <div className="flex items-center justify-center h-40">
+                        </CardContent>
+                    </Card>
+                ) : campaigns.length === 0 ? (
+                    <Card className="bento-card gradient-surface border-card-border/50">
+                        <CardContent className="flex items-center justify-center py-12">
                             <div className="text-center">
-                                <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                                <p className="text-muted-foreground mb-2">No featured campaigns</p>
-                                <p className="text-sm text-muted-foreground">All campaigns are either completed or no active campaigns available.</p>
+                                <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                                <p className="text-muted-foreground mb-2">No campaigns found</p>
+                                <p className="text-sm text-muted-foreground">No active campaigns available.</p>
                             </div>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {getFeaturedCampaigns().map((campaign, index) => {
-                                const remaining = campaign.goal - (campaign.raised || 0);
-                                const daysLeft = campaign.endDate 
-                                    ? Math.max(0, Math.ceil((new Date(campaign.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
-                                    : null;
+                        </CardContent>
+                    </Card>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {campaigns.map((campaign, index) => {
+                            const daysLeft = campaign.endDate 
+                                ? Math.max(0, Math.ceil((new Date(campaign.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
+                                : null;
 
-                                return (
-                                    <div
-                                        key={`featured-${campaign._id}`}
-                                        className="relative group overflow-hidden rounded-lg border border-card-border/50 bg-gradient-to-br from-card/50 to-card/30 hover:from-card/70 hover:to-card/50 transition-all duration-300 animate-fade-in hover:shadow-lg hover:shadow-primary/10"
-                                        style={{ animationDelay: `${index * 200}ms` }}
-                                    >
-                                        {/* Header with badges */}
-                                        <div className="relative p-6 pb-4">
-                                            <div className="flex justify-between items-start mb-4">
-                                                <Badge className="bg-primary/90 text-primary-foreground">
-                                                    Featured
+                            return (
+                                <Card
+                                    key={`campaign-${campaign._id}`}
+                                    className="bento-card gradient-surface border-card-border/50 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 animate-fade-in"
+                                    style={{ animationDelay: `${index * 100}ms` }}
+                                >
+                                    <CardHeader className="pb-3 space-y-2">
+                                        <div className="flex justify-between items-start gap-2">
+                                            {campaign.category && (
+                                                <Badge variant="secondary" className="bg-primary/10 text-primary text-xs">
+                                                    {campaign.category}
                                                 </Badge>
-                                                {campaign.category && (
-                                                    <Badge variant="secondary" className="bg-background/90">
-                                                        {campaign.category}
-                                                    </Badge>
-                                                )}
-                                            </div>
-                                            
-                                            <h3 className="font-semibold text-lg text-foreground mb-2 group-hover:text-primary transition-colors">
-                                                {campaign.name}
-                                            </h3>
-                                            <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
-                                                {campaign.description}
-                                            </p>
-
-                                            {/* Key highlight - remaining amount */}
-                                            <div className="bg-primary/5 rounded-lg p-3 border border-primary/20">
-                                                <p className="text-xs text-muted-foreground mb-1">Only needs</p>
-                                                <p className="font-bold text-lg text-primary">
-                                                    {formatCurrency(remaining)}
-                                                </p>
-                                                <p className="text-xs text-muted-foreground">to reach the goal</p>
-                                            </div>
-                                        </div>
-
-                                        {/* Progress Section */}
-                                        <div className="px-6 pb-4 space-y-3">
-                                            <div className="flex justify-between items-center">
-                                                <span className="text-sm text-muted-foreground">Progress</span>
-                                                <span className="text-sm font-medium text-foreground">
-                                                    {getProgressPercentage(campaign.raised, campaign.goal)}%
-                                                </span>
-                                            </div>
-                                            
-                                            {/* Progress Bar */}
-                                            <div className="w-full bg-secondary rounded-full h-2">
-                                                <div
-                                                    className="bg-gradient-to-r from-primary to-primary/80 h-2 rounded-full transition-all duration-500"
-                                                    style={{ width: `${getProgressPercentage(campaign.raised, campaign.goal)}%` }}
-                                                />
-                                            </div>
-
-                                            {/* Stats Grid */}
-                                            <div className="grid grid-cols-2 gap-4 pt-2">
-                                                <div>
-                                                    <p className="font-semibold text-foreground">
-                                                        {formatCurrency(campaign.raised || 0)}
-                                                    </p>
-                                                    <p className="text-xs text-muted-foreground">raised</p>
-                                                </div>
-                                                <div>
-                                                    <p className="font-semibold text-primary">
-                                                        {getDonorCount(campaign)}
-                                                    </p>
-                                                    <p className="text-xs text-muted-foreground">donors</p>
-                                                </div>
-                                            </div>
-
-                                            {daysLeft !== null && (
-                                                <div className="pt-2">
-                                                    <Badge 
-                                                        variant="outline" 
-                                                        className={`${daysLeft < 10 ? 'border-destructive text-destructive' : 'border-primary/50 text-primary'}`}
-                                                    >
-                                                        {daysLeft} days left
-                                                    </Badge>
-                                                </div>
                                             )}
-                                        </div>
-
-                                        {/* Action Buttons */}
-                                        <div className="px-6 pb-6">
-                                            <div className="flex gap-2">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="flex-1 border-card-border/50 hover:bg-accent"
-                                                    onClick={() => fetchCampaignDonors(campaign._id, campaign.name)}
-                                                >
-                                                    View Donors
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    className="flex-1 gradient-primary text-primary-foreground hover:shadow-purple"
-                                                >
-                                                    Promote
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-
-            {/* Main Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Active Campaigns - Now takes 2/3 width */}
-                <Card className="bento-card gradient-surface border-card-border/50 lg:col-span-2">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Target className="h-5 w-5 text-primary" />
-                            Active Campaigns
-                        </CardTitle>
-                        <CardDescription>
-                            Current fundraising initiatives from database
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="h-[600px] overflow-hidden">
-                        {loading ? (
-                            <div className="flex items-center justify-center h-full">
-                                <div className="text-center">
-                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
-                                    <p className="text-muted-foreground">Loading campaigns...</p>
-                                </div>
-                            </div>
-                        ) : error ? (
-                            <div className="flex items-center justify-center h-full">
-                                <div className="text-center">
-                                    <p className="text-destructive mb-2">Error loading campaigns</p>
-                                    <p className="text-sm text-muted-foreground">{error}</p>
-                                    <Button 
-                                        variant="outline" 
-                                        onClick={() => window.location.reload()}
-                                        className="mt-4"
-                                    >
-                                        Retry
-                                    </Button>
-                                </div>
-                            </div>
-                        ) : campaigns.length === 0 ? (
-                            <div className="flex items-center justify-center h-full">
-                                <div className="text-center">
-                                    <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                                    <p className="text-muted-foreground mb-2">No campaigns found</p>
-                                    <p className="text-sm text-muted-foreground">No active campaigns available.</p>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="h-full overflow-y-auto pr-2 space-y-6 custom-scrollbar">
-                                {campaigns.map((campaign, index) => (
-                                    <div
-                                        key={`campaign-${campaign._id}-${index}`}
-                                        className="p-4 rounded-lg border border-card-border/50 hover:bg-accent/30 transition-smooth animate-fade-in"
-                                        style={{ animationDelay: `${index * 150}ms` }}
-                                    >
-                                        <div className="flex justify-between items-start mb-3">
-                                            <div className="flex-1">
-                                                <h3 className="font-semibold text-foreground mb-2">{campaign.name}</h3>
-                                                <p className="text-sm text-muted-foreground mb-2">
-                                                    {campaign.description}
-                                                </p>
-                                                <p className="text-sm text-muted-foreground">
-                                                    Created {formatDate(campaign.createdAt || "")}
-                                                </p>
-                                            </div>
-                                            <Badge variant="secondary" className="ml-4">
+                                            <Badge variant="outline" className="ml-auto text-xs">
                                                 {getDonorCount(campaign)} donors
                                             </Badge>
                                         </div>
-
-                                        <div className="space-y-2">
-                                            <div className="flex justify-between text-sm">
+                                        <CardTitle className="text-base line-clamp-1">
+                                            {campaign.name}
+                                        </CardTitle>
+                                        <CardDescription className="line-clamp-2 text-xs">
+                                            {campaign.description}
+                                        </CardDescription>
+                                    </CardHeader>
+                                    
+                                    <CardContent className="space-y-3">
+                                        {/* Progress Section */}
+                                        <div className="space-y-1.5">
+                                            <div className="flex justify-between text-xs">
                                                 <span className="text-muted-foreground">Progress</span>
                                                 <span className="font-medium text-foreground">
-                                                    {formatCurrency(campaign.raised || 0)} of {formatCurrency(campaign.goal)}
+                                                    {getProgressPercentage(campaign.raised, campaign.goal)}%
                                                 </span>
                                             </div>
-                                            <div className="w-full bg-secondary rounded-full h-2">
+                                            <div className="w-full bg-secondary rounded-full h-1.5">
                                                 <div
-                                                    className="bg-primary h-2 rounded-full transition-all duration-500"
+                                                    className="bg-gradient-to-r from-primary to-primary/80 h-1.5 rounded-full transition-all duration-500"
                                                     style={{ width: `${getProgressPercentage(campaign.raised, campaign.goal)}%` }}
                                                 />
                                             </div>
-                                            <div className="flex justify-between text-xs text-muted-foreground">
-                                                <span>{getProgressPercentage(campaign.raised, campaign.goal)}% complete</span>
-                                                <span>{formatCurrency(campaign.goal - (campaign.raised || 0))} remaining</span>
+                                        </div>
+
+                                        {/* Stats Grid */}
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="space-y-0.5">
+                                                <p className="text-xs text-muted-foreground">Raised</p>
+                                                <p className="font-semibold text-sm text-foreground">
+                                                    {formatCurrency(campaign.raised || 0)}
+                                                </p>
+                                            </div>
+                                            <div className="space-y-0.5">
+                                                <p className="text-xs text-muted-foreground">Goal</p>
+                                                <p className="font-semibold text-sm text-foreground">
+                                                    {formatCurrency(campaign.goal)}
+                                                </p>
                                             </div>
                                         </div>
 
-                                        {/* Action Buttons - View Donors button added */}
-                                        <div className="flex gap-2 mt-4">
+                                        {/* Remaining Amount */}
+                                        <div className="bg-primary/5 rounded-lg p-2 border border-primary/20">
+                                            <p className="text-xs text-muted-foreground mb-0.5">Remaining</p>
+                                            <p className="font-bold text-base text-primary">
+                                                {formatCurrency(campaign.goal - (campaign.raised || 0))}
+                                            </p>
+                                        </div>
+
+                                        {/* Days Left */}
+                                        {daysLeft !== null && (
+                                            <div className="flex items-center justify-between text-xs">
+                                                <span className="text-muted-foreground">
+                                                    {formatDate(campaign.createdAt || "")}
+                                                </span>
+                                                <Badge 
+                                                    variant="outline" 
+                                                    className={`text-xs ${daysLeft < 10 ? 'border-destructive text-destructive' : 'border-primary/50 text-primary'}`}
+                                                >
+                                                    {daysLeft}d left
+                                                </Badge>
+                                            </div>
+                                        )}
+
+                                        {/* Action Buttons */}
+                                        <div className="flex gap-2 pt-1">
                                             <Button
                                                 variant="outline"
                                                 size="sm"
-                                                className="flex-1"
+                                                className="flex-1 border-card-border/50 hover:bg-accent h-8 text-xs"
                                                 onClick={() => fetchCampaignDonors(campaign._id, campaign.name)}
                                             >
                                                 View Donors
                                             </Button>
+                                            <Button
+                                                size="sm"
+                                                className="flex-1 gradient-primary text-primary-foreground hover:shadow-purple h-8 text-xs"
+                                            >
+                                                Promote
+                                            </Button>
                                         </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-
-                {/* Top Donors Card - Now takes 1/3 width */}
-                <Card className="bento-card gradient-surface border-card-border/50">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Trophy className="h-5 w-5 text-primary" />
-                            Top Donors
-                        </CardTitle>
-                        <CardDescription>
-                            Highest contributors this year
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="h-[600px] overflow-hidden">
-                        <div className="h-full overflow-y-auto pr-2 space-y-4 custom-scrollbar-thin">
-                            {recentDonations
-                                .sort((a, b) => b.amount - a.amount)
-                                .slice(0, 10)
-                                .map((donation, index) => (
-                                <div
-                                    key={`top-donor-${donation.id}-${index}`}
-                                    className="flex items-center justify-between p-4 rounded-lg border border-card-border/50 hover:bg-accent/30 transition-smooth animate-fade-in"
-                                    style={{ animationDelay: `${index * 100}ms` }}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className="relative">
-                                            <Avatar className="w-12 h-12">
-                                                <AvatarImage src={donation.avatar} alt={donation.donor} />
-                                                <AvatarFallback className="bg-primary/10 text-primary">
-                                                    {donation.donor.split(' ').map(n => n[0]).join('')}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                            {index < 3 && (
-                                                <div className={`absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
-                                                    index === 0 ? 'bg-yellow-500 text-yellow-900' :
-                                                    index === 1 ? 'bg-gray-400 text-gray-800' :
-                                                    'bg-orange-500 text-orange-900'
-                                                }`}>
-                                                    {index + 1}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div>
-                                            <h4 className="font-semibold text-foreground">{donation.donor}</h4>
-                                            <p className="text-sm text-muted-foreground">Class of {donation.class}</p>
-                                            <p className="text-xs text-muted-foreground">{donation.campaign}</p>
-                                        </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="font-semibold text-lg text-primary">
-                                            {formatCurrency(donation.amount)}
-                                        </p>
-                                        <p className="text-xs text-muted-foreground">
-                                            {formatDate(donation.date)}
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
+                                    </CardContent>
+                                </Card>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
 
-            {/* Recent Donations - Full Width Below */}
+            {/* Recent Donations - Full Width */}
             <Card className="bento-card gradient-surface border-card-border/50">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
