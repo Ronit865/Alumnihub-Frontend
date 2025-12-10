@@ -129,21 +129,19 @@ export default function Donations() {
             const remaining = (campaign.goal ?? 0) - (campaign.raisedAmount ?? 0);
             
             return (
-              <Card key={campaign._id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Heart className="h-5 w-5 text-red-500" />
-                    {campaign.name}
+              <Card key={campaign._id} className="bento-card hover:shadow-md border-card-border/50 hover-lift flex flex-col h-full">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-lg min-h-[3.5rem]">
+                    <Heart className="h-5 w-5 text-red-500 flex-shrink-0" />
+                    <span className="line-clamp-2">{campaign.name}</span>
                   </CardTitle>
-                  <CardDescription className="line-clamp-2">
-                    {campaign.description}
-                  </CardDescription>
                 </CardHeader>
                 
-                <CardContent className="space-y-4">
+                <CardContent className="flex-1 flex flex-col space-y-4">
+                  {/* Progress Section */}
                   <div>
                     <div className="flex justify-between text-sm mb-2">
-                      <span className="font-semibold">${(campaign.raisedAmount ?? 0).toLocaleString()}</span>
+                      <span className="font-semibold text-primary">${(campaign.raisedAmount ?? 0).toLocaleString()}</span>
                       <span className="text-muted-foreground">
                         of ${(campaign.goal ?? 0).toLocaleString()}
                       </span>
@@ -154,33 +152,35 @@ export default function Donations() {
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4 pt-2 border-t">
+                  {/* Stats Section */}
+                  <div className="grid grid-cols-2 gap-4 pt-2 border-t border-card-border/20 flex-1">
                     <div className="flex items-center gap-2">
-                      <Target className="h-4 w-4 text-muted-foreground" />
+                      <Target className="h-4 w-4 text-primary flex-shrink-0" />
                       <div>
                         <p className="text-xs text-muted-foreground">Remaining</p>
                         <p className="text-sm font-semibold">${remaining.toLocaleString()}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                      <TrendingUp className="h-4 w-4 text-primary flex-shrink-0" />
                       <div>
                         <p className="text-xs text-muted-foreground">Contributors</p>
                         <p className="text-sm font-semibold">{campaign.donors?.length || 0}</p>
                       </div>
                     </div>
                   </div>
+
+                  {/* Button - Always at bottom */}
+                  <div className="pt-2 mt-auto">
+                    <Button 
+                      className="w-full" 
+                      onClick={() => handleContribute(campaign)}
+                      disabled={progress >= 100}
+                    >
+                      {progress >= 100 ? 'Goal Reached' : 'Contribute Now'}
+                    </Button>
+                  </div>
                 </CardContent>
-                
-                <CardFooter>
-                  <Button 
-                    className="w-full" 
-                    onClick={() => handleContribute(campaign)}
-                    disabled={progress >= 100}
-                  >
-                    {progress >= 100 ? 'Goal Reached' : 'Contribute Now'}
-                  </Button>
-                </CardFooter>
               </Card>
             );
           })}

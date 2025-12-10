@@ -280,39 +280,39 @@ export default function Alumni() {
           </div>
         ) : (
           filteredAlumni.map((person) => (
-            <Card key={person._id} className="hover-lift group">
+            <Card key={person._id} className="bento-card hover:shadow-md border-card-border/50 hover-lift group flex flex-col h-full">
               <CardHeader className="pb-4">
                 <div className="flex items-start gap-4">
-                  <Avatar className="w-16 h-16 ring-2 ring-primary/20">
+                  <Avatar className="w-16 h-16 ring-2 ring-primary/20 flex-shrink-0">
                     <AvatarImage src={person.avatar} alt={person.name} />
                     <AvatarFallback className="bg-primary/10 text-primary font-medium text-lg">
                       {person.name?.split(' ').map(n => n[0]).join('') || 'AL'}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-lg group-hover:text-primary transition-colors truncate">
                       {person.name || 'Unknown'}
                     </h3>
                     <p className="text-sm text-muted-foreground">
                       {person.graduationYear ? `Class of ${person.graduationYear}` : 'Graduate'}
                     </p>
-                    <p className="text-sm text-muted-foreground">{person.course || 'N/A'}</p>
+                    <p className="text-sm text-muted-foreground truncate">{person.course || 'N/A'}</p>
                   </div>
                 </div>
               </CardHeader>
               
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
+              <CardContent className="flex-1 flex flex-col space-y-4">
+                <div className="space-y-2 flex-1">
                   <div className="flex items-center gap-2 text-sm">
-                    <Briefcase className="w-4 h-4 text-muted-foreground" />
-                    <div>
-                      <p className="font-medium">{person.course || 'Course not specified'}</p>
+                    <Briefcase className="w-4 h-4 text-primary flex-shrink-0" />
+                    <div className="min-w-0">
+                      <p className="font-medium truncate">{person.course || 'Course not specified'}</p>
                       <p className="text-muted-foreground">Alumni</p>
                     </div>
                   </div>
                   
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Calendar className="w-4 h-4" />
+                    <Calendar className="w-4 h-4 text-primary flex-shrink-0" />
                     <span>Graduated: {person.graduationYear || 'N/A'}</span>
                   </div>
                 </div>
@@ -329,7 +329,7 @@ export default function Alumni() {
                   )}
                 </div>
 
-                <div className="flex gap-2 pt-2">
+                <div className="flex gap-2 pt-2 mt-auto">
                   <Button size="sm" className="flex-1">
                     Connect
                   </Button>
