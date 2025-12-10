@@ -266,39 +266,37 @@ export default function Jobs() {
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {allJobs.map((job) => (
-                <Card key={job._id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="text-xl mb-2">{job.title}</CardTitle>
-                        <CardDescription className="flex items-center gap-2 mb-1">
-                          <Building2 className="w-4 h-4" />
-                          {job.company}
-                        </CardDescription>
-                      </div>
+                <Card key={job._id} className="bento-card hover:shadow-md border-card-border/50 hover-lift flex flex-col h-full">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <CardTitle className="text-lg line-clamp-2 min-h-[3.5rem]">{job.title}</CardTitle>
                       {job.isVerified && (
-                        <Badge variant="default" className="flex items-center gap-1">
+                        <Badge variant="default" className="flex items-center gap-1 flex-shrink-0">
                           <CheckCircle className="w-3 h-3" />
                           Verified
                         </Badge>
                       )}
                     </div>
+                    <CardDescription className="flex items-center gap-2">
+                      <Building2 className="w-4 h-4 flex-shrink-0" />
+                      <span className="truncate">{job.company}</span>
+                    </CardDescription>
                   </CardHeader>
 
-                  <CardContent className="space-y-4">
-                    <p className="text-sm text-muted-foreground line-clamp-3">
+                  <CardContent className="flex-1 flex flex-col space-y-4">
+                    <p className="text-sm text-muted-foreground line-clamp-2 min-h-[2.5rem]">
                       {job.description}
                     </p>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2 flex-1">
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <MapPin className="w-4 h-4" />
-                        {job.location}
+                        <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
+                        <span className="truncate">{job.location}</span>
                       </div>
 
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <DollarSign className="w-4 h-4" />
-                        ${job.salary.toLocaleString()}/year
+                        <DollarSign className="w-4 h-4 text-primary flex-shrink-0" />
+                        <span>${job.salary.toLocaleString()}/year</span>
                       </div>
                     </div>
 
@@ -308,21 +306,23 @@ export default function Jobs() {
                       <Badge variant="secondary">{job.category}</Badge>
                     </div>
 
-                    <Button
-                      className="w-full"
-                      onClick={() => handleApply(job._id)}
-                      disabled={hasApplied(job)}
-                      variant={hasApplied(job) ? "secondary" : "default"}
-                    >
-                      {hasApplied(job) ? (
-                        <>
-                          <CheckCircle className="w-4 h-4 mr-2" />
-                          Applied
-                        </>
-                      ) : (
-                        "Apply Now"
-                      )}
-                    </Button>
+                    <div className="pt-2 mt-auto">
+                      <Button
+                        className="w-full"
+                        onClick={() => handleApply(job._id)}
+                        disabled={hasApplied(job)}
+                        variant={hasApplied(job) ? "secondary" : "default"}
+                      >
+                        {hasApplied(job) ? (
+                          <>
+                            <CheckCircle className="w-4 h-4 mr-2" />
+                            Applied
+                          </>
+                        ) : (
+                          "Apply Now"
+                        )}
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               ))}
@@ -348,17 +348,11 @@ export default function Jobs() {
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {postedJobs.map((job) => (
-                <Card key={job._id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="text-xl mb-2">{job.title}</CardTitle>
-                        <CardDescription className="flex items-center gap-2 mb-1">
-                          <Building2 className="w-4 h-4" />
-                          {job.company}
-                        </CardDescription>
-                      </div>
-                      <div className="flex gap-2">
+                <Card key={job._id} className="bento-card hover:shadow-md border-card-border/50 hover-lift flex flex-col h-full">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <CardTitle className="text-lg line-clamp-2 min-h-[3.5rem]">{job.title}</CardTitle>
+                      <div className="flex gap-2 flex-shrink-0">
                         {job.isVerified ? (
                           <Badge variant="default" className="flex items-center gap-1">
                             <CheckCircle className="w-3 h-3" />
@@ -372,32 +366,36 @@ export default function Jobs() {
                         )}
                       </div>
                     </div>
+                    <CardDescription className="flex items-center gap-2">
+                      <Building2 className="w-4 h-4 flex-shrink-0" />
+                      <span className="truncate">{job.company}</span>
+                    </CardDescription>
                   </CardHeader>
 
-                  <CardContent className="space-y-4">
-                    <p className="text-sm text-muted-foreground line-clamp-2">
+                  <CardContent className="flex-1 flex flex-col space-y-4">
+                    <p className="text-sm text-muted-foreground line-clamp-2 min-h-[2.5rem]">
                       {job.description}
                     </p>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2 flex-1">
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <MapPin className="w-4 h-4" />
-                        {job.location}
+                        <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
+                        <span className="truncate">{job.location}</span>
                       </div>
 
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <DollarSign className="w-4 h-4" />
-                        ${job.salary.toLocaleString()}/year
+                        <DollarSign className="w-4 h-4 text-primary flex-shrink-0" />
+                        <span>${job.salary.toLocaleString()}/year</span>
                       </div>
 
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Calendar className="w-4 h-4" />
-                        Posted {formatDate(job.createdAt)}
+                        <Calendar className="w-4 h-4 text-primary flex-shrink-0" />
+                        <span>Posted {formatDate(job.createdAt)}</span>
                       </div>
 
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Users className="w-4 h-4" />
-                        {job.applicants?.length || 0} Applicants
+                        <Users className="w-4 h-4 text-primary flex-shrink-0" />
+                        <span>{job.applicants?.length || 0} Applicants</span>
                       </div>
                     </div>
 
@@ -406,7 +404,7 @@ export default function Jobs() {
                       <Badge variant="outline">{job.experienceRequired}</Badge>
                     </div>
 
-                    <div className="flex gap-2 pt-2">
+                    <div className="flex gap-2 pt-2 mt-auto">
                       <Button
                         variant="outline"
                         size="sm"

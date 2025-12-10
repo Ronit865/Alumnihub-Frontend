@@ -322,15 +322,13 @@ export default function Events() {
                     {filteredEvents.map((event, index) => (
                         <Card 
                             key={event._id} 
-                            className="bento-card hover:shadow-md border-card-border/50 animate-fade-in hover-lift group"
+                            className="bento-card hover:shadow-md border-card-border/50 animate-fade-in hover-lift group flex flex-col h-full"
                             style={{ animationDelay: `${index * 100}ms` }}
                         >
                             <CardHeader className="pb-3">
-                                <div className="flex items-start justify-between mb-2">
-                                    <CardTitle className="text-lg font-semibold group-hover:text-primary transition-colors line-clamp-2">
-                                        {event.title}
-                                    </CardTitle>
-                                </div>
+                                <CardTitle className="text-lg font-semibold group-hover:text-primary transition-colors line-clamp-2 min-h-[3.5rem]">
+                                    {event.title}
+                                </CardTitle>
                                 <div className="flex items-center gap-2 flex-wrap">
                                     {getStatusBadge(event.isactive)}
                                     {event.category && (
@@ -341,28 +339,24 @@ export default function Events() {
                                 </div>
                             </CardHeader>
 
-                            <CardContent className="space-y-4">
-                                <p className="text-muted-foreground text-sm line-clamp-3">
+                            <CardContent className="flex-1 flex flex-col">
+                                <p className="text-muted-foreground text-sm line-clamp-2 min-h-[2.5rem] mb-4">
                                     {event.description}
                                 </p>
                                 
-                                <div className="space-y-2 text-sm">
+                                <div className="space-y-2 text-sm flex-1">
                                     <div className="flex items-center gap-2 text-muted-foreground">
                                         <CalendarDays className="h-4 w-4 text-primary flex-shrink-0" />
                                         <span className="truncate">{formatDate(event.date)}</span>
                                     </div>
-                                    {event.time && (
-                                        <div className="flex items-center gap-2 text-muted-foreground">
-                                            <Clock className="h-4 w-4 text-primary flex-shrink-0" />
-                                            <span className="truncate">{event.time}</span>
-                                        </div>
-                                    )}
-                                    {event.location && (
-                                        <div className="flex items-center gap-2 text-muted-foreground">
-                                            <MapPin className="h-4 w-4 text-primary flex-shrink-0" />
-                                            <span className="truncate">{event.location}</span>
-                                        </div>
-                                    )}
+                                    <div className="flex items-center gap-2 text-muted-foreground">
+                                        <Clock className="h-4 w-4 text-primary flex-shrink-0" />
+                                        <span className="truncate">{event.time || "TBD"}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-muted-foreground">
+                                        <MapPin className="h-4 w-4 text-primary flex-shrink-0" />
+                                        <span className="truncate">{event.location || "TBD"}</span>
+                                    </div>
                                     <div className="flex items-center gap-2 text-muted-foreground">
                                         <Users className="h-4 w-4 text-primary flex-shrink-0" />
                                         <span className="truncate">
@@ -372,33 +366,8 @@ export default function Events() {
                                     </div>
                                 </div>
 
-                                {/* Registration Progress Bar (if maxAttendees is available) */}
-                                {event.maxAttendees && (
-                                    <div className="space-y-2">
-                                        <div className="flex justify-between text-xs text-muted-foreground">
-                                            <span>Registration</span>
-                                            <span>
-                                                {Math.round(
-                                                    (event.participants.length / event.maxAttendees) * 100
-                                                )}
-                                                % full
-                                            </span>
-                                        </div>
-                                        <div className="w-full bg-muted rounded-full h-2">
-                                            <div
-                                                className="bg-primary h-2 rounded-full transition-all duration-300"
-                                                style={{
-                                                    width: `${
-                                                        (event.participants.length / event.maxAttendees) * 100
-                                                    }%`,
-                                                }}
-                                            />
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Action Buttons */}
-                                <div className="flex flex-col gap-2 pt-2">
+                                {/* Action Buttons - Always at bottom */}
+                                <div className="flex flex-col gap-2 pt-4 mt-auto">
                                     <Button
                                         size="sm"
                                         className="w-full"
