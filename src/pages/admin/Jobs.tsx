@@ -475,7 +475,7 @@ function JobCard({ job, onVerify, onDelete, actionLoading }: JobCardProps) {
           disabled={actionLoading === job._id}
           variant="destructive"
           size="sm"
-          className={!job.isVerified && onVerify ? "" : "flex-1"}
+          className="flex-1"
         >
           <Trash2 className="h-4 w-4 mr-2" />
           Reject
