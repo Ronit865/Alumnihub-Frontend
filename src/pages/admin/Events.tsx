@@ -682,14 +682,14 @@ export function Events() {
                 {eventsToDisplay.map((event, index) => (
                   <Card 
                     key={event._id} 
-                    className="bento-card hover:shadow-md border-card-border/50 animate-fade-in relative group"
+                    className="bento-card hover:shadow-md border-card-border/50 animate-fade-in relative group flex flex-col h-full"
                     style={{ animationDelay: `${index * 100}ms` }}
                   >
-                    <CardContent className="p-6">
+                    <CardContent className="p-6 flex-1 flex flex-col">
                       {/* Event Header with Status and Actions */}
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-lg font-semibold text-foreground truncate mb-2">
+                          <h3 className="text-lg font-semibold text-foreground line-clamp-1 mb-2 min-h-[1.75rem]">
                             {event.title}
                           </h3>
                           {getStatusBadge(event.isactive)}
@@ -731,7 +731,7 @@ export function Events() {
                       </div>
 
                       {/* Event Description */}
-                      <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
+                      <p className="text-muted-foreground text-sm mb-4 line-clamp-2 min-h-[2.5rem]">
                         {event.description}
                       </p>
                       
@@ -767,7 +767,7 @@ export function Events() {
                       </div>
 
                       {/* Event Footer */}
-                      <div className="mt-4 pt-3 border-t border-card-border/20">
+                      <div className="mt-auto pt-4 border-t border-card-border/20">
                       
                         {/* Action Buttons */}
                         <div className="flex gap-2">
