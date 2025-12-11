@@ -185,12 +185,12 @@ export function Jobs() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 sm:space-y-6 md:space-y-8">
       {/* Header */}
-      <div className="flex justify-between items-start animate-fade-in">
+      <div className="flex flex-col sm:flex-row justify-between items-start gap-3 animate-fade-in">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Job Management</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Job Management</h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2">
             Verify and manage job postings from the alumni network.
           </p>
         </div>
@@ -209,7 +209,7 @@ export function Jobs() {
       )}
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-slide-up">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-6 animate-slide-up">
         <div className="stats-card-blue">
           <div className="flex items-center justify-between">
             <div>
@@ -277,7 +277,7 @@ export function Jobs() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {pendingJobs.map((job) => (
                 <JobCard
                   key={job._id}
@@ -307,7 +307,7 @@ export function Jobs() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {verifiedJobs.map((job) => (
                 <JobCard
                   key={job._id}

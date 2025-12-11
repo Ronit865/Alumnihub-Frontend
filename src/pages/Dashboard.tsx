@@ -182,30 +182,30 @@ export default function Dashboard() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Hero Section */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary/90 to-primary/80 p-8 text-white">
+      <div className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-primary via-primary/90 to-primary/80 p-4 sm:p-6 md:p-8 text-white">
         <div className="relative z-10">
-          <h1 className="text-4xl font-bold mb-4">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 sm:mb-4">
             Welcome to AllyNet
           </h1>
-          <p className="text-xl text-primary-foreground/90 mb-6 max-w-2xl">
+          <p className="text-sm sm:text-base md:text-xl text-primary-foreground/90 mb-4 sm:mb-6 max-w-2xl">
             Connect, engage, and grow with our vibrant alumni community. Discover events, 
             opportunities, and meaningful connections that last a lifetime.
           </p>
-          <div className="flex gap-4">
-            <Button onClick={() => navigate('/communications')} size="lg" className="bg-white text-primary hover:bg-white/90">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+            <Button onClick={() => navigate('/communications')} size="default" className="bg-white text-primary hover:bg-white/90 text-sm sm:text-base">
               Explore Community
             </Button>
-            <Button onClick={() => navigate('/events')} size="lg" className="bg-white text-primary hover:bg-white/90">
+            <Button onClick={() => navigate('/events')} size="default" className="bg-white text-primary hover:bg-white/90 text-sm sm:text-base">
               Join Events
             </Button>
           </div>
         </div>
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-24 -translate-x-24"></div>
+        <div className="absolute top-0 right-0 w-32 sm:w-48 md:w-64 h-32 sm:h-48 md:h-64 bg-white/10 rounded-full -translate-y-16 sm:-translate-y-24 md:-translate-y-32 translate-x-16 sm:translate-x-24 md:translate-x-32"></div>
+        <div className="absolute bottom-0 left-0 w-24 sm:w-36 md:w-48 h-24 sm:h-36 md:h-48 bg-white/5 rounded-full translate-y-12 sm:translate-y-18 md:translate-y-24 -translate-x-12 sm:-translate-x-18 md:-translate-x-24"></div>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <div className="stats-card-orange">
           <div className="flex items-center justify-between">
             <div>
@@ -320,7 +320,7 @@ export default function Dashboard() {
 
 
       {/* Second Row - Four Equal Columns */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <BentoCard 
           title="Job Opportunities" 
           description="Latest career opportunities"

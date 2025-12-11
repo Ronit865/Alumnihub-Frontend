@@ -387,18 +387,25 @@
     transform: translate(30%, -30%);
   }
 
-  /* Stats Card Text Styles */
+  /* Stats Card Text Styles - Mobile Optimized */
   .stats-card-number {
-    font-size: 2.5rem;
+    font-size: 1.75rem;
     font-weight: 700;
     line-height: 1;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
     position: relative;
     z-index: 1;
   }
   
+  @media (min-width: 640px) {
+    .stats-card-number {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+  }
+  
   .stats-card-label {
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     font-weight: 500;
     opacity: 0.9;
     text-transform: uppercase;
@@ -407,13 +414,27 @@
     z-index: 1;
   }
   
+  @media (min-width: 640px) {
+    .stats-card-label {
+      font-size: 0.875rem;
+    }
+  }
+  
   .stats-card-icon {
     position: absolute;
-    bottom: 1rem;
-    right: 1rem;
-    font-size: 1.5rem;
+    bottom: 0.75rem;
+    right: 0.75rem;
+    font-size: 1.25rem;
     opacity: 0.7;
     z-index: 1;
+  }
+  
+  @media (min-width: 640px) {
+    .stats-card-icon {
+      bottom: 1rem;
+      right: 1rem;
+      font-size: 1.5rem;
+    }
   }
 
   /* Dark mode adjustments for stats cards */
