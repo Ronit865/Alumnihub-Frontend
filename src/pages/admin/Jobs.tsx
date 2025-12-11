@@ -354,10 +354,10 @@ interface JobCardProps {
 
 function JobCard({ job, onVerify, onDelete, actionLoading }: JobCardProps) {
   return (
-    <Card className="bento-card hover-lift border-card-border/50 overflow-hidden">
+    <Card className="bento-card hover-lift border-card-border/50 overflow-hidden flex flex-col h-full">
       <CardHeader className="space-y-3">
         <div className="flex justify-between items-start gap-2">
-          <CardTitle className="text-lg line-clamp-2 text-foreground">
+          <CardTitle className="text-lg line-clamp-1 text-foreground min-h-[1.75rem]">
             {job.title}
           </CardTitle>
           {job.isVerified ? (
@@ -372,17 +372,17 @@ function JobCard({ job, onVerify, onDelete, actionLoading }: JobCardProps) {
             </Badge>
           )}
         </div>
-        <CardDescription className="line-clamp-1 text-base font-medium">
+        <CardDescription className="line-clamp-1 text-base font-medium text-primary min-h-[1.5rem]">
           {job.company || 'Company Not Specified'}
         </CardDescription>
       </CardHeader>
       
-      <CardContent className="space-y-4">
-        <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
+      <CardContent className="space-y-4 flex-1 flex flex-col">
+        <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed min-h-[2.5rem]">
           {job.description}
         </p>
         
-        <div className="space-y-2.5">
+        <div className="space-y-2.5 flex-1">
           {job.location && (
             <div className="flex items-center gap-2 text-sm">
               <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
@@ -458,7 +458,7 @@ function JobCard({ job, onVerify, onDelete, actionLoading }: JobCardProps) {
         )}
       </CardContent>
       
-      <CardFooter className="gap-2 pt-4 border-t border-card-border/20">
+      <CardFooter className="gap-2 pt-4 border-t border-card-border/20 mt-auto">
         {!job.isVerified && onVerify && (
           <Button 
             onClick={() => onVerify(job._id)} 
