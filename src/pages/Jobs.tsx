@@ -232,24 +232,24 @@ export default function Jobs() {
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="space-y-4 sm:space-y-6 animate-fade-in">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Job Opportunities</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">Job Opportunities</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
             Browse and apply for jobs or manage your postings
           </p>
         </div>
-        <Button onClick={() => setPostDialogOpen(true)}>
+        <Button onClick={() => setPostDialogOpen(true)} className="w-full sm:w-auto">
           <Plus className="w-4 h-4 mr-2" />
           Post a Job
         </Button>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full max-w-md grid-cols-2">
-          <TabsTrigger value="all">All Jobs ({allJobs.length})</TabsTrigger>
-          <TabsTrigger value="posted">My Posted Jobs ({postedJobs.length})</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="all" className="text-xs sm:text-sm">All Jobs ({allJobs.length})</TabsTrigger>
+          <TabsTrigger value="posted" className="text-xs sm:text-sm">My Posted ({postedJobs.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="all" className="mt-6">
@@ -264,7 +264,7 @@ export default function Jobs() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {allJobs.map((job) => (
                 <Card key={job._id} className="bento-card hover:shadow-md border-card-border/50 hover-lift flex flex-col h-full">
                   <CardHeader className="pb-3">

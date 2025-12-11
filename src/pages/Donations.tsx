@@ -108,22 +108,22 @@ export default function Donations() {
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">Donation Campaigns</h1>
-        <p className="text-muted-foreground">Support causes that matter to our community</p>
+    <div className="space-y-4 sm:space-y-6 animate-fade-in">
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-bold">Donation Campaigns</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">Support causes that matter to our community</p>
       </div>
 
       {campaigns.length === 0 ? (
         <Card>
-          <CardContent className="flex flex-col items-center justify-center py-16">
-            <Heart className="h-16 w-16 text-muted-foreground mb-4" />
-            <h3 className="text-xl font-semibold mb-2">No Active Campaigns</h3>
-            <p className="text-muted-foreground">Check back later for new donation opportunities</p>
+          <CardContent className="flex flex-col items-center justify-center py-12 sm:py-16">
+            <Heart className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground mb-4" />
+            <h3 className="text-lg sm:text-xl font-semibold mb-2">No Active Campaigns</h3>
+            <p className="text-sm sm:text-base text-muted-foreground text-center">Check back later for new donation opportunities</p>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {campaigns.map((campaign) => {
             const progress = ((campaign.raisedAmount ?? 0) / (campaign.goal ?? 1)) * 100;
             const remaining = (campaign.goal ?? 0) - (campaign.raisedAmount ?? 0);
