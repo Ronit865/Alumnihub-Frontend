@@ -208,7 +208,7 @@ export default function Alumni() {
 
   // Handle message button click
   const handleMessage = (userId: string) => {
-    navigate('/personal-messages', { state: { userId } });
+    navigate('/messages', { state: { userId } });
   };
 
   // Loading state
@@ -394,7 +394,7 @@ export default function Alumni() {
                 </div>
 
                 <div className="pt-2 mt-auto">
-                  {connectionStatuses[person._id]?.status === 'accepted' ? (
+                  {connectionStatuses[person._id] && connectionStatuses[person._id].status === 'accepted' ? (
                     <Button 
                       size="sm" 
                       className="w-full gap-2"
@@ -403,7 +403,7 @@ export default function Alumni() {
                       <MessageCircle className="w-4 h-4" />
                       Message
                     </Button>
-                  ) : connectionStatuses[person._id]?.status === 'pending' ? (
+                  ) : connectionStatuses[person._id] && connectionStatuses[person._id].status === 'pending' ? (
                     <Button 
                       size="sm" 
                       variant="outline" 

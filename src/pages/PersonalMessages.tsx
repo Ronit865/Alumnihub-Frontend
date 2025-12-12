@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Send, Search, Phone, Video, MoreVertical, Pin, Star, Archive, Loader2 } from "lucide-react";
+import { Send, Search, Phone, Video, MoreVertical, Pin, Star, Archive, Loader2, UserPlus } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { messageService, userService } from "@/services/ApiServices";
+import { messageService, userService, connectionService } from "@/services/ApiServices";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 
@@ -25,6 +25,13 @@ interface User {
   email: string;
   currentPosition?: string;
   graduationYear?: string;
+}
+
+interface Connection {
+  _id: string;
+  user: User;
+  status: string;
+  connectedAt: string;
 }
 
 interface Message {
@@ -52,11 +59,13 @@ export default function PersonalMessages() {
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [connections, setConnections] = useState<Connection[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [sendingMessage, setSendingMessage] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
+  const [showConnections, setShowConnections] = useState(false);
   const { toast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
@@ -64,36 +73,65 @@ export default function PersonalMessages() {
   // Handle incoming userId from navigation (e.g., from Alumni page Message button)
   useEffect(() => {
     const userId = location.state?.userId;
-    if (userId) {
-      // Create or get conversation with this user
-      const createConversationWithUser = async () => {
-        try {
-          const response = await messageService.getOrCreateConversation(userId);
-          const newConversation = response.data.data;
-          
-          // Add to conversations list if not already there
-          setConversations(prev => {
-            const exists = prev.find(c => c._id === newConversation._id);
-            if (exists) return prev;
-            return [newConversation, ...prev];
-          });
-          
-          // Select this conversation
-          setSelectedConversation(newConversation);
-        } catch (error: any) {
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: error.response?.data?.message || "Failed to create conversation"
-          });
-        }
-      };
-      
-      createConversationWithUser();
-      // Clear the state
-      navigate(location.pathname, { replace: true, state: {} });
+    
+    // Validate userId
+    if (!userId || typeof userId !== 'string' || userId.trim() === '') {
+      return; // Skip if no valid userId
     }
-  }, [location.state?.userId]);
+
+    if (!currentUser) {
+      return; // Wait for current user to load
+    }
+
+    // Don't create conversation with yourself
+    if (userId === currentUser._id) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Cannot message yourself"
+      });
+      navigate(location.pathname, { replace: true, state: {} });
+      return;
+    }
+
+    // Create or get conversation with this user
+    const createConversationWithUser = async () => {
+      try {
+        console.log("Creating conversation with userId:", userId);
+        const response = await messageService.getOrCreateConversation(userId);
+        console.log("Conversation response:", response);
+        
+        const newConversation = response.data?.data;
+        
+        if (!newConversation) {
+          throw new Error("Invalid response from server");
+        }
+
+        // Add to conversations list if not already there
+        setConversations(prev => {
+          if (!Array.isArray(prev)) return [newConversation];
+          const exists = prev.find(c => c?._id === newConversation._id);
+          if (exists) return prev;
+          return [newConversation, ...prev];
+        });
+        
+        // Select this conversation
+        setSelectedConversation(newConversation);
+      } catch (error: any) {
+        console.error("Error creating conversation:", error);
+        console.error("Error response:", error.response);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: error.response?.data?.message || error.message || "Failed to create conversation"
+        });
+      }
+    };
+    
+    createConversationWithUser();
+    // Clear the state
+    navigate(location.pathname, { replace: true, state: {} });
+  }, [location.state?.userId, currentUser]);
 
   // Fetch current user
   useEffect(() => {
@@ -108,20 +146,22 @@ export default function PersonalMessages() {
     fetchCurrentUser();
   }, []);
 
-  // Fetch conversations
+  // Fetch conversations and connections
   useEffect(() => {
     fetchConversations();
+    fetchConnections();
   }, []);
 
   const fetchConversations = async () => {
     try {
       setLoading(true);
       const response = await messageService.getUserConversations();
-      setConversations(response.data.data);
+      const conversationsData = response.data?.data || [];
+      setConversations(Array.isArray(conversationsData) ? conversationsData : []);
       
       // Select first conversation if exists
-      if (response.data.data.length > 0 && !selectedConversation) {
-        setSelectedConversation(response.data.data[0]);
+      if (conversationsData.length > 0 && !selectedConversation) {
+        setSelectedConversation(conversationsData[0]);
       }
     } catch (error: any) {
       toast({
@@ -131,6 +171,16 @@ export default function PersonalMessages() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchConnections = async () => {
+    try {
+      const response = await connectionService.getConnections({ status: 'accepted' });
+      const connectionsData = response.data?.data || [];
+      setConnections(Array.isArray(connectionsData) ? connectionsData : []);
+    } catch (error: any) {
+      console.error('Error fetching connections:', error);
     }
   };
 
@@ -145,7 +195,8 @@ export default function PersonalMessages() {
     try {
       setLoadingMessages(true);
       const response = await messageService.getConversationMessages(conversationId, { limit: 50 });
-      setMessages(response.data.data.messages);
+      const messagesData = response.data?.data?.messages || [];
+      setMessages(Array.isArray(messagesData) ? messagesData : []);
       
       // Mark as read
       await messageService.markMessagesAsRead(conversationId);
@@ -168,7 +219,10 @@ export default function PersonalMessages() {
       const response = await messageService.sendMessage(selectedConversation._id, newMessage.trim());
       
       // Add message to current messages
-      setMessages(prev => [...prev, response.data.data]);
+      const newMsg = response.data?.data;
+      if (newMsg) {
+        setMessages(prev => Array.isArray(prev) ? [...prev, newMsg] : [newMsg]);
+      }
       setNewMessage("");
       
       // Update conversation list
@@ -181,6 +235,36 @@ export default function PersonalMessages() {
       });
     } finally {
       setSendingMessage(false);
+    }
+  };
+
+  const handleStartConversation = async (userId: string) => {
+    try {
+      const response = await messageService.getOrCreateConversation(userId);
+      const newConversation = response.data?.data;
+      
+      if (!newConversation) {
+        throw new Error("Invalid response from server");
+      }
+
+      // Add to conversations list if not already there
+      setConversations(prev => {
+        if (!Array.isArray(prev)) return [newConversation];
+        const exists = prev.find(c => c?._id === newConversation._id);
+        if (exists) return prev;
+        return [newConversation, ...prev];
+      });
+      
+      // Select this conversation
+      setSelectedConversation(newConversation);
+      setShowConnections(false);
+    } catch (error: any) {
+      console.error("Error creating conversation:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.response?.data?.message || "Failed to start conversation"
+      });
     }
   };
 
@@ -204,7 +288,16 @@ export default function PersonalMessages() {
   };
 
   const filteredConversations = (conversations || []).filter(conv =>
-    conv.participant?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+    conv && conv.participant?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredConnections = (connections || []).filter(conn =>
+    conn && conn.user?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Get connections that don't have conversations yet
+  const availableConnections = filteredConnections.filter(conn => 
+    !conversations.some(conv => conv.participant?._id === conn.user._id)
   );
 
   return (
@@ -223,8 +316,54 @@ export default function PersonalMessages() {
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
       ) : !conversations || conversations.length === 0 ? (
-        <Card className="p-12 text-center">
-          <p className="text-muted-foreground">No conversations yet. Connect with alumni to start messaging!</p>
+        <Card className="p-12">
+          <div className="text-center mb-6">
+            <h3 className="text-lg font-semibold mb-2">No conversations yet</h3>
+            <p className="text-muted-foreground mb-6">
+              {connections.length > 0 
+                ? "Start a conversation with your connections" 
+                : "Connect with alumni to start messaging!"}
+            </p>
+            {connections.length === 0 && (
+              <Button onClick={() => navigate('/alumni')}>
+                Browse Alumni Directory
+              </Button>
+            )}
+          </div>
+
+          {connections.length > 0 && (
+            <div>
+              <h4 className="font-semibold mb-4">Your Connections ({connections.length})</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {connections.map((connection) => (
+                  <Card key={connection._id} className="p-4 hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Avatar className="w-12 h-12">
+                        <AvatarImage src={connection.user.avatar} />
+                        <AvatarFallback className="bg-primary/20 text-primary font-medium">
+                          {connection.user.name?.split(' ').map(n => n[0]).join('') || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <h5 className="font-medium truncate">{connection.user.name}</h5>
+                        <p className="text-sm text-muted-foreground truncate">
+                          {connection.user.currentPosition || connection.user.email}
+                        </p>
+                      </div>
+                    </div>
+                    <Button 
+                      size="sm" 
+                      className="w-full"
+                      onClick={() => handleStartConversation(connection.user._id)}
+                    >
+                      <Send className="w-4 h-4 mr-2" />
+                      Start Conversation
+                    </Button>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
         </Card>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[700px]">
@@ -232,15 +371,29 @@ export default function PersonalMessages() {
           <Card className="lg:col-span-1">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <h2 className="font-semibold">Conversations</h2>
-                <Button variant="ghost" size="icon">
-                  <MoreVertical className="w-4 h-4" />
-                </Button>
+                <h2 className="font-semibold">
+                  {showConnections ? 'Start New Chat' : 'Conversations'}
+                </h2>
+                <div className="flex gap-1">
+                  {availableConnections.length > 0 && (
+                    <Button 
+                      variant={showConnections ? "default" : "ghost"} 
+                      size="icon"
+                      onClick={() => setShowConnections(!showConnections)}
+                      title="Start new conversation"
+                    >
+                      <UserPlus className="w-4 h-4" />
+                    </Button>
+                  )}
+                  <Button variant="ghost" size="icon">
+                    <MoreVertical className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
-                  placeholder="Search conversations..."
+                  placeholder={showConnections ? "Search connections..." : "Search conversations..."}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
@@ -249,54 +402,93 @@ export default function PersonalMessages() {
             </CardHeader>
             <CardContent className="p-0">
               <ScrollArea className="h-[580px]">
-                <div className="space-y-1 p-3">
-                  {filteredConversations.map((conversation) => (
-                    <div
-                      key={conversation._id}
-                      onClick={() => setSelectedConversation(conversation)}
-                      className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all duration-200 hover:bg-accent/80 ${
-                        selectedConversation?._id === conversation._id 
-                          ? "bg-primary/10 border-l-4 border-l-primary" 
-                          : "hover:shadow-sm"
-                      }`}
-                    >
-                      <div className="relative">
-                        <Avatar className="w-10 h-10">
-                          <AvatarImage src={conversation.participant?.avatar} />
-                          <AvatarFallback className="bg-primary/20 text-primary font-medium">
-                            {conversation.participant?.name?.split(' ').map(n => n[0]).join('') || 'U'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
+                {showConnections ? (
+                  <div className="space-y-1 p-3">
+                    {availableConnections.length === 0 ? (
+                      <div className="p-8 text-center">
+                        <p className="text-sm text-muted-foreground">
+                          All your connections have active conversations
+                        </p>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1">
-                            <h3 className="font-medium text-sm truncate">
-                              {conversation.participant?.name}
-                              {conversation.participant?.graduationYear && typeof conversation.participant.graduationYear === 'string' && ` '${conversation.participant.graduationYear.slice(-2)}`}
-                            </h3>
+                    ) : (
+                      availableConnections.map((connection) => (
+                        <div
+                          key={connection._id}
+                          onClick={() => handleStartConversation(connection.user._id)}
+                          className="flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all duration-200 hover:bg-accent/80 hover:shadow-sm"
+                        >
+                          <div className="relative">
+                            <Avatar className="w-10 h-10">
+                              <AvatarImage src={connection.user.avatar} />
+                              <AvatarFallback className="bg-primary/20 text-primary font-medium">
+                                {connection.user.name?.split(' ').map(n => n[0]).join('') || 'U'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
                           </div>
-                          {conversation.lastMessageTime && (
-                            <span className="text-xs text-muted-foreground">
-                              {getTimeAgo(conversation.lastMessageTime).replace(' ago', '')}
-                            </span>
-                          )}
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-medium text-sm truncate">
+                              {connection.user.name}
+                            </h3>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {connection.user.currentPosition || connection.user.email}
+                            </p>
+                          </div>
+                          <UserPlus className="w-4 h-4 text-muted-foreground" />
                         </div>
-                        <div className="flex items-center justify-between">
-                          <p className="text-sm text-muted-foreground truncate">
-                            {conversation.lastMessage?.content || "Start a conversation"}
-                          </p>
-                          {conversation.lastMessage && 
-                           !conversation.lastMessage.read && 
-                           conversation.lastMessage.sender !== currentUser?._id && (
-                            <div className="w-2 h-2 bg-primary rounded-full" />
-                          )}
+                      ))
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-1 p-3">
+                    {filteredConversations.map((conversation) => (
+                      <div
+                        key={conversation._id}
+                        onClick={() => setSelectedConversation(conversation)}
+                        className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all duration-200 hover:bg-accent/80 ${
+                          selectedConversation?._id === conversation._id 
+                            ? "bg-primary/10 border-l-4 border-l-primary" 
+                            : "hover:shadow-sm"
+                        }`}
+                      >
+                        <div className="relative">
+                          <Avatar className="w-10 h-10">
+                            <AvatarImage src={conversation.participant?.avatar} />
+                            <AvatarFallback className="bg-primary/20 text-primary font-medium">
+                              {conversation.participant?.name?.split(' ').map(n => n[0]).join('') || 'U'}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1">
+                              <h3 className="font-medium text-sm truncate">
+                                {conversation.participant?.name}
+                                {conversation.participant?.graduationYear && typeof conversation.participant.graduationYear === 'string' && ` '${conversation.participant.graduationYear.slice(-2)}`}
+                              </h3>
+                            </div>
+                            {conversation.lastMessageTime && (
+                              <span className="text-xs text-muted-foreground">
+                                {getTimeAgo(conversation.lastMessageTime).replace(' ago', '')}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm text-muted-foreground truncate">
+                              {conversation.lastMessage?.content || "Start a conversation"}
+                            </p>
+                            {conversation.lastMessage && 
+                             !conversation.lastMessage.read && 
+                             conversation.lastMessage.sender !== currentUser?._id && (
+                              <div className="w-2 h-2 bg-primary rounded-full" />
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </ScrollArea>
             </CardContent>
           </Card>

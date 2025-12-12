@@ -29,13 +29,9 @@ export default function Connections() {
         connectionService.getConnections({ status: 'accepted' })
       ]);
 
-      if (pendingRes.success) {
-        setPendingRequests(pendingRes.data || []);
-      }
-
-      if (connectionsRes.success) {
-        setMyConnections(connectionsRes.data || []);
-      }
+      // Backend returns ApiResponse: { statusCode, data, message, success }
+      setPendingRequests(pendingRes?.data || []);
+      setMyConnections(connectionsRes?.data || []);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -50,15 +46,13 @@ export default function Connections() {
   const handleAccept = async (connectionId: string) => {
     try {
       setActionLoading(prev => ({ ...prev, [connectionId]: true }));
-      const response = await connectionService.acceptConnectionRequest(connectionId);
+      await connectionService.acceptConnectionRequest(connectionId);
 
-      if (response.success) {
-        toast({
-          title: "Connection accepted!",
-          description: "You are now connected.",
-        });
-        fetchData();
-      }
+      toast({
+        title: "Connection accepted!",
+        description: "You are now connected.",
+      });
+      fetchData();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -73,15 +67,13 @@ export default function Connections() {
   const handleReject = async (connectionId: string) => {
     try {
       setActionLoading(prev => ({ ...prev, [connectionId]: true }));
-      const response = await connectionService.rejectConnectionRequest(connectionId);
+      await connectionService.rejectConnectionRequest(connectionId);
 
-      if (response.success) {
-        toast({
-          title: "Connection rejected",
-          description: "Request has been declined.",
-        });
-        fetchData();
-      }
+      toast({
+        title: "Connection rejected",
+        description: "Request has been declined.",
+      });
+      fetchData();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -94,7 +86,7 @@ export default function Connections() {
   };
 
   const handleMessage = (userId: string) => {
-    navigate('/personal-messages', { state: { userId } });
+    navigate('/messages', { state: { userId } });
   };
 
   const getUserInitials = (name: string) => {
@@ -156,6 +148,13 @@ export default function Connections() {
                 <div className="text-center py-12">
                   <UserPlus className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
                   <p className="text-muted-foreground">No pending connection requests</p>
+                  <Button
+                    variant="outline"
+                    className="mt-4"
+                    onClick={() => navigate('/alumni')}
+                  >
+                    Browse Alumni
+                  </Button>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -262,11 +261,15 @@ export default function Connections() {
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold">{connection.user?.name || 'Anonymous'}</h4>
-                        <p className="text-sm text-muted-foreground">
+                        <h4 className="font-semibold truncate">{connection.user?.name || 'Anonymous'}</h4>
+                        <p className="text-sm text-muted-foreground truncate">
                           {connection.user?.currentPosition || 'Alumni'}
-                          {connection.user?.graduationYear && ` • Class of ${connection.user.graduationYear}`}
                         </p>
+                        {connection.user?.graduationYear && (
+                          <p className="text-xs text-muted-foreground">
+                            Class of {connection.user.graduationYear}
+                          </p>
+                        )}
                         <Button
                           size="sm"
                           variant="ghost"

@@ -72,7 +72,7 @@ export function AppHeader() {
       if (notification.type === 'connection') {
         navigate('/connections');
       } else if (notification.type === 'message') {
-        navigate('/personal-messages');
+        navigate('/messages');
       } else if (notification.postId) {
         navigate(`/communications/post/${notification.postId}`);
       } else if (notification.type === 'event') {
