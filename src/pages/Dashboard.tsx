@@ -55,36 +55,25 @@ export default function Dashboard() {
     try {
       setLoading(true);
 
-      // Fetch alumni data - Fix: Extract data from response object
+      // Fetch alumni data
       const alumniResponse = await userService.getAllUsers();
-      console.log('Full Alumni API response structure:', alumniResponse); // Enhanced debug
-      console.log('Alumni data array:', alumniResponse?.data); // Check data array
       
       // Extract data from the response object properly
       const allUsers = Array.isArray(alumniResponse?.data) 
         ? alumniResponse.data 
         : [];
       
-      console.log('Processed users count:', allUsers.length); // Debug count
-      
       // Filter verified alumni
       const verifiedAlumni = allUsers.filter((user: Alumni) => {
-        console.log('User role:', user.role); // Debug user roles
         return user.role?.toLowerCase() === "alumni";
       });
 
-      console.log('Verified alumni count:', verifiedAlumni.length); // Debug filtered count
-
-      // Fetch events data - Fix: Handle response structure properly
+      // Fetch events data
       const eventsResponse = await eventService.getEvents();
-      console.log('Full Events API response structure:', eventsResponse); // Enhanced debug
-      console.log('Events data array:', eventsResponse?.data); // Check data array
       
       const allEvents = eventsResponse?.success && Array.isArray(eventsResponse.data) 
         ? eventsResponse.data 
         : [];
-      
-      console.log('Processed events count:', allEvents.length); // Debug count
       
       // Filter active events
       const activeEvents = allEvents.filter((event: Event) => event.isactive);
@@ -111,9 +100,7 @@ export default function Dashboard() {
       setFeaturedAlumni(featured);
 
     } catch (error: any) {
-      console.error("Detailed error fetching dashboard data:", error);
-      console.error("Error message:", error.message);
-      console.error("Error stack:", error.stack);
+      console.error("Error fetching dashboard data:", error);
       toast.error("Failed to load dashboard data");
     } finally {
       setLoading(false);

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Filter, MapPin, Briefcase, Calendar, Loader2 } from "lucide-react";
+import { Search, Filter, MapPin, Briefcase, Calendar, Loader2, MessageCircle, UserPlus, UserCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -14,9 +14,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { adminService, userService, handleApiError } from "@/services/ApiServices";
+import { adminService, userService, connectionService, handleApiError } from "@/services/ApiServices";
 import { toast } from "@/components/ui/use-toast";
 import { useAuth } from "@/context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 // Define the User interface to match your backend model
 interface User {
@@ -37,7 +38,10 @@ export default function Alumni() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedYear, setSelectedYear] = useState("all");
   const [selectedIndustry, setSelectedIndustry] = useState("all");
+  const [connectionStatuses, setConnectionStatuses] = useState<{ [key: string]: any }>({});
+  const [loadingConnections, setLoadingConnections] = useState<{ [key: string]: boolean }>({});
   const { userType } = useAuth();
+  const navigate = useNavigate();
 
   // Fetch alumni data using React Query
   const {
@@ -149,6 +153,63 @@ export default function Alumni() {
     
     return matchesSearch && matchesYear && matchesIndustry;
   });
+
+  // Fetch connection statuses for filtered alumni
+  useEffect(() => {
+    const fetchConnectionStatuses = async () => {
+      for (const person of filteredAlumni) {
+        try {
+          const response = await connectionService.getConnectionStatus(person._id);
+          if (response.success && response.data) {
+            setConnectionStatuses(prev => ({
+              ...prev,
+              [person._id]: response.data
+            }));
+          }
+        } catch (error) {
+          console.error(`Failed to fetch connection status for ${person._id}:`, error);
+        }
+      }
+    };
+
+    if (filteredAlumni.length > 0) {
+      fetchConnectionStatuses();
+    }
+  }, [filteredAlumni.length]);
+
+  // Handle connect button click
+  const handleConnect = async (userId: string) => {
+    try {
+      setLoadingConnections(prev => ({ ...prev, [userId]: true }));
+      const response = await connectionService.sendConnectionRequest(userId);
+      
+      if (response.success) {
+        toast({
+          title: "Connection request sent!",
+          description: "Your request has been sent successfully.",
+        });
+        
+        // Update connection status
+        setConnectionStatuses(prev => ({
+          ...prev,
+          [userId]: { status: 'pending', isRequester: true }
+        }));
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send connection request",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingConnections(prev => ({ ...prev, [userId]: false }));
+    }
+  };
+
+  // Handle message button click
+  const handleMessage = (userId: string) => {
+    navigate('/personal-messages', { state: { userId } });
+  };
 
   // Loading state
   if (isLoading) {
@@ -332,18 +393,41 @@ export default function Alumni() {
                   )}
                 </div>
 
-                <div className="flex gap-2 pt-2 mt-auto">
-                  <Button size="sm" className="flex-1">
-                    Connect
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="flex-1"
-                    onClick={() => window.location.href = `mailto:${person.email}`}
-                  >
-                    Message
-                  </Button>
+                <div className="pt-2 mt-auto">
+                  {connectionStatuses[person._id]?.status === 'accepted' ? (
+                    <Button 
+                      size="sm" 
+                      className="w-full gap-2"
+                      onClick={() => handleMessage(person._id)}
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      Message
+                    </Button>
+                  ) : connectionStatuses[person._id]?.status === 'pending' ? (
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="w-full gap-2"
+                      disabled
+                    >
+                      <UserCheck className="w-4 h-4" />
+                      Request Sent
+                    </Button>
+                  ) : (
+                    <Button 
+                      size="sm" 
+                      className="w-full gap-2"
+                      onClick={() => handleConnect(person._id)}
+                      disabled={loadingConnections[person._id]}
+                    >
+                      {loadingConnections[person._id] ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <UserPlus className="w-4 h-4" />
+                      )}
+                      Connect
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>

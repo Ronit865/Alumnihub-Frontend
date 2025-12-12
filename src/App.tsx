@@ -16,6 +16,7 @@ import Donations from "./pages/Donations";
 import PersonalMessages from "./pages/PersonalMessages";
 import Communications from "./pages/Communications";
 import PostDetail from "./pages/PostDetail";
+import Connections from "./pages/Connections";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -70,6 +71,7 @@ const App = () => (
               <Route path="messages" element={<PersonalMessages />} />
               <Route path="communications" element={<Communications />} />
               <Route path="communications/post/:postId" element={<PostDetail />} />
+              <Route path="connections" element={<Connections />} />
               <Route path="settings" element={<Settings />} />
             </Route>
             

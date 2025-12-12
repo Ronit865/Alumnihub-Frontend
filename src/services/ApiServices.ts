@@ -486,6 +486,85 @@ export const notificationService = {
   },
 };
 
+// Connection Services
+export const connectionService = {
+  sendConnectionRequest: async (recipientId: string): Promise<ApiResponse> => {
+    return await api.post('/connections/request', { recipientId });
+  },
+
+  getConnectionStatus: async (userId: string): Promise<ApiResponse> => {
+    return await api.get(`/connections/status/${userId}`);
+  },
+
+  getConnections: async (params?: {
+    status?: string;
+  }): Promise<ApiResponse> => {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          queryParams.append(key, value.toString());
+        }
+      });
+    }
+    return await api.get(`/connections?${queryParams.toString()}`);
+  },
+
+  getPendingRequests: async (): Promise<ApiResponse> => {
+    return await api.get('/connections/pending');
+  },
+
+  acceptConnectionRequest: async (connectionId: string): Promise<ApiResponse> => {
+    return await api.patch(`/connections/${connectionId}/accept`);
+  },
+
+  rejectConnectionRequest: async (connectionId: string): Promise<ApiResponse> => {
+    return await api.patch(`/connections/${connectionId}/reject`);
+  },
+
+  removeConnection: async (connectionId: string): Promise<ApiResponse> => {
+    return await api.delete(`/connections/${connectionId}`);
+  },
+};
+
+// Message Services
+export const messageService = {
+  getOrCreateConversation: async (participantId: string): Promise<ApiResponse> => {
+    return await api.post('/messages/conversation', { participantId });
+  },
+
+  getUserConversations: async (): Promise<ApiResponse> => {
+    return await api.get('/messages/conversations');
+  },
+
+  sendMessage: async (conversationId: string, content: string): Promise<ApiResponse> => {
+    return await api.post('/messages/send', { conversationId, content });
+  },
+
+  getConversationMessages: async (
+    conversationId: string,
+    params?: { page?: number; limit?: number }
+  ): Promise<ApiResponse> => {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          queryParams.append(key, value.toString());
+        }
+      });
+    }
+    return await api.get(`/messages/conversation/${conversationId}?${queryParams.toString()}`);
+  },
+
+  markMessagesAsRead: async (conversationId: string): Promise<ApiResponse> => {
+    return await api.patch(`/messages/conversation/${conversationId}/read`);
+  },
+
+  getUnreadCount: async (): Promise<ApiResponse> => {
+    return await api.get('/messages/unread-count');
+  },
+};
+
 // Error handler utility
 export const handleApiError = (error: ApiError) => {
   return {
