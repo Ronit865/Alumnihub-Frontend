@@ -216,16 +216,16 @@ export function Settings() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 sm:space-y-6 md:space-y-8">
       {/* Header */}
       <div className="animate-fade-in">
-        <h1 className="text-3xl font-bold text-foreground">Settings</h1>
-        <p className="text-muted-foreground mt-2">
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Settings</h1>
+        <p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2">
           Manage your account settings, preferences, and system configuration.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Profile Settings */}
         <Card className="lg:col-span-2 bento-card gradient-surface border-card-border/50">
           <CardHeader>
@@ -238,7 +238,7 @@ export function Settings() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="flex items-center gap-6">
+            <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
               <Avatar className="h-20 w-20">
                 <AvatarImage src={admin.avatar} alt={admin.name || "Admin"} />
                 <AvatarFallback className="bg-primary/10 text-primary text-lg">
