@@ -62,6 +62,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               const adminData = JSON.parse(cachedAdmin);
               setAdmin(adminData);
               setUser(null);
+              if (adminData._id) {
+                localStorage.setItem('userId', adminData._id);
+              }
             } catch (e) {
               console.warn('Failed to parse cached admin data');
             }
@@ -73,6 +76,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               const userData = JSON.parse(cachedUser);
               setUser(userData);
               setAdmin(null);
+              if (userData._id) {
+                localStorage.setItem('userId', userData._id);
+              }
             } catch (e) {
               console.warn('Failed to parse cached user data');
             }
@@ -123,6 +129,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setAdmin(adminData);
           setUser(null);
           localStorage.setItem('cachedAdminData', JSON.stringify(adminData));
+          if (adminData._id) {
+            localStorage.setItem('userId', adminData._id);
+          }
         }
       } else {
         response = await userService.getCurrentUser();
@@ -141,6 +150,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(userData);
           setAdmin(null);
           localStorage.setItem('cachedUserData', JSON.stringify(userData));
+          if (userData._id) {
+            localStorage.setItem('userId', userData._id);
+          }
         }
       }
       
@@ -159,9 +171,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (storedUserType === 'admin') {
       setAdmin(userData as Admin);
       localStorage.setItem('cachedAdminData', JSON.stringify(userData));
+      if (userData._id) {
+        localStorage.setItem('userId', userData._id);
+      }
     } else {
       setUser(userData as User);
       localStorage.setItem('cachedUserData', JSON.stringify(userData));
+      if (userData._id) {
+        localStorage.setItem('userId', userData._id);
+      }
     }
   };
 
@@ -182,11 +200,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setAdmin(adminData);
       setUser(null);
       localStorage.setItem('cachedAdminData', JSON.stringify(adminData));
+      if (adminData._id) {
+        localStorage.setItem('userId', adminData._id);
+      }
     } else {
       const userData_ = responseUser || userData;
       setUser(userData_);
       setAdmin(null);
       localStorage.setItem('cachedUserData', JSON.stringify(userData_));
+      if (userData_._id) {
+        localStorage.setItem('userId', userData_._id);
+      }
     }
     
     setIsLoading(false);
@@ -202,6 +226,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('userType');
     localStorage.removeItem('cachedUserData');
     localStorage.removeItem('cachedAdminData');
+    localStorage.removeItem('userId');
   };
 
   const value = {

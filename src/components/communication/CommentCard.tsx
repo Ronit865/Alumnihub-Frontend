@@ -181,6 +181,16 @@ export function CommentCard({ comment, postId, onUpdate, depth = 0 }: CommentCar
     return name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U';
   };
 
+  const canDeleteComment = (): boolean => {
+    const commentTime = new Date(comment.createdAt).getTime();
+    const now = Date.now();
+    const twentyFourHours = 24 * 60 * 60 * 1000;
+    return (now - commentTime) <= twentyFourHours;
+  };
+
+  const isAuthor = comment.author?._id === userId;
+  const canDelete = isAuthor && canDeleteComment();
+
   const maxDepth = 5;
   const shouldShowReplyButton = depth < maxDepth;
 
@@ -277,7 +287,7 @@ export function CommentCard({ comment, postId, onUpdate, depth = 0 }: CommentCar
                 </Button>
               )}
 
-              {comment.author?._id === userId && (
+              {isAuthor && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -289,9 +299,13 @@ export function CommentCard({ comment, postId, onUpdate, depth = 0 }: CommentCar
                       <Edit2 className="mr-2 h-3 w-3" />
                       Edit
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleDelete} className="text-xs text-destructive focus:text-destructive">
+                    <DropdownMenuItem 
+                      onClick={handleDelete} 
+                      disabled={!canDelete}
+                      className="text-xs text-destructive focus:text-destructive cursor-pointer"
+                    >
                       <Trash2 className="mr-2 h-3 w-3" />
-                      Delete
+                      {canDelete ? 'Delete' : 'Delete (expired)'}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

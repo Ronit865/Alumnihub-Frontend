@@ -19,6 +19,46 @@ import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import { containsInappropriateContent } from "@/lib/contentFilter";
 
+// Cache helper functions
+const CACHE_KEY_PREFIX = 'chat_messages_';
+const CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours
+
+const getCachedMessages = (conversationId: string) => {
+  try {
+    const cached = localStorage.getItem(CACHE_KEY_PREFIX + conversationId);
+    if (cached) {
+      const { messages, timestamp } = JSON.parse(cached);
+      // Check if cache is still valid (less than 24 hours old)
+      if (Date.now() - timestamp < CACHE_EXPIRY) {
+        return messages;
+      }
+    }
+  } catch (error) {
+    console.error('Error reading cache:', error);
+  }
+  return null;
+};
+
+const setCachedMessages = (conversationId: string, messages: any[]) => {
+  try {
+    const cacheData = {
+      messages,
+      timestamp: Date.now()
+    };
+    localStorage.setItem(CACHE_KEY_PREFIX + conversationId, JSON.stringify(cacheData));
+  } catch (error) {
+    console.error('Error writing cache:', error);
+  }
+};
+
+const clearCachedMessages = (conversationId: string) => {
+  try {
+    localStorage.removeItem(CACHE_KEY_PREFIX + conversationId);
+  } catch (error) {
+    console.error('Error clearing cache:', error);
+  }
+};
+
 interface User {
   _id: string;
   name: string;
@@ -148,7 +188,11 @@ export default function PersonalMessages() {
     const fetchCurrentUser = async () => {
       try {
         const response = await userService.getCurrentUser();
-        setCurrentUser(response.data.data);
+        console.log('Current user response:', response);
+        // Handle different response structures
+        const userData = response?.data?.data || response?.data || response;
+        console.log('Current user data:', userData);
+        setCurrentUser(userData);
       } catch (error) {
         console.error('Error fetching current user:', error);
       }
@@ -214,28 +258,59 @@ export default function PersonalMessages() {
     }
   }, [messages]);
 
-  const fetchMessages = async (conversationId: string) => {
+  const fetchMessages = async (conversationId: string, skipCache = false) => {
     try {
+      // Load from cache immediately if available
+      if (!skipCache) {
+        const cachedMessages = getCachedMessages(conversationId);
+        if (cachedMessages && cachedMessages.length > 0) {
+          setMessages(cachedMessages);
+          setLoadingMessages(false);
+          // Scroll to bottom immediately with cached data
+          setTimeout(() => scrollToBottom('auto'), 100);
+          // Fetch fresh data in background without showing loader
+          fetchMessagesFromServer(conversationId, false);
+          return;
+        }
+      }
+      
+      // No cache, show loading
       setLoadingMessages(true);
-      const response = await messageService.getConversationMessages(conversationId, { limit: 50 });
-      console.log('Messages API Response:', response);
-      const messagesData = response?.data?.messages || response?.data || [];
-      console.log('Messages Data:', messagesData);
-      setMessages(Array.isArray(messagesData) ? messagesData : []);
-      
-      // Mark as read
-      await messageService.markMessagesAsRead(conversationId);
-      
-      // Scroll to bottom after loading messages (instant for initial load)
-      setTimeout(() => scrollToBottom('auto'), 100);
+      await fetchMessagesFromServer(conversationId, true);
     } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Error",
         description: error.response?.data?.message || "Failed to fetch messages"
       });
-    } finally {
       setLoadingMessages(false);
+    }
+  };
+
+  const fetchMessagesFromServer = async (conversationId: string, showLoading = true) => {
+    try {
+      const response = await messageService.getConversationMessages(conversationId, { limit: 50 });
+      const messagesData = response?.data?.messages || response?.data || [];
+      const finalMessages = Array.isArray(messagesData) ? messagesData : [];
+      
+      setMessages(finalMessages);
+      
+      // Cache the messages
+      if (finalMessages.length > 0) {
+        setCachedMessages(conversationId, finalMessages);
+      }
+      
+      // Mark as read
+      await messageService.markMessagesAsRead(conversationId);
+      
+      // Scroll to bottom after loading messages
+      if (showLoading) {
+        setTimeout(() => scrollToBottom('auto'), 100);
+      }
+    } finally {
+      if (showLoading) {
+        setLoadingMessages(false);
+      }
     }
   };
 
@@ -261,10 +336,11 @@ export default function PersonalMessages() {
       const newMsg = response?.data;
       console.log('New message:', newMsg);
       if (newMsg) {
-        setMessages(prev => {
-          const updated = Array.isArray(prev) ? [...prev, newMsg] : [newMsg];
-          return updated;
-        });
+        const updatedMessages = Array.isArray(messages) ? [...messages, newMsg] : [newMsg];
+        setMessages(updatedMessages);
+        
+        // Update cache immediately
+        setCachedMessages(selectedConversation._id, updatedMessages);
       }
       setNewMessage("");
       
@@ -326,8 +402,14 @@ export default function PersonalMessages() {
     try {
       await messageService.deleteMessage(messageId);
       
-      // Remove message from UI
-      setMessages(prev => prev.filter(m => m._id !== messageId));
+      // Remove message from UI and cache
+      const updatedMessages = messages.filter(m => m._id !== messageId);
+      setMessages(updatedMessages);
+      
+      // Update cache
+      if (selectedConversation) {
+        setCachedMessages(selectedConversation._id, updatedMessages);
+      }
       
       // Refresh conversations to update last message
       fetchConversations();
@@ -607,32 +689,23 @@ export default function PersonalMessages() {
                     {messages.map((message) => {
                       const isMe = message.sender._id === currentUser?._id;
                       const canDelete = isMe && canDeleteMessage(message.createdAt);
+                      
+                      // Debug logging
+                      console.log('Message:', message.content, {
+                        isMe,
+                        canDelete,
+                        senderId: message.sender._id,
+                        currentUserId: currentUser?._id,
+                        createdAt: message.createdAt
+                      });
+                      
                       return (
                         <div
                           key={message._id}
                           className={`flex ${isMe ? "justify-end" : "justify-start"}`}
                         >
-                          <div className={`flex gap-2 max-w-[70%] ${isMe ? "flex-row-reverse" : ""}`}>
-                            {!isMe && (
-                              <Avatar className="w-8 h-8">
-                                <AvatarImage src={message.sender.avatar} />
-                                <AvatarFallback className="bg-primary/20 text-primary text-xs">
-                                  {message.sender.name.split(' ').map(n => n[0]).join('')}
-                                </AvatarFallback>
-                              </Avatar>
-                            )}
-                            <div className="group relative flex items-center gap-1">
-                              {canDelete && isMe && (
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="opacity-0 group-hover:opacity-100 hover:bg-destructive/10 transition-all h-7 w-7 flex-shrink-0"
-                                  onClick={() => handleDeleteMessage(message._id)}
-                                  title="Delete message (available for 24 hours)"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5 text-destructive" />
-                                </Button>
-                              )}
+                          <div className={`flex items-end gap-1 max-w-[70%] group ${isMe ? "flex-row" : "flex-row-reverse"}`}>
+                            <div className="relative">
                               <div className={`rounded-2xl px-4 py-2 ${
                                 isMe 
                                   ? "bg-primary text-primary-foreground" 
@@ -647,18 +720,39 @@ export default function PersonalMessages() {
                                   {getMessageTime(message.createdAt)}
                                 </p>
                               </div>
-                              {canDelete && !isMe && (
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="opacity-0 group-hover:opacity-100 hover:bg-destructive/10 transition-all h-7 w-7 flex-shrink-0"
-                                  onClick={() => handleDeleteMessage(message._id)}
-                                  title="Delete message (available for 24 hours)"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5 text-destructive" />
-                                </Button>
-                              )}
                             </div>
+                            {/* Dropdown menu for message actions */}
+                            {isMe && (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 mb-1"
+                                  >
+                                    <MoreVertical className="w-4 h-4 text-muted-foreground" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem
+                                    onClick={() => handleDeleteMessage(message._id)}
+                                    disabled={!canDelete}
+                                    className="text-destructive focus:text-destructive cursor-pointer"
+                                  >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    {canDelete ? "Delete message" : "Delete (expired)"}
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )}
+                            {!isMe && (
+                              <Avatar className="w-8 h-8">
+                                <AvatarImage src={message.sender.avatar} />
+                                <AvatarFallback className="bg-primary/20 text-primary text-xs">
+                                  {message.sender.name.split(' ').map(n => n[0]).join('')}
+                                </AvatarFallback>
+                              </Avatar>
+                            )}
                           </div>
                         </div>
                       );

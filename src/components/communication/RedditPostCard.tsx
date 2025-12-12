@@ -99,6 +99,22 @@ export function RedditPostCard({ post, onUpdate }: RedditPostProps) {
     return name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U';
   };
 
+  const canDeletePost = (): boolean => {
+    const postTime = new Date(post.createdAt).getTime();
+    const now = Date.now();
+    const twentyFourHours = 24 * 60 * 60 * 1000;
+    return (now - postTime) <= twentyFourHours;
+  };
+
+  const isAuthor = post.author?._id === localStorage.getItem('userId');
+  const canDelete = isAuthor && canDeletePost();
+
+  // Debug logging
+  console.log('Post author ID:', post.author?._id);
+  console.log('Current user ID:', localStorage.getItem('userId'));
+  console.log('Is author:', isAuthor);
+  console.log('Can delete:', canDelete);
+
   return (
     <Card 
       className="bg-card border border-border hover:border-accent-foreground/20 transition-all duration-200 cursor-pointer"
@@ -163,15 +179,19 @@ export function RedditPostCard({ post, onUpdate }: RedditPostProps) {
                   <Share className="mr-2 h-4 w-4" />
                   Share
                 </DropdownMenuItem>
-                {post.author?._id === localStorage.getItem('userId') && (
+                {isAuthor && (
                   <>
                     <DropdownMenuItem>
                       <Edit className="mr-2 h-4 w-4" />
                       Edit
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleDelete} className="text-destructive">
+                    <DropdownMenuItem 
+                      onClick={handleDelete} 
+                      disabled={!canDelete}
+                      className="text-destructive focus:text-destructive cursor-pointer"
+                    >
                       <Trash2 className="mr-2 h-4 w-4" />
-                      Delete
+                      {canDelete ? 'Delete' : 'Delete (expired)'}
                     </DropdownMenuItem>
                   </>
                 )}

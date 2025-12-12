@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { AdminToggle } from "./admin-toggle";
 import { useAuth } from "@/context/AuthContext";
 import { authService, notificationService, messageService } from "@/services/ApiServices";
 import { useNavigate } from "react-router-dom";
@@ -75,56 +76,63 @@ export function AppHeader() {
   const handleNotificationClick = async (notification: any) => {
     try {
       if (!notification.read) {
-        await notificationService.markAsRead([notification._id]);
-        setNotifications(prev => 
+        await notificationService.markAsRead(notification._id);
+        setUnreadCount(prev => Math.max(0, prev - 1));
+        setNotifications(prev =>
           prev.map(n => n._id === notification._id ? { ...n, read: true } : n)
         );
-        setUnreadCount(prev => Math.max(0, prev - 1));
       }
-      
+
       setNotificationsOpen(false);
-      
-      if (notification.link) {
-        navigate(notification.link);
+
+      // Navigate based on notification type
+      if (notification.type === 'connection') {
+        navigate('/connections');
+      } else if (notification.type === 'message') {
+        navigate('/messages');
+      } else if (notification.postId) {
+        navigate(`/communications/post/${notification.postId}`);
+      } else if (notification.type === 'event') {
+        navigate('/events');
+      } else if (notification.type === 'donation') {
+        navigate('/donations');
       }
     } catch (error) {
-      console.error("Failed to mark notification as read:", error);
+      console.error("Failed to handle notification:", error);
     }
   };
 
-  const formatTimestamp = (timestamp: string) => {
-    try {
-      const date = new Date(timestamp);
-      const now = new Date();
-      const diffMs = now.getTime() - date.getTime();
-      const diffMins = Math.floor(diffMs / 60000);
-      const diffHours = Math.floor(diffMs / 3600000);
-      const diffDays = Math.floor(diffMs / 86400000);
-      
-      if (diffMins < 1) return 'Just now';
-      if (diffMins < 60) return `${diffMins}m ago`;
-      if (diffHours < 24) return `${diffHours}h ago`;
-      if (diffDays < 7) return `${diffDays}d ago`;
-      return date.toLocaleDateString();
-    } catch {
-      return timestamp;
-    }
-  };
-
+  // Get notification icon
   const getNotificationIcon = (type: string) => {
     switch (type) {
-      case 'comment':
-      case 'reply':
-        return <MessageSquare className="w-5 h-5 text-blue-500" />;
-      case 'upvote':
-        return <Heart className="w-5 h-5 text-red-500" />;
-      case 'event':
-        return <Calendar className="w-5 h-5 text-green-500" />;
       case 'connection':
-        return <UserPlus className="w-5 h-5 text-purple-500" />;
+        return <UserPlus className="w-4 h-4 text-primary" />;
+      case 'message':
+        return <MessageCircle className="w-4 h-4 text-purple-500" />;
+      case 'reply':
+      case 'comment':
+        return <MessageSquare className="w-4 h-4 text-blue-500" />;
+      case 'event':
+        return <Calendar className="w-4 h-4 text-green-500" />;
+      case 'donation':
+        return <Heart className="w-4 h-4 text-red-500" />;
       default:
-        return <Bell className="w-5 h-5 text-muted-foreground" />;
+        return <Bell className="w-4 h-4 text-muted-foreground" />;
     }
+  };
+
+  // Format timestamp
+  const formatTimestamp = (timestamp: string) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (diffInSeconds < 60) return 'just now';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+    
+    return date.toLocaleDateString();
   };
 
   const handleLogout = async () => {
@@ -171,19 +179,7 @@ export function AppHeader() {
             <div className="w-8 h-8 rounded-full bg-muted animate-pulse"></div>
           </div>
         </div>
-      </header>
-    );
-  }
-
-  return (
-    <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 border-l-0">
-      <div className="container flex h-16 items-center justify-between px-4">
-        <div className="flex items-center gap-2">
-          <SidebarTrigger className="md:hidden" />
-        </div>
-
-        <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
-          {/* Personal Messages Button with Dropdown */}
+      </header>with Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button 
@@ -236,7 +232,21 @@ export function AppHeader() {
                 </>
               )}
             </DropdownMenuContent>
-          </DropdownMenu>
+          </DropdownMenuTrigger className="p-2" />
+          <div className="hidden md:block">
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
+          {/* Personal Messages Button */}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="relative h-8 w-8 sm:h-10 sm:w-10"
+            onClick={() => navigate('/messages')}
+          >
+            <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+          </Button>
 
           <DropdownMenu open={notificationsOpen} onOpenChange={setNotificationsOpen}>
             <DropdownMenuTrigger asChild>
@@ -305,6 +315,12 @@ export function AppHeader() {
                   <Button
                     variant="ghost"
                     className="w-full text-sm"
+      
+      {/* Chat Dialog Popup */}
+      <ChatDialog 
+        open={chatDialogOpen} 
+        onOpenChange={setChatDialogOpen}
+      />
                     onClick={() => {
                       setNotificationsOpen(false);
                       navigate('/communications?tab=notifications');
@@ -364,12 +380,6 @@ export function AppHeader() {
           </DropdownMenu>
         </div>
       </div>
-      
-      {/* Chat Dialog Popup */}
-      <ChatDialog 
-        open={chatDialogOpen} 
-        onOpenChange={setChatDialogOpen}
-      />
     </header>
   );
 }
