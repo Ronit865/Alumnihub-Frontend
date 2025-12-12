@@ -101,7 +101,7 @@ export default function PersonalMessages() {
         const response = await messageService.getOrCreateConversation(userId);
         console.log("Conversation response:", response);
         
-        const newConversation = response.data?.data;
+        const newConversation = response?.data;
         
         if (!newConversation) {
           throw new Error("Invalid response from server");
@@ -156,7 +156,9 @@ export default function PersonalMessages() {
     try {
       setLoading(true);
       const response = await messageService.getUserConversations();
-      const conversationsData = response.data?.data || [];
+      console.log('Conversations API Response:', response);
+      const conversationsData = response?.data || [];
+      console.log('Conversations Data:', conversationsData);
       setConversations(Array.isArray(conversationsData) ? conversationsData : []);
       
       // Select first conversation if exists
@@ -164,6 +166,7 @@ export default function PersonalMessages() {
         setSelectedConversation(conversationsData[0]);
       }
     } catch (error: any) {
+      console.error('Error fetching conversations:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -177,7 +180,9 @@ export default function PersonalMessages() {
   const fetchConnections = async () => {
     try {
       const response = await connectionService.getConnections({ status: 'accepted' });
-      const connectionsData = response.data?.data || [];
+      console.log('Connections API Response:', response);
+      const connectionsData = response?.data || [];
+      console.log('Connections Data:', connectionsData);
       setConnections(Array.isArray(connectionsData) ? connectionsData : []);
     } catch (error: any) {
       console.error('Error fetching connections:', error);
@@ -195,7 +200,9 @@ export default function PersonalMessages() {
     try {
       setLoadingMessages(true);
       const response = await messageService.getConversationMessages(conversationId, { limit: 50 });
-      const messagesData = response.data?.data?.messages || [];
+      console.log('Messages API Response:', response);
+      const messagesData = response?.data?.messages || response?.data || [];
+      console.log('Messages Data:', messagesData);
       setMessages(Array.isArray(messagesData) ? messagesData : []);
       
       // Mark as read
@@ -217,9 +224,11 @@ export default function PersonalMessages() {
     try {
       setSendingMessage(true);
       const response = await messageService.sendMessage(selectedConversation._id, newMessage.trim());
+      console.log('Send message response:', response);
       
       // Add message to current messages
-      const newMsg = response.data?.data;
+      const newMsg = response?.data;
+      console.log('New message:', newMsg);
       if (newMsg) {
         setMessages(prev => Array.isArray(prev) ? [...prev, newMsg] : [newMsg]);
       }
@@ -241,7 +250,8 @@ export default function PersonalMessages() {
   const handleStartConversation = async (userId: string) => {
     try {
       const response = await messageService.getOrCreateConversation(userId);
-      const newConversation = response.data?.data;
+      console.log('Start conversation response:', response);
+      const newConversation = response?.data;
       
       if (!newConversation) {
         throw new Error("Invalid response from server");
@@ -315,65 +325,13 @@ export default function PersonalMessages() {
         <div className="flex items-center justify-center h-[700px]">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
-      ) : !conversations || conversations.length === 0 ? (
-        <Card className="p-12">
-          <div className="text-center mb-6">
-            <h3 className="text-lg font-semibold mb-2">No conversations yet</h3>
-            <p className="text-muted-foreground mb-6">
-              {connections.length > 0 
-                ? "Start a conversation with your connections" 
-                : "Connect with alumni to start messaging!"}
-            </p>
-            {connections.length === 0 && (
-              <Button onClick={() => navigate('/alumni')}>
-                Browse Alumni Directory
-              </Button>
-            )}
-          </div>
-
-          {connections.length > 0 && (
-            <div>
-              <h4 className="font-semibold mb-4">Your Connections ({connections.length})</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {connections.map((connection) => (
-                  <Card key={connection._id} className="p-4 hover:shadow-md transition-shadow">
-                    <div className="flex items-center gap-3 mb-3">
-                      <Avatar className="w-12 h-12">
-                        <AvatarImage src={connection.user.avatar} />
-                        <AvatarFallback className="bg-primary/20 text-primary font-medium">
-                          {connection.user.name?.split(' ').map(n => n[0]).join('') || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <h5 className="font-medium truncate">{connection.user.name}</h5>
-                        <p className="text-sm text-muted-foreground truncate">
-                          {connection.user.currentPosition || connection.user.email}
-                        </p>
-                      </div>
-                    </div>
-                    <Button 
-                      size="sm" 
-                      className="w-full"
-                      onClick={() => handleStartConversation(connection.user._id)}
-                    >
-                      <Send className="w-4 h-4 mr-2" />
-                      Start Conversation
-                    </Button>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          )}
-        </Card>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[700px]">
           {/* Conversations List */}
           <Card className="lg:col-span-1">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <h2 className="font-semibold">
-                  {showConnections ? 'Start New Chat' : 'Conversations'}
-                </h2>
+                <h2 className="font-semibold">Messages</h2>
                 <div className="flex gap-1">
                   {availableConnections.length > 0 && (
                     <Button 
@@ -385,15 +343,12 @@ export default function PersonalMessages() {
                       <UserPlus className="w-4 h-4" />
                     </Button>
                   )}
-                  <Button variant="ghost" size="icon">
-                    <MoreVertical className="w-4 h-4" />
-                  </Button>
                 </div>
               </div>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
-                  placeholder={showConnections ? "Search connections..." : "Search conversations..."}
+                  placeholder={showConnections ? "Search connections..." : "Search messages..."}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
@@ -403,52 +358,88 @@ export default function PersonalMessages() {
             <CardContent className="p-0">
               <ScrollArea className="h-[580px]">
                 {showConnections ? (
-                  <div className="space-y-1 p-3">
+                  <div className="space-y-1">
                     {availableConnections.length === 0 ? (
                       <div className="p-8 text-center">
                         <p className="text-sm text-muted-foreground">
-                          All your connections have active conversations
+                          {connections.length === 0 ? "No connections yet" : "All your connections have active conversations"}
                         </p>
+                        {connections.length === 0 && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="mt-4"
+                            onClick={() => navigate('/alumni')}
+                          >
+                            Browse Alumni
+                          </Button>
+                        )}
                       </div>
                     ) : (
                       availableConnections.map((connection) => (
                         <div
                           key={connection._id}
                           onClick={() => handleStartConversation(connection.user._id)}
-                          className="flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all duration-200 hover:bg-accent/80 hover:shadow-sm"
+                          className="flex items-center gap-3 p-3 mx-2 rounded-lg cursor-pointer transition-all duration-200 hover:bg-accent"
                         >
-                          <div className="relative">
-                            <Avatar className="w-10 h-10">
-                              <AvatarImage src={connection.user.avatar} />
-                              <AvatarFallback className="bg-primary/20 text-primary font-medium">
-                                {connection.user.name?.split(' ').map(n => n[0]).join('') || 'U'}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
-                          </div>
+                          <Avatar className="w-10 h-10">
+                            <AvatarImage src={connection.user.avatar} />
+                            <AvatarFallback className="bg-primary/20 text-primary font-medium">
+                              {connection.user.name?.split(' ').map(n => n[0]).join('') || 'U'}
+                            </AvatarFallback>
+                          </Avatar>
                           <div className="flex-1 min-w-0">
                             <h3 className="font-medium text-sm truncate">
                               {connection.user.name}
                             </h3>
                             <p className="text-xs text-muted-foreground truncate">
-                              {connection.user.currentPosition || connection.user.email}
+                              Click to start chat
                             </p>
                           </div>
-                          <UserPlus className="w-4 h-4 text-muted-foreground" />
                         </div>
                       ))
                     )}
                   </div>
+                ) : conversations.length === 0 && connections.length > 0 ? (
+                  <div className="p-8 text-center">
+                    <p className="text-sm text-muted-foreground mb-4">
+                      No conversations yet
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowConnections(true)}
+                    >
+                      <UserPlus className="w-4 h-4 mr-2" />
+                      Start New Chat
+                    </Button>
+                  </div>
+                ) : conversations.length === 0 ? (
+                  <div className="p-8 text-center">
+                    <p className="text-sm text-muted-foreground mb-4">
+                      No conversations yet
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate('/alumni')}
+                    >
+                      Browse Alumni
+                    </Button>
+                  </div>
                 ) : (
-                  <div className="space-y-1 p-3">
+                  <div className="space-y-1">
                     {filteredConversations.map((conversation) => (
                       <div
                         key={conversation._id}
-                        onClick={() => setSelectedConversation(conversation)}
-                        className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all duration-200 hover:bg-accent/80 ${
+                        onClick={() => {
+                          setSelectedConversation(conversation);
+                          setShowConnections(false);
+                        }}
+                        className={`flex items-center gap-3 p-3 mx-2 rounded-lg cursor-pointer transition-all duration-200 ${
                           selectedConversation?._id === conversation._id 
-                            ? "bg-primary/10 border-l-4 border-l-primary" 
-                            : "hover:shadow-sm"
+                            ? "bg-primary/10" 
+                            : "hover:bg-accent"
                         }`}
                       >
                         <div className="relative">
@@ -458,32 +449,26 @@ export default function PersonalMessages() {
                               {conversation.participant?.name?.split(' ').map(n => n[0]).join('') || 'U'}
                             </AvatarFallback>
                           </Avatar>
-                          <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
+                          {conversation.lastMessage && 
+                           !conversation.lastMessage.read && 
+                           conversation.lastMessage.sender !== currentUser?._id && (
+                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full border-2 border-background" />
+                          )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-1">
-                              <h3 className="font-medium text-sm truncate">
-                                {conversation.participant?.name}
-                                {conversation.participant?.graduationYear && typeof conversation.participant.graduationYear === 'string' && ` '${conversation.participant.graduationYear.slice(-2)}`}
-                              </h3>
-                            </div>
+                          <div className="flex items-center justify-between mb-0.5">
+                            <h3 className="font-medium text-sm truncate">
+                              {conversation.participant?.name}
+                            </h3>
                             {conversation.lastMessageTime && (
-                              <span className="text-xs text-muted-foreground">
+                              <span className="text-xs text-muted-foreground ml-2">
                                 {getTimeAgo(conversation.lastMessageTime).replace(' ago', '')}
                               </span>
                             )}
                           </div>
-                          <div className="flex items-center justify-between">
-                            <p className="text-sm text-muted-foreground truncate">
-                              {conversation.lastMessage?.content || "Start a conversation"}
-                            </p>
-                            {conversation.lastMessage && 
-                             !conversation.lastMessage.read && 
-                             conversation.lastMessage.sender !== currentUser?._id && (
-                              <div className="w-2 h-2 bg-primary rounded-full" />
-                            )}
-                          </div>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {conversation.lastMessage?.content || "No messages yet"}
+                          </p>
                         </div>
                       </div>
                     ))}
@@ -500,15 +485,12 @@ export default function PersonalMessages() {
               <CardHeader className="pb-3 border-b">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <Avatar className="w-10 h-10">
-                        <AvatarImage src={selectedConversation.participant?.avatar} />
-                        <AvatarFallback className="bg-primary/20 text-primary font-medium">
-                          {selectedConversation.participant?.name?.split(' ').map(n => n[0]).join('') || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
-                    </div>
+                    <Avatar className="w-10 h-10">
+                      <AvatarImage src={selectedConversation.participant?.avatar} />
+                      <AvatarFallback className="bg-primary/20 text-primary font-medium">
+                        {selectedConversation.participant?.name?.split(' ').map(n => n[0]).join('') || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
                     <div>
                       <h3 className="font-semibold">{selectedConversation.participant?.name}</h3>
                       <p className="text-sm text-muted-foreground">
@@ -516,34 +498,23 @@ export default function PersonalMessages() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon">
-                      <Phone className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon">
-                      <Video className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon">
-                      <Star className="w-4 h-4" />
-                    </Button>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreVertical className="w-4 h-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
-                          <Pin className="mr-2 h-4 w-4" />
-                          Pin conversation
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Archive className="mr-2 h-4 w-4" />
-                          Archive
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <MoreVertical className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem>
+                        <Pin className="mr-2 h-4 w-4" />
+                        Pin conversation
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Archive className="mr-2 h-4 w-4" />
+                        Archive
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </CardHeader>
 
@@ -568,20 +539,17 @@ export default function PersonalMessages() {
                         >
                           <div className={`flex gap-2 max-w-[70%] ${isMe ? "flex-row-reverse" : ""}`}>
                             {!isMe && (
-                              <div className="relative">
-                                <Avatar className="w-8 h-8">
-                                  <AvatarImage src={message.sender.avatar} />
-                                  <AvatarFallback className="bg-primary/20 text-primary text-xs">
-                                    {message.sender.name.split(' ').map(n => n[0]).join('')}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-background rounded-full"></div>
-                              </div>
+                              <Avatar className="w-8 h-8">
+                                <AvatarImage src={message.sender.avatar} />
+                                <AvatarFallback className="bg-primary/20 text-primary text-xs">
+                                  {message.sender.name.split(' ').map(n => n[0]).join('')}
+                                </AvatarFallback>
+                              </Avatar>
                             )}
-                            <div className={`rounded-2xl px-4 py-3 shadow-sm ${
+                            <div className={`rounded-2xl px-4 py-2 ${
                               isMe 
                                 ? "bg-primary text-primary-foreground" 
-                                : "bg-card border border-border"
+                                : "bg-muted"
                             }`}>
                               <p className="text-sm">{message.content}</p>
                               <p className={`text-xs mt-1 ${
@@ -629,7 +597,10 @@ export default function PersonalMessages() {
             </Card>
           ) : (
             <Card className="lg:col-span-2 flex items-center justify-center">
-              <p className="text-muted-foreground">Select a conversation to start messaging</p>
+              <div className="text-center">
+                <h3 className="text-lg font-semibold mb-2">Select a conversation</h3>
+                <p className="text-muted-foreground text-sm">Choose a conversation from the list to start messaging</p>
+              </div>
             </Card>
           )}
         </div>

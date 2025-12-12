@@ -176,6 +176,16 @@ export function AppHeader() {
         </div>
 
         <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
+          {/* Personal Messages Button */}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="relative h-8 w-8 sm:h-10 sm:w-10"
+            onClick={() => navigate('/messages')}
+          >
+            <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+          </Button>
+
           <DropdownMenu open={notificationsOpen} onOpenChange={setNotificationsOpen}>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="relative h-8 w-8 sm:h-10 sm:w-10">
