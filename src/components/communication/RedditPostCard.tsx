@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { ArrowUp, ArrowDown, MessageCircle, Share, Bookmark, MoreHorizontal } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { MessageCircle, Share, Bookmark, MoreHorizontal, Trash2, Edit } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,113 +11,140 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { VoteButtons } from "./VoteButtons";
+import { communicationService } from "@/services/ApiServices";
+import { useToast } from "@/hooks/use-toast";
 
 interface RedditPostProps {
-  id: number;
-  user: string;
-  message: string;
-  timestamp: string;
-  replies: number;
-  category: string;
-  upvotes?: number;
-  downvotes?: number;
-  userVote?: 'up' | 'down' | null;
+  post: any;
+  onUpdate?: () => void;
 }
 
-export function RedditPostCard({ 
-  id, 
-  user, 
-  message, 
-  timestamp, 
-  replies, 
-  category,
-  upvotes = 0,
-  downvotes = 0,
-  userVote = null
-}: RedditPostProps) {
-  const [currentVote, setCurrentVote] = useState<'up' | 'down' | null>(userVote);
-  const [voteCount, setVoteCount] = useState(upvotes - downvotes);
+export function RedditPostCard({ post, onUpdate }: RedditPostProps) {
+  const navigate = useNavigate();
+  const [isSaved, setIsSaved] = useState(post.savedBy?.includes(localStorage.getItem('userId')) || false);
+  const { toast } = useToast();
 
-  const handleVote = (voteType: 'up' | 'down') => {
-    let newVoteCount = voteCount;
-    let newVote: 'up' | 'down' | null = voteType;
-
-    // Remove previous vote
-    if (currentVote === 'up') newVoteCount--;
-    if (currentVote === 'down') newVoteCount++;
-    
-    // Apply new vote or remove if same
-    if (currentVote === voteType) {
-      newVote = null;
-    } else {
-      if (voteType === 'up') newVoteCount++;
-      if (voteType === 'down') newVoteCount--;
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't navigate if clicking on interactive elements
+    const target = e.target as HTMLElement;
+    if (
+      target.closest('button') || 
+      target.closest('a') ||
+      target.closest('[role="menuitem"]')
+    ) {
+      return;
     }
+    navigate(`/communications/post/${post._id}`);
+  };
 
-    setCurrentVote(newVote);
-    setVoteCount(newVoteCount);
+  const handleSave = async () => {
+    try {
+      const response = await communicationService.toggleSavePost(post._id);
+      
+      if (response.success) {
+        setIsSaved(response.data.isSaved);
+        toast({
+          title: response.data.isSaved ? "Post saved" : "Post unsaved",
+          description: response.data.isSaved 
+            ? "You can find this post in your saved items" 
+            : "Post removed from saved items",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save post. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm("Are you sure you want to delete this post?")) return;
+    
+    try {
+      await communicationService.deletePost(post._id);
+      toast({
+        title: "Post deleted",
+        description: "Your post has been removed.",
+      });
+      
+      if (onUpdate) {
+        onUpdate();
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete post. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const formatTimestamp = (timestamp: string) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (diffInSeconds < 60) return 'just now';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`;
+    
+    return date.toLocaleDateString();
+  };
+
+  const getUserInitials = (name: string) => {
+    return name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U';
   };
 
   return (
-    <Card className="bg-card border border-border hover:border-accent-foreground/20 transition-all duration-200">
+    <Card 
+      className="bg-card border border-border hover:border-accent-foreground/20 transition-all duration-200 cursor-pointer"
+      onClick={handleCardClick}
+    >
       <div className="flex gap-0">
         {/* Vote Section */}
-        <div className="flex flex-col items-center p-2 bg-muted/30 border-r border-border">
-          <Button
-            variant="ghost"
-            size="sm"
-            className={`p-1 h-auto hover:bg-accent ${
-              currentVote === 'up' 
-                ? 'text-orange-500 hover:text-orange-600' 
-                : 'text-muted-foreground hover:text-orange-500'
-            }`}
-            onClick={() => handleVote('up')}
-          >
-            <ArrowUp className="w-5 h-5" />
-          </Button>
-          
-          <span className={`text-sm font-medium py-1 ${
-            voteCount > 0 
-              ? 'text-orange-500' 
-              : voteCount < 0 
-                ? 'text-blue-500' 
-                : 'text-muted-foreground'
-          }`}>
-            {voteCount > 0 ? '+' : ''}{voteCount}
-          </span>
-          
-          <Button
-            variant="ghost"
-            size="sm"
-            className={`p-1 h-auto hover:bg-accent ${
-              currentVote === 'down' 
-                ? 'text-blue-500 hover:text-blue-600' 
-                : 'text-muted-foreground hover:text-blue-500'
-            }`}
-            onClick={() => handleVote('down')}
-          >
-            <ArrowDown className="w-5 h-5" />
-          </Button>
-        </div>
+        <VoteButtons
+          postId={post._id}
+          initialUpvotes={post.upvotes}
+          initialDownvotes={post.downvotes}
+          upvotedBy={post.upvotedBy || []}
+          downvotedBy={post.downvotedBy || []}
+          onUpdate={onUpdate}
+        />
 
         {/* Content Section */}
-        <div className="flex-1 p-4">
+        <div className="flex-1 p-3">
           {/* Header */}
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-3">
-              <Avatar className="w-8 h-8">
-                <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
-                  {user.split(' ').map(n => n[0]).join('')}
-                </AvatarFallback>
-              </Avatar>
+              <div className="relative">
+                <Avatar className="w-8 h-8">
+                  <AvatarImage src={post.author?.avatar} />
+                  <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
+                    {getUserInitials(post.author?.name || 'User')}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-background rounded-full"></div>
+              </div>
               <div className="flex items-center gap-2">
-                <span className="font-medium text-sm">u/{user}</span>
+                <span className="font-medium text-sm">
+                  {post.author?.name || 'Anonymous'}
+                </span>
+                {post.author?.graduationYear && (
+                  <>
+                    <span className="text-xs text-muted-foreground">•</span>
+                    <span className="text-xs text-muted-foreground">'{post.author.graduationYear.toString().slice(-2)}</span>
+                  </>
+                )}
                 <span className="text-xs text-muted-foreground">•</span>
                 <Badge variant="outline" className="text-xs px-2 py-0">
-                  {category}
+                  {post.category}
                 </Badge>
                 <span className="text-xs text-muted-foreground">•</span>
-                <span className="text-xs text-muted-foreground">{timestamp}</span>
+                <span className="text-xs text-muted-foreground">{formatTimestamp(post.createdAt)}</span>
               </div>
             </div>
             
@@ -127,32 +155,66 @@ export function RedditPostCard({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem>
-                  <Bookmark className="mr-2 h-4 w-4" />
-                  Save
+                <DropdownMenuItem onClick={handleSave}>
+                  <Bookmark className={`mr-2 h-4 w-4 ${isSaved ? 'fill-current' : ''}`} />
+                  {isSaved ? 'Unsave' : 'Save'}
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <Share className="mr-2 h-4 w-4" />
                   Share
                 </DropdownMenuItem>
+                {post.author?._id === localStorage.getItem('userId') && (
+                  <>
+                    <DropdownMenuItem>
+                      <Edit className="mr-2 h-4 w-4" />
+                      Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleDelete} className="text-destructive">
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete
+                    </DropdownMenuItem>
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
 
           {/* Message Content */}
-          <div className="mb-4">
-            <p className="text-sm leading-relaxed text-foreground">{message}</p>
+          <div className="mb-3">
+            <p className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">{post.content}</p>
+            
+            {/* Images */}
+            {post.images && post.images.length > 0 && (
+              <div className={`mt-2 grid gap-2 ${
+                post.images.length === 1 ? 'grid-cols-1' : 
+                post.images.length === 2 ? 'grid-cols-2' : 
+                'grid-cols-3'
+              }`}>
+                {post.images.map((image: string, index: number) => (
+                  <img 
+                    key={index}
+                    src={image} 
+                    alt={`Post image ${index + 1}`}
+                    className="w-full h-auto rounded-md border object-cover max-h-96"
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Actions */}
           <div className="flex items-center gap-4">
             <Button 
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/communications/post/${post._id}`);
+              }}
               variant="ghost" 
               size="sm" 
               className="gap-2 text-muted-foreground hover:text-foreground hover:bg-accent"
             >
               <MessageCircle className="w-4 h-4" />
-              <span className="text-xs">{replies} comments</span>
+              <span className="text-xs">{post.commentsCount || 0} comments</span>
             </Button>
             
             <Button 
@@ -167,10 +229,13 @@ export function RedditPostCard({
             <Button 
               variant="ghost" 
               size="sm" 
-              className="gap-2 text-muted-foreground hover:text-foreground hover:bg-accent"
+              className={`gap-2 hover:bg-accent ${
+                isSaved ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+              }`}
+              onClick={handleSave}
             >
-              <Bookmark className="w-4 h-4" />
-              <span className="text-xs">Save</span>
+              <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
+              <span className="text-xs">{isSaved ? 'Saved' : 'Save'}</span>
             </Button>
           </div>
         </div>

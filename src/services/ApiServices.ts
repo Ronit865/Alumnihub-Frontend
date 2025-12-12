@@ -298,6 +298,194 @@ export const emailService = {
   }
 };
 
+// Communication Services (Posts & Comments)
+export const communicationService = {
+  // Post APIs
+  getAllPosts: async (params?: {
+    page?: number;
+    limit?: number;
+    category?: string;
+    sortBy?: 'hot' | 'new' | 'top' | 'createdAt';
+    order?: 'asc' | 'desc';
+    search?: string;
+  }): Promise<ApiResponse> => {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          queryParams.append(key, value.toString());
+        }
+      });
+    }
+    return await api.get(`/communications/posts?${queryParams.toString()}`);
+  },
+
+  getPostById: async (postId: string): Promise<ApiResponse> => {
+    return await api.get(`/communications/posts/${postId}`);
+  },
+
+  createPost: async (formData: FormData): Promise<ApiResponse> => {
+    return await api.post('/communications/posts', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  },
+
+  updatePost: async (postId: string, data: {
+    content?: string;
+    category?: string;
+  }): Promise<ApiResponse> => {
+    return await api.patch(`/communications/posts/${postId}`, data);
+  },
+
+  deletePost: async (postId: string): Promise<ApiResponse> => {
+    return await api.delete(`/communications/posts/${postId}`);
+  },
+
+  upvotePost: async (postId: string): Promise<ApiResponse> => {
+    return await api.post(`/communications/posts/${postId}/upvote`);
+  },
+
+  downvotePost: async (postId: string): Promise<ApiResponse> => {
+    return await api.post(`/communications/posts/${postId}/downvote`);
+  },
+
+  toggleSavePost: async (postId: string): Promise<ApiResponse> => {
+    return await api.post(`/communications/posts/${postId}/save`);
+  },
+
+  getSavedPosts: async (params?: {
+    page?: number;
+    limit?: number;
+  }): Promise<ApiResponse> => {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          queryParams.append(key, value.toString());
+        }
+      });
+    }
+    return await api.get(`/communications/posts/saved?${queryParams.toString()}`);
+  },
+
+  getUserPosts: async (userId: string, params?: {
+    page?: number;
+    limit?: number;
+  }): Promise<ApiResponse> => {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          queryParams.append(key, value.toString());
+        }
+      });
+    }
+    return await api.get(`/communications/posts/user/${userId}?${queryParams.toString()}`);
+  },
+
+  getCommunicationStats: async (): Promise<ApiResponse> => {
+    return await api.get('/communications/posts/stats');
+  },
+
+  togglePinPost: async (postId: string): Promise<ApiResponse> => {
+    return await api.post(`/communications/posts/${postId}/pin`);
+  },
+
+  // Comment APIs
+  createComment: async (data: {
+    content: string;
+    postId: string;
+    parentCommentId?: string;
+  }): Promise<ApiResponse> => {
+    return await api.post('/communications/comments', data);
+  },
+
+  getPostComments: async (postId: string, params?: {
+    page?: number;
+    limit?: number;
+    sortBy?: 'top' | 'new' | 'createdAt';
+    order?: 'asc' | 'desc';
+  }): Promise<ApiResponse> => {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          queryParams.append(key, value.toString());
+        }
+      });
+    }
+    return await api.get(`/communications/posts/${postId}/comments?${queryParams.toString()}`);
+  },
+
+  getCommentReplies: async (commentId: string, params?: {
+    page?: number;
+    limit?: number;
+  }): Promise<ApiResponse> => {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          queryParams.append(key, value.toString());
+        }
+      });
+    }
+    return await api.get(`/communications/comments/${commentId}/replies?${queryParams.toString()}`);
+  },
+
+  updateComment: async (commentId: string, data: {
+    content: string;
+  }): Promise<ApiResponse> => {
+    return await api.patch(`/communications/comments/${commentId}`, data);
+  },
+
+  deleteComment: async (commentId: string): Promise<ApiResponse> => {
+    return await api.delete(`/communications/comments/${commentId}`);
+  },
+
+  upvoteComment: async (commentId: string): Promise<ApiResponse> => {
+    return await api.post(`/communications/comments/${commentId}/upvote`);
+  },
+
+  downvoteComment: async (commentId: string): Promise<ApiResponse> => {
+    return await api.post(`/communications/comments/${commentId}/downvote`);
+  },
+};
+
+// Notification Services
+export const notificationService = {
+  getNotifications: async (params?: {
+    page?: number;
+    limit?: number;
+    unreadOnly?: boolean;
+  }): Promise<ApiResponse> => {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          queryParams.append(key, value.toString());
+        }
+      });
+    }
+    return await api.get(`/notifications?${queryParams.toString()}`);
+  },
+
+  getUnreadCount: async (): Promise<ApiResponse> => {
+    return await api.get('/notifications/unread-count');
+  },
+
+  markAsRead: async (notificationId: string): Promise<ApiResponse> => {
+    return await api.patch(`/notifications/${notificationId}/read`);
+  },
+
+  markAllAsRead: async (): Promise<ApiResponse> => {
+    return await api.patch('/notifications/mark-all-read');
+  },
+
+  deleteNotification: async (notificationId: string): Promise<ApiResponse> => {
+    return await api.delete(`/notifications/${notificationId}`);
+  },
+};
+
 // Error handler utility
 export const handleApiError = (error: ApiError) => {
   return {

@@ -90,12 +90,15 @@ export function AppHeader() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 sm:h-10 sm:w-10 rounded-full">
-                <Avatar className="h-8 w-8 sm:h-10 sm:w-10 ring-2 ring-primary/20">
-                  <AvatarImage src={avatarSrc} alt="Profile" />
-                  <AvatarFallback className="bg-primary text-primary-foreground font-medium text-xs sm:text-sm">
-                    {avatarFallback}
-                  </AvatarFallback>
-                </Avatar>
+                <div className="relative">
+                  <Avatar className="h-8 w-8 sm:h-10 sm:w-10 ring-2 ring-primary/20">
+                    <AvatarImage src={avatarSrc} alt="Profile" />
+                    <AvatarFallback className="bg-primary text-primary-foreground font-medium text-xs sm:text-sm">
+                      {avatarFallback}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="absolute bottom-0 right-0 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-500 border-2 border-background rounded-full"></div>
+                </div>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>

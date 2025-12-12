@@ -15,6 +15,7 @@ import PostJob from "./pages/PostJob";
 import Donations from "./pages/Donations";
 import PersonalMessages from "./pages/PersonalMessages";
 import Communications from "./pages/Communications";
+import PostDetail from "./pages/PostDetail";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -68,6 +69,7 @@ const App = () => (
               <Route path="donations" element={<Donations />} />
               <Route path="messages" element={<PersonalMessages />} />
               <Route path="communications" element={<Communications />} />
+              <Route path="communications/post/:postId" element={<PostDetail />} />
               <Route path="settings" element={<Settings />} />
             </Route>
             

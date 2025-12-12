@@ -283,12 +283,15 @@ export default function Alumni() {
             <Card key={person._id} className="bento-card hover:shadow-md border-card-border/50 hover-lift group flex flex-col h-full">
               <CardHeader className="pb-4">
                 <div className="flex items-start gap-4">
-                  <Avatar className="w-16 h-16 ring-2 ring-primary/20 flex-shrink-0">
-                    <AvatarImage src={person.avatar} alt={person.name} />
-                    <AvatarFallback className="bg-primary/10 text-primary font-medium text-lg">
-                      {person.name?.split(' ').map(n => n[0]).join('') || 'AL'}
-                    </AvatarFallback>
-                  </Avatar>
+                  <div className="relative">
+                    <Avatar className="w-16 h-16 ring-2 ring-primary/20 flex-shrink-0">
+                      <AvatarImage src={person.avatar} alt={person.name} />
+                      <AvatarFallback className="bg-primary/10 text-primary font-medium text-lg">
+                        {person.name?.split(' ').map(n => n[0]).join('') || 'AL'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-background rounded-full"></div>
+                  </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-lg group-hover:text-primary transition-colors truncate">
                       {person.name || 'Unknown'}

@@ -265,11 +265,14 @@ export default function PersonalMessages() {
                 >
                   <div className={`flex gap-2 max-w-[70%] ${message.isMe ? "flex-row-reverse" : ""}`}>
                     {!message.isMe && (
-                      <Avatar className="w-8 h-8">
-                        <AvatarFallback className="bg-primary/20 text-primary text-xs">
-                          {message.sender.split(' ').map(n => n[0]).join('')}
-                        </AvatarFallback>
-                      </Avatar>
+                      <div className="relative">
+                        <Avatar className="w-8 h-8">
+                          <AvatarFallback className="bg-primary/20 text-primary text-xs">
+                            {message.sender.split(' ').map(n => n[0]).join('')}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-background rounded-full"></div>
+                      </div>
                     )}
                     <div className={`rounded-2xl px-4 py-3 shadow-sm ${
                       message.isMe 
