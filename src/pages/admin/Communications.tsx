@@ -197,12 +197,12 @@ export function Communications() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 sm:space-y-6 md:space-y-8">
       {/* Header */}
-      <div className="flex justify-between items-start animate-fade-in">
+      <div className="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-4 animate-fade-in">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Communications</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Communications</h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2">
             Manage newsletters, announcements, and alumni communications.
           </p>
         </div>
@@ -213,7 +213,7 @@ export function Communications() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-slide-up">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 animate-slide-up">
         <div className="stats-card-pink">
           <div className="flex items-center justify-between">
             <div>
@@ -272,7 +272,7 @@ export function Communications() {
       </div>
 
       {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Quick Compose */}
         <Card className="bento-card gradient-surface border-card-border/50 lg:col-span-2">
           <CardHeader>
@@ -305,32 +305,32 @@ export function Communications() {
             </div>
             <div>
               <label className="text-sm font-medium text-foreground">Recipients</label>
-              <div className="flex gap-2 mt-2">
+              <div className="flex flex-wrap gap-2 mt-2">
                 <Button 
                   variant="outline" 
                   size="sm"
                   onClick={() => handleRecipientSelect("alumni")}
-                  className={emailForm.filter === "alumni" ? "bg-primary/10 border-primary" : ""}
+                  className={`text-xs sm:text-sm ${emailForm.filter === "alumni" ? "bg-primary/10 border-primary" : ""}`}
                 >
-                  <Users className="h-4 w-4 mr-1" />
+                  <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                   Alumni
                 </Button>
                 <Button 
                   variant="outline" 
                   size="sm"
                   onClick={() => handleRecipientSelect("student")}
-                  className={emailForm.filter === "student" ? "bg-primary/10 border-primary" : ""}
+                  className={`text-xs sm:text-sm ${emailForm.filter === "student" ? "bg-primary/10 border-primary" : ""}`}
                 >
-                  <Users className="h-4 w-4 mr-1" />
+                  <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                   Students
                 </Button>
                 <Button 
                   variant="outline" 
                   size="sm"
                   onClick={() => handleRecipientSelect("donors")}
-                  className={emailForm.filter === "donors" ? "bg-primary/10 border-primary" : ""}
+                  className={`text-xs sm:text-sm ${emailForm.filter === "donors" ? "bg-primary/10 border-primary" : ""}`}
                 >
-                  <Users className="h-4 w-4 mr-1" />
+                  <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                   Donors
                 </Button>
               </div>

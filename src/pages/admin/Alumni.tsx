@@ -418,14 +418,14 @@ export function Alumni() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 sm:space-y-6 md:space-y-8">
       {/* Header */}
-      <div className="flex justify-between items-start animate-fade-in">
+      <div className="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-4 animate-fade-in">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
             Users Management
           </h1>
-          <p className="text-muted-foreground mt-2">
+          <p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2">
             Manage alumni profiles, verify registrations, and track engagement.
           </p>
         </div>
@@ -695,7 +695,7 @@ export function Alumni() {
       </AlertDialog>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 animate-slide-up">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 animate-slide-up">
         <div className="stats-card-blue">
           <div className="flex items-center justify-between">
             <div>
@@ -739,156 +739,162 @@ export function Alumni() {
 
       {/* Alumni Table */}
       <Card className="bento-card gradient-surface border-card-border/50">
-        <CardHeader>
-          <div className="flex flex-col sm:flex-row gap-4 justify-between">
+        <CardHeader className="p-4 sm:p-6">
+          <div className="flex flex-col gap-3 sm:gap-4">
             <div>
-              <CardTitle>Alumni Directory</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-base sm:text-lg">Alumni Directory</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">
                 Manage and verify alumni profiles ({filteredAlumni.length} of{" "}
                 {totalUsers} alumni)
               </CardDescription>
             </div>
-            <div className="flex gap-2">
-              <div className="relative">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+              <div className="relative flex-1 sm:flex-none">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   placeholder="Search alumni..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 w-64"
+                  className="pl-10 w-full sm:w-48 md:w-64"
                 />
               </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline">
-                    Status: {selectedStatus === "all" ? "All" : selectedStatus}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => setSelectedStatus("all")}>
-                    All
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => setSelectedStatus("verified")}
-                  >
-                    Verified
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => setSelectedStatus("pending")}
-                  >
-                    Pending
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <Button variant="outline" onClick={() => refetch()}>
-                Refresh
-              </Button>
+              <div className="flex gap-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="text-xs sm:text-sm flex-1 sm:flex-none">
+                      Status: {selectedStatus === "all" ? "All" : selectedStatus}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="bg-popover">
+                    <DropdownMenuItem onClick={() => setSelectedStatus("all")}>
+                      All
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => setSelectedStatus("verified")}
+                    >
+                      Verified
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => setSelectedStatus("pending")}
+                    >
+                      Pending
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <Button variant="outline" size="sm" onClick={() => refetch()} className="text-xs sm:text-sm">
+                  Refresh
+                </Button>
+              </div>
             </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Alumni</TableHead>
-                <TableHead>Graduation</TableHead>
-                <TableHead>Course</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredAlumni.length === 0 ? (
+        <CardContent className="p-0 sm:p-6 sm:pt-0">
+          <div className="overflow-x-auto">
+            <Table className="min-w-[600px]">
+              <TableHeader>
                 <TableRow>
-                  <TableCell
-                    colSpan={6}
-                    className="text-center py-8 text-muted-foreground"
-                  >
-                    No alumni found
-                  </TableCell>
+                  <TableHead className="text-xs sm:text-sm whitespace-nowrap">Alumni</TableHead>
+                  <TableHead className="text-xs sm:text-sm whitespace-nowrap hidden sm:table-cell">Graduation</TableHead>
+                  <TableHead className="text-xs sm:text-sm whitespace-nowrap hidden md:table-cell">Course</TableHead>
+                  <TableHead className="text-xs sm:text-sm whitespace-nowrap hidden lg:table-cell">Phone</TableHead>
+                  <TableHead className="text-xs sm:text-sm whitespace-nowrap">Role</TableHead>
+                  <TableHead className="text-xs sm:text-sm text-right whitespace-nowrap">Actions</TableHead>
                 </TableRow>
-              ) : (
-                filteredAlumni.map((alumni, index) => (
-                  <TableRow
-                    key={alumni._id}
-                    className="hover:bg-accent/30 transition-smooth animate-fade-in"
-                    style={{ animationDelay: `${index * 100}ms` }}
-                  >
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10">
-                          <AvatarImage src={alumni.avatar} alt={alumni.name} />
-                          <AvatarFallback className="bg-primary/10 text-primary">
-                            {alumni.name
-                              ?.split(" ")
-                              .map((n) => n[0])
-                              .join("") || "UN"}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium text-foreground">
-                            {alumni.name || "Unknown"}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {alumni.email}
-                          </p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">
-                          {alumni.graduationYear || "N/A"}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Building className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">
-                          {alumni.course || "N/A"}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <span>{alumni.phone || "N/A"}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {getRoleBadge(alumni.role || "")}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => handleEditUser(alumni)}>
-                            <Edit className="h-4 w-4 mr-2" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem 
-                            className="text-destructive"
-                            onClick={() => handleDeleteUser(alumni)}
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Remove
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+              </TableHeader>
+              <TableBody>
+                {filteredAlumni.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={6}
+                      className="text-center py-8 text-muted-foreground text-sm"
+                    >
+                      No alumni found
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : (
+                  filteredAlumni.map((alumni, index) => (
+                    <TableRow
+                      key={alumni._id}
+                      className="hover:bg-accent/30 transition-smooth animate-fade-in"
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
+                      <TableCell className="p-2 sm:p-4">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
+                            <AvatarImage src={alumni.avatar} alt={alumni.name} />
+                            <AvatarFallback className="bg-primary/10 text-primary text-xs sm:text-sm">
+                              {alumni.name
+                                ?.split(" ")
+                                .map((n) => n[0])
+                                .join("") || "UN"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="font-medium text-foreground text-xs sm:text-sm truncate max-w-[120px] sm:max-w-none">
+                              {alumni.name || "Unknown"}
+                            </p>
+                            <p className="text-xs text-muted-foreground truncate max-w-[120px] sm:max-w-none">
+                              {alumni.email}
+                            </p>
+                            {/* Mobile: Show graduation year below name */}
+                            <p className="text-xs text-muted-foreground sm:hidden">
+                              {alumni.graduationYear || "N/A"}
+                            </p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell p-2 sm:p-4">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+                          <span className="font-medium text-xs sm:text-sm">
+                            {alumni.graduationYear || "N/A"}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell p-2 sm:p-4">
+                        <div className="flex items-center gap-2">
+                          <Building className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+                          <span className="font-medium text-xs sm:text-sm">
+                            {alumni.course || "N/A"}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell p-2 sm:p-4">
+                        <span className="text-xs sm:text-sm">{alumni.phone || "N/A"}</span>
+                      </TableCell>
+                      <TableCell className="p-2 sm:p-4">
+                        {getRoleBadge(alumni.role || "")}
+                      </TableCell>
+                      <TableCell className="text-right p-2 sm:p-4">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-7 w-7 sm:h-8 sm:w-8 p-0">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="bg-popover">
+                            <DropdownMenuLabel className="text-xs sm:text-sm">Actions</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => handleEditUser(alumni)} className="text-xs sm:text-sm">
+                              <Edit className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              className="text-destructive text-xs sm:text-sm"
+                              onClick={() => handleDeleteUser(alumni)}
+                            >
+                              <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                              Remove
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>
