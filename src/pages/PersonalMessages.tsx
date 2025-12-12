@@ -262,9 +262,9 @@ export default function PersonalMessages() {
                     >
                       <div className="relative">
                         <Avatar className="w-10 h-10">
-                          <AvatarImage src={conversation.participant.avatar} />
+                          <AvatarImage src={conversation.participant?.avatar} />
                           <AvatarFallback className="bg-primary/20 text-primary font-medium">
-                            {conversation.participant.name.split(' ').map(n => n[0]).join('')}
+                            {conversation.participant?.name?.split(' ').map(n => n[0]).join('') || 'U'}
                           </AvatarFallback>
                         </Avatar>
                         <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
@@ -273,8 +273,8 @@ export default function PersonalMessages() {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-1">
                             <h3 className="font-medium text-sm truncate">
-                              {conversation.participant.name}
-                              {conversation.participant.graduationYear && ` '${conversation.participant.graduationYear.slice(-2)}`}
+                              {conversation.participant?.name}
+                              {conversation.participant?.graduationYear && typeof conversation.participant.graduationYear === 'string' && ` '${conversation.participant.graduationYear.slice(-2)}`}
                             </h3>
                           </div>
                           {conversation.lastMessageTime && (
@@ -310,17 +310,17 @@ export default function PersonalMessages() {
                   <div className="flex items-center gap-3">
                     <div className="relative">
                       <Avatar className="w-10 h-10">
-                        <AvatarImage src={selectedConversation.participant.avatar} />
+                        <AvatarImage src={selectedConversation.participant?.avatar} />
                         <AvatarFallback className="bg-primary/20 text-primary font-medium">
-                          {selectedConversation.participant.name.split(' ').map(n => n[0]).join('')}
+                          {selectedConversation.participant?.name?.split(' ').map(n => n[0]).join('') || 'U'}
                         </AvatarFallback>
                       </Avatar>
                       <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
                     </div>
                     <div>
-                      <h3 className="font-semibold">{selectedConversation.participant.name}</h3>
+                      <h3 className="font-semibold">{selectedConversation.participant?.name}</h3>
                       <p className="text-sm text-muted-foreground">
-                        {selectedConversation.participant.currentPosition || "Active now"}
+                        {selectedConversation.participant?.currentPosition || "Active now"}
                       </p>
                     </div>
                   </div>
