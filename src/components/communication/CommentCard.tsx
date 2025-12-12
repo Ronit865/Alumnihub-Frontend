@@ -12,6 +12,7 @@ import {
 import { VoteButtons } from "./VoteButtons";
 import { communicationService } from "@/services/ApiServices";
 import { useToast } from "@/hooks/use-toast";
+import { containsInappropriateContent } from "@/lib/contentFilter";
 
 interface CommentCardProps {
   comment: any;
@@ -60,6 +61,16 @@ export function CommentCard({ comment, postId, onUpdate, depth = 0 }: CommentCar
   const handleReplySubmit = async () => {
     if (!replyText.trim()) return;
 
+    // Check for inappropriate content
+    if (containsInappropriateContent(replyText)) {
+      toast({
+        title: "Inappropriate Content Detected",
+        description: "Your reply contains offensive language. Please remove inappropriate words and try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       setIsSubmitting(true);
       const response = await communicationService.createComment({
@@ -99,6 +110,16 @@ export function CommentCard({ comment, postId, onUpdate, depth = 0 }: CommentCar
   const handleEdit = async () => {
     if (!editText.trim() || editText === comment.content) {
       setIsEditing(false);
+      return;
+    }
+
+    // Check for inappropriate content
+    if (containsInappropriateContent(editText)) {
+      toast({
+        title: "Inappropriate Content Detected",
+        description: "Your comment contains offensive language. Please remove inappropriate words and try again.",
+        variant: "destructive",
+      });
       return;
     }
 

@@ -11,6 +11,7 @@ import { communicationService } from "@/services/ApiServices";
 import { useToast } from "@/hooks/use-toast";
 import { CommentCard } from "@/components/communication/CommentCard";
 import { VoteButtons } from "@/components/communication/VoteButtons";
+import { containsInappropriateContent } from "@/lib/contentFilter";
 
 export default function PostDetail() {
   const { postId } = useParams();
@@ -68,6 +69,16 @@ export default function PostDetail() {
 
   const handleCommentSubmit = async () => {
     if (!commentText.trim()) return;
+
+    // Check for inappropriate content
+    if (containsInappropriateContent(commentText)) {
+      toast({
+        title: "Inappropriate Content Detected",
+        description: "Your comment contains offensive language. Please remove inappropriate words and try again.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       setIsSubmitting(true);

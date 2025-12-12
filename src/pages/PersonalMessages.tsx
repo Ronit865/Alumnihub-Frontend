@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Send, Search, Phone, Video, MoreVertical, Pin, Star, Archive, Loader2, UserPlus } from "lucide-react";
+import { Send, Search, Phone, Video, MoreVertical, Pin, Star, Archive, Loader2, UserPlus, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import {
 import { messageService, userService, connectionService } from "@/services/ApiServices";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
+import { containsInappropriateContent } from "@/lib/contentFilter";
 
 interface User {
   _id: string;
@@ -69,6 +70,15 @@ export default function PersonalMessages() {
   const { toast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to bottom of messages
+  const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior });
+    }
+  };
 
   // Handle incoming userId from navigation (e.g., from Alumni page Message button)
   useEffect(() => {
@@ -196,6 +206,14 @@ export default function PersonalMessages() {
     }
   }, [selectedConversation]);
 
+  // Auto-scroll when messages change
+  useEffect(() => {
+    if (messages.length > 0) {
+      // Small delay to ensure DOM is updated
+      setTimeout(() => scrollToBottom('smooth'), 100);
+    }
+  }, [messages]);
+
   const fetchMessages = async (conversationId: string) => {
     try {
       setLoadingMessages(true);
@@ -207,6 +225,9 @@ export default function PersonalMessages() {
       
       // Mark as read
       await messageService.markMessagesAsRead(conversationId);
+      
+      // Scroll to bottom after loading messages (instant for initial load)
+      setTimeout(() => scrollToBottom('auto'), 100);
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -221,21 +242,44 @@ export default function PersonalMessages() {
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !selectedConversation) return;
 
+    // Check for inappropriate content
+    if (containsInappropriateContent(newMessage)) {
+      toast({
+        variant: "destructive",
+        title: "Inappropriate Content Detected",
+        description: "Your message contains offensive language. Please remove inappropriate words and try again."
+      });
+      return;
+    }
+
     try {
       setSendingMessage(true);
       const response = await messageService.sendMessage(selectedConversation._id, newMessage.trim());
       console.log('Send message response:', response);
       
-      // Add message to current messages
+      // Add message to current messages smoothly
       const newMsg = response?.data;
       console.log('New message:', newMsg);
       if (newMsg) {
-        setMessages(prev => Array.isArray(prev) ? [...prev, newMsg] : [newMsg]);
+        setMessages(prev => {
+          const updated = Array.isArray(prev) ? [...prev, newMsg] : [newMsg];
+          return updated;
+        });
       }
       setNewMessage("");
       
-      // Update conversation list
-      fetchConversations();
+      // Update conversation list in background without refetching all
+      setConversations(prev => {
+        return prev.map(conv => 
+          conv._id === selectedConversation._id 
+            ? { ...conv, lastMessage: { content: newMsg.content, createdAt: newMsg.createdAt, sender: newMsg.sender._id, read: false }, lastMessageTime: newMsg.createdAt }
+            : conv
+        ).sort((a, b) => {
+          const timeA = a.lastMessageTime ? new Date(a.lastMessageTime).getTime() : 0;
+          const timeB = b.lastMessageTime ? new Date(b.lastMessageTime).getTime() : 0;
+          return timeB - timeA;
+        });
+      });
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -276,6 +320,36 @@ export default function PersonalMessages() {
         description: error.response?.data?.message || "Failed to start conversation"
       });
     }
+  };
+
+  const handleDeleteMessage = async (messageId: string) => {
+    try {
+      await messageService.deleteMessage(messageId);
+      
+      // Remove message from UI
+      setMessages(prev => prev.filter(m => m._id !== messageId));
+      
+      // Refresh conversations to update last message
+      fetchConversations();
+      
+      toast({
+        title: "Success",
+        description: "Message deleted successfully"
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.response?.data?.message || "Failed to delete message"
+      });
+    }
+  };
+
+  const canDeleteMessage = (messageDate: string): boolean => {
+    const messageTime = new Date(messageDate).getTime();
+    const now = Date.now();
+    const twentyFourHours = 24 * 60 * 60 * 1000;
+    return (now - messageTime) <= twentyFourHours;
   };
 
   const getTimeAgo = (date: string) => {
@@ -532,6 +606,7 @@ export default function PersonalMessages() {
                   <div className="space-y-4">
                     {messages.map((message) => {
                       const isMe = message.sender._id === currentUser?._id;
+                      const canDelete = isMe && canDeleteMessage(message.createdAt);
                       return (
                         <div
                           key={message._id}
@@ -546,24 +621,50 @@ export default function PersonalMessages() {
                                 </AvatarFallback>
                               </Avatar>
                             )}
-                            <div className={`rounded-2xl px-4 py-2 ${
-                              isMe 
-                                ? "bg-primary text-primary-foreground" 
-                                : "bg-muted"
-                            }`}>
-                              <p className="text-sm">{message.content}</p>
-                              <p className={`text-xs mt-1 ${
+                            <div className="group relative flex items-center gap-1">
+                              {canDelete && isMe && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="opacity-0 group-hover:opacity-100 hover:bg-destructive/10 transition-all h-7 w-7 flex-shrink-0"
+                                  onClick={() => handleDeleteMessage(message._id)}
+                                  title="Delete message (available for 24 hours)"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                                </Button>
+                              )}
+                              <div className={`rounded-2xl px-4 py-2 ${
                                 isMe 
-                                  ? "text-primary-foreground/70" 
-                                  : "text-muted-foreground"
+                                  ? "bg-primary text-primary-foreground" 
+                                  : "bg-muted"
                               }`}>
-                                {getMessageTime(message.createdAt)}
-                              </p>
+                                <p className="text-sm break-words">{message.content}</p>
+                                <p className={`text-xs mt-1 ${
+                                  isMe 
+                                    ? "text-primary-foreground/70" 
+                                    : "text-muted-foreground"
+                                }`}>
+                                  {getMessageTime(message.createdAt)}
+                                </p>
+                              </div>
+                              {canDelete && !isMe && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="opacity-0 group-hover:opacity-100 hover:bg-destructive/10 transition-all h-7 w-7 flex-shrink-0"
+                                  onClick={() => handleDeleteMessage(message._id)}
+                                  title="Delete message (available for 24 hours)"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                                </Button>
+                              )}
                             </div>
                           </div>
                         </div>
                       );
                     })}
+                    {/* Scroll anchor */}
+                    <div ref={messagesEndRef} />
                   </div>
                 )}
               </ScrollArea>

@@ -175,9 +175,11 @@ export default function Communications() {
   const fetchNotifications = async () => {
     try {
       setNotificationsLoading(true);
+      // Only fetch community chat related notifications
       const response = await notificationService.getNotifications({
         page: 1,
-        limit: 20
+        limit: 20,
+        type: 'reply,comment,upvote,mention,post'
       });
       
       if (response.success && response.data) {

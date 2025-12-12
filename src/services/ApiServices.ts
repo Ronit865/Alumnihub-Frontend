@@ -457,6 +457,7 @@ export const notificationService = {
     page?: number;
     limit?: number;
     unreadOnly?: boolean;
+    type?: string;
   }): Promise<ApiResponse> => {
     const queryParams = new URLSearchParams();
     if (params) {
@@ -562,6 +563,10 @@ export const messageService = {
 
   getUnreadCount: async (): Promise<ApiResponse> => {
     return await api.get('/messages/unread-count');
+  },
+
+  deleteMessage: async (messageId: string): Promise<ApiResponse> => {
+    return await api.delete(`/messages/${messageId}`);
   },
 };
 

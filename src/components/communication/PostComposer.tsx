@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { communicationService } from "@/services/ApiServices";
+import { containsInappropriateContent } from "@/lib/contentFilter";
 
 const categories = [
   "General",
@@ -72,6 +73,16 @@ export function PostComposer({ onPostCreated }: PostComposerProps) {
       toast({
         title: "Missing fields",
         description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check for inappropriate content
+    if (containsInappropriateContent(content)) {
+      toast({
+        title: "Inappropriate Content Detected",
+        description: "Your post contains offensive language. Please remove inappropriate words and try again.",
         variant: "destructive",
       });
       return;
