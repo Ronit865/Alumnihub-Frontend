@@ -105,23 +105,23 @@ const geographicData = [
 
 export function Analytics() {
 	return (
-		<div className="space-y-8">
+		<div className="space-y-4 sm:space-y-6 md:space-y-8">
 			{/* Header */}
-			<div className="flex justify-between items-start animate-fade-in">
+			<div className="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-4 animate-fade-in">
 				<div>
-					<h1 className="text-3xl font-bold text-foreground">Analytics Dashboard</h1>
-					<p className="text-muted-foreground mt-2">
+					<h1 className="text-2xl sm:text-3xl font-bold text-foreground">Analytics Dashboard</h1>
+					<p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2">
 						Comprehensive insights into alumni engagement and network growth.
 					</p>
 				</div>
-				<Button variant="outline" className="hover:bg-accent">
+				<Button variant="outline" className="hover:bg-accent w-full sm:w-auto">
 					<Download className="h-4 w-4 mr-2" />
 					Export Report
 				</Button>
 			</div>
 
 			{/* Main KPI Grid - Bento Style */}
-			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-slide-up">
+			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 animate-slide-up">
 				<div className="stats-card-blue">
 					<div className="flex items-center justify-between">
 						<div>
@@ -208,9 +208,9 @@ export function Analytics() {
 			</div>
 
 			{/* Engagement Overview */}
-			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+			<div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
 				<Card className="bento-card gradient-surface border-card-border/50">
-					<CardHeader>
+					<CardHeader className="p-4 sm:p-6">
 						<CardTitle className="flex items-center gap-2">
 							<Activity className="h-5 w-5 text-primary" />
 							Engagement Metrics
@@ -293,7 +293,7 @@ export function Analytics() {
 			</div>
 
 			{/* Geographic Distribution and Recent Activity */}
-			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+			<div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
 				<Card className="lg:col-span-2 bento-card gradient-surface border-card-border/50">
 					<CardHeader>
 						<CardTitle className="flex items-center gap-2">
