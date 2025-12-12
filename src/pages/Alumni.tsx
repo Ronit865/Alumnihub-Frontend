@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Filter, MapPin, Briefcase, Calendar, Loader2, MessageCircle, UserPlus, UserCheck } from "lucide-react";
+import { Search, Filter, MapPin, Briefcase, Calendar, Loader2, MessageCircle, UserPlus, UserCheck, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -258,11 +258,21 @@ export default function Alumni() {
   return (
     <div className="space-y-4 sm:space-y-6 animate-fade-in">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold gradient-text mb-1 sm:mb-2">Alumni Directory</h1>
-        <p className="text-sm sm:text-base text-muted-foreground">
-          Connect with {alumniData.length}+ verified alumni across various fields
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold gradient-text mb-1 sm:mb-2">Alumni Directory</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
+            Connect with {alumniData.length}+ verified alumni across various fields
+          </p>
+        </div>
+        <Button 
+          onClick={() => navigate('/connections')}
+          className="gap-2 w-full sm:w-auto"
+          variant="outline"
+        >
+          <Users className="w-4 h-4" />
+          My Connections
+        </Button>
       </div>
 
       {/* Search and Filters */}
