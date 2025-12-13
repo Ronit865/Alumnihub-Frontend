@@ -130,7 +130,7 @@ export function ChatDialog({
       } catch (error) {
         console.error('Error refreshing messages:', error);
       }
-    }, 5000); // Poll every 5 seconds
+    }, 2000); // Poll every 2 seconds
 
     return () => clearInterval(interval);
   }, [open, conversationId, messages.length]);
