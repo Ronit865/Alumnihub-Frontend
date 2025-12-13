@@ -242,11 +242,6 @@ export function AppHeader() {
                       </div>
                     </DropdownMenuItem>
                   ))}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate('/messages')} className="cursor-pointer">
-                    <MessageCircle className="mr-2 h-4 w-4" />
-                    View all messages
-                  </DropdownMenuItem>
                 </>
               )}
             </DropdownMenuContent>

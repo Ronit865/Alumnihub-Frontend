@@ -18,6 +18,7 @@ import { adminService, userService, connectionService, handleApiError } from "@/
 import { toast } from "@/components/ui/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { ChatDialog } from "@/components/chat/ChatDialog";
 
 // Define the User interface to match your backend model
 interface User {
@@ -206,9 +207,13 @@ export default function Alumni() {
     }
   };
 
-  // Handle message button click
+  // Handle message button click - open chat dialog
+  const [chatDialogOpen, setChatDialogOpen] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  
   const handleMessage = (userId: string) => {
-    navigate('/messages', { state: { userId } });
+    setSelectedUserId(userId);
+    setChatDialogOpen(true);
   };
 
   // Loading state
@@ -453,6 +458,13 @@ export default function Alumni() {
           </Button>
         </div>
       )}
+      
+      {/* Chat Dialog */}
+      <ChatDialog 
+        open={chatDialogOpen} 
+        onOpenChange={setChatDialogOpen}
+        userId={selectedUserId || undefined}
+      />
     </div>
   );
 }

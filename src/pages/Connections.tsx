@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { connectionService } from "@/services/ApiServices";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { ChatDialog } from "@/components/chat/ChatDialog";
 
 export default function Connections() {
   const [pendingRequests, setPendingRequests] = useState<any[]>([]);
@@ -85,8 +86,12 @@ export default function Connections() {
     }
   };
 
+  const [chatDialogOpen, setChatDialogOpen] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  
   const handleMessage = (userId: string) => {
-    navigate('/messages', { state: { userId } });
+    setSelectedUserId(userId);
+    setChatDialogOpen(true);
   };
 
   const getUserInitials = (name: string) => {
@@ -288,6 +293,13 @@ export default function Connections() {
           </Card>
         </TabsContent>
       </Tabs>
+      
+      {/* Chat Dialog */}
+      <ChatDialog 
+        open={chatDialogOpen} 
+        onOpenChange={setChatDialogOpen}
+        userId={selectedUserId || undefined}
+      />
     </div>
   );
 }

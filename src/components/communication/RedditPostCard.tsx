@@ -39,19 +39,23 @@ export function RedditPostCard({ post, onUpdate }: RedditPostProps) {
   };
 
   const handleSave = async () => {
+    // Immediately update UI for instant feedback
+    const newSavedState = !isSaved;
+    setIsSaved(newSavedState);
+    
+    toast({
+      title: newSavedState ? "Post saved" : "Post unsaved",
+      description: newSavedState 
+        ? "You can find this post in your saved items" 
+        : "Post removed from saved items",
+    });
+
+    // Call API in background
     try {
-      const response = await communicationService.toggleSavePost(post._id);
-      
-      if (response.success) {
-        setIsSaved(response.data.isSaved);
-        toast({
-          title: response.data.isSaved ? "Post saved" : "Post unsaved",
-          description: response.data.isSaved 
-            ? "You can find this post in your saved items" 
-            : "Post removed from saved items",
-        });
-      }
+      await communicationService.toggleSavePost(post._id);
     } catch (error: any) {
+      // Revert on error
+      setIsSaved(!newSavedState);
       toast({
         title: "Error",
         description: error.message || "Failed to save post. Please try again.",
@@ -63,22 +67,25 @@ export function RedditPostCard({ post, onUpdate }: RedditPostProps) {
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this post?")) return;
     
+    // Immediately update UI for instant feedback
+    if (onUpdate) {
+      onUpdate();
+    }
+    
+    toast({
+      title: "Post deleted",
+      description: "Your post has been removed.",
+    });
+    
+    // Call API in background
     try {
       await communicationService.deletePost(post._id);
-      toast({
-        title: "Post deleted",
-        description: "Your post has been removed.",
-      });
-      
-      if (onUpdate) {
-        onUpdate();
-      }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete post. Please try again.",
-        variant: "destructive",
-      });
+      // Silently handle or show minimal error
+      console.error("Delete post error:", error);
+      if (onUpdate) {
+        onUpdate(); // Refresh to restore if failed
+      }
     }
   };
 

@@ -104,7 +104,6 @@ export default function PersonalMessages() {
   const [newMessage, setNewMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
-  const [sendingMessage, setSendingMessage] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [showConnections, setShowConnections] = useState(false);
   const { toast } = useToast();
@@ -327,43 +326,71 @@ export default function PersonalMessages() {
       return;
     }
 
-    try {
-      setSendingMessage(true);
-      const response = await messageService.sendMessage(selectedConversation._id, newMessage.trim());
-      console.log('Send message response:', response);
-      
-      // Add message to current messages smoothly
-      const newMsg = response?.data;
-      console.log('New message:', newMsg);
-      if (newMsg) {
-        const updatedMessages = Array.isArray(messages) ? [...messages, newMsg] : [newMsg];
-        setMessages(updatedMessages);
-        
-        // Update cache immediately
-        setCachedMessages(selectedConversation._id, updatedMessages);
-      }
-      setNewMessage("");
-      
-      // Update conversation list in background without refetching all
-      setConversations(prev => {
-        return prev.map(conv => 
-          conv._id === selectedConversation._id 
-            ? { ...conv, lastMessage: { content: newMsg.content, createdAt: newMsg.createdAt, sender: newMsg.sender._id, read: false }, lastMessageTime: newMsg.createdAt }
-            : conv
-        ).sort((a, b) => {
-          const timeA = a.lastMessageTime ? new Date(a.lastMessageTime).getTime() : 0;
-          const timeB = b.lastMessageTime ? new Date(b.lastMessageTime).getTime() : 0;
-          return timeB - timeA;
-        });
+    // Create optimistic message for instant UI update
+    const optimisticMessage = {
+      _id: `temp_${Date.now()}`,
+      content: newMessage.trim(),
+      sender: {
+        _id: localStorage.getItem('userId') || '',
+        name: 'You',
+        avatar: '',
+        email: ''
+      },
+      createdAt: new Date().toISOString(),
+      read: false
+    };
+
+    // Immediately update UI
+    const updatedMessages = Array.isArray(messages) ? [...messages, optimisticMessage] : [optimisticMessage];
+    setMessages(updatedMessages);
+    setCachedMessages(selectedConversation._id, updatedMessages);
+    setNewMessage("");
+    setTimeout(() => scrollToBottom('smooth'), 50);
+
+    // Update conversation list optimistically
+    setConversations(prev => {
+      return prev.map(conv => 
+        conv._id === selectedConversation._id 
+          ? { ...conv, lastMessage: { content: optimisticMessage.content, createdAt: optimisticMessage.createdAt, sender: optimisticMessage.sender._id, read: false }, lastMessageTime: optimisticMessage.createdAt }
+          : conv
+      ).sort((a, b) => {
+        const timeA = a.lastMessageTime ? new Date(a.lastMessageTime).getTime() : 0;
+        const timeB = b.lastMessageTime ? new Date(b.lastMessageTime).getTime() : 0;
+        return timeB - timeA;
       });
+    });
+
+    // Send to API in background
+    try {
+      const response = await messageService.sendMessage(selectedConversation._id, optimisticMessage.content);
+      const newMsg = response?.data;
+      if (newMsg) {
+        // Replace optimistic message with real one
+        setMessages(prev => prev.map(m => m._id === optimisticMessage._id ? newMsg : m));
+        setCachedMessages(selectedConversation._id, updatedMessages.map(m => m._id === optimisticMessage._id ? newMsg : m));
+        
+        // Update conversation with real data
+        setConversations(prev => {
+          return prev.map(conv => 
+            conv._id === selectedConversation._id 
+              ? { ...conv, lastMessage: { content: newMsg.content, createdAt: newMsg.createdAt, sender: newMsg.sender._id, read: false }, lastMessageTime: newMsg.createdAt }
+              : conv
+          ).sort((a, b) => {
+            const timeA = a.lastMessageTime ? new Date(a.lastMessageTime).getTime() : 0;
+            const timeB = b.lastMessageTime ? new Date(b.lastMessageTime).getTime() : 0;
+            return timeB - timeA;
+          });
+        });
+      }
     } catch (error: any) {
+      // Remove optimistic message on error
+      setMessages(prev => prev.filter(m => m._id !== optimisticMessage._id));
+      setCachedMessages(selectedConversation._id, messages);
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.response?.data?.message || "Failed to send message"
+        description: error.response?.data?.message || "Failed to send message. Please try again."
       });
-    } finally {
-      setSendingMessage(false);
     }
   };
 
@@ -399,31 +426,32 @@ export default function PersonalMessages() {
   };
 
   const handleDeleteMessage = async (messageId: string) => {
+    // Immediately remove message from UI and cache for instant feedback
+    const updatedMessages = messages.filter(m => m._id !== messageId);
+    setMessages(updatedMessages);
+    
+    // Update cache
+    if (selectedConversation) {
+      setCachedMessages(selectedConversation._id, updatedMessages);
+    }
+    
+    toast({
+      title: "Success",
+      description: "Message deleted successfully"
+    });
+    
+    // Call API in background and update conversations
     try {
       await messageService.deleteMessage(messageId);
-      
-      // Remove message from UI and cache
-      const updatedMessages = messages.filter(m => m._id !== messageId);
-      setMessages(updatedMessages);
-      
-      // Update cache
-      if (selectedConversation) {
-        setCachedMessages(selectedConversation._id, updatedMessages);
-      }
-      
       // Refresh conversations to update last message
       fetchConversations();
-      
-      toast({
-        title: "Success",
-        description: "Message deleted successfully"
-      });
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.response?.data?.message || "Failed to delete message"
-      });
+      // Silently handle or log error
+      console.error("Delete message error:", error);
+      // Optionally refresh to restore if failed
+      if (selectedConversation) {
+        fetchMessages(selectedConversation._id, false);
+      }
     }
   };
 
@@ -772,20 +800,15 @@ export default function PersonalMessages() {
                     placeholder="Type a message..."
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && !sendingMessage && handleSendMessage()}
-                    disabled={sendingMessage}
+                    onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
                     className="flex-1"
                   />
                   <Button 
                     onClick={handleSendMessage}
-                    disabled={!newMessage.trim() || sendingMessage}
+                    disabled={!newMessage.trim()}
                     size="icon"
                   >
-                    {sendingMessage ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Send className="w-4 h-4" />
-                    )}
+                    <Send className="w-4 h-4" />
                   </Button>
                 </div>
               </div>

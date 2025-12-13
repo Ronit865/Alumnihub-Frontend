@@ -65,7 +65,6 @@ export function ChatDialog({
   const [conversationId, setConversationId] = useState(initialConversationId);
   const [participant, setParticipant] = useState({ name: participantName, avatar: participantAvatar });
   const [loading, setLoading] = useState(false);
-  const [sending, setSending] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showConversationList, setShowConversationList] = useState(!initialConversationId && !userId);
   const { toast } = useToast();
@@ -197,40 +196,62 @@ export function ChatDialog({
       return;
     }
 
+    // Create optimistic message for instant UI update
+    const optimisticMessage = {
+      _id: `temp_${Date.now()}`,
+      content: newMessage.trim(),
+      sender: {
+        _id: currentUser?._id || '',
+        name: currentUser?.name || 'You',
+        avatar: currentUser?.avatar || ''
+      },
+      createdAt: new Date().toISOString(),
+      read: false
+    };
+
+    // Immediately update UI
+    setMessages(prev => [...prev, optimisticMessage]);
+    setNewMessage("");
+    setTimeout(() => scrollToBottom('smooth'), 50);
+
+    // Send to API in background
     try {
-      setSending(true);
-      const response = await messageService.sendMessage(conversationId, newMessage.trim());
+      const response = await messageService.sendMessage(conversationId, optimisticMessage.content);
       const newMsg = response?.data;
       if (newMsg) {
-        setMessages(prev => [...prev, newMsg]);
-        setTimeout(() => scrollToBottom('smooth'), 50);
+        // Replace optimistic message with real one
+        setMessages(prev => prev.map(m => m._id === optimisticMessage._id ? newMsg : m));
       }
-      setNewMessage("");
     } catch (error: any) {
+      // Remove optimistic message on error
+      setMessages(prev => prev.filter(m => m._id !== optimisticMessage._id));
       toast({
         variant: "destructive",
         title: "Error",
         description: error.response?.data?.message || "Failed to send message"
       });
-    } finally {
-      setSending(false);
     }
   };
 
   const handleDeleteMessage = async (messageId: string) => {
+    // Immediately remove message from UI for instant feedback
+    setMessages(prev => prev.filter(m => m._id !== messageId));
+    
+    toast({
+      title: "Success",
+      description: "Message deleted successfully"
+    });
+    
+    // Call API in background
     try {
       await messageService.deleteMessage(messageId);
-      setMessages(prev => prev.filter(m => m._id !== messageId));
-      toast({
-        title: "Success",
-        description: "Message deleted successfully"
-      });
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.response?.data?.message || "Failed to delete message"
-      });
+      // Silently handle or log error
+      console.error("Delete message error:", error);
+      // Optionally refresh messages if failed
+      if (conversationId) {
+        fetchMessagesForConversation(conversationId);
+      }
     }
   };
 
@@ -439,20 +460,16 @@ export function ChatDialog({
                   placeholder="Type a message..."
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && !sending && handleSendMessage()}
-                  disabled={sending || !conversationId}
+                  onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                  disabled={!conversationId}
                   className="flex-1"
                 />
                 <Button 
                   onClick={handleSendMessage}
-                  disabled={!newMessage.trim() || sending || !conversationId}
+                  disabled={!newMessage.trim() || !conversationId}
                   size="icon"
                 >
-                  {sending ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Send className="w-4 h-4" />
-                  )}
+                  <Send className="w-4 h-4" />
                 </Button>
               </div>
             </div>

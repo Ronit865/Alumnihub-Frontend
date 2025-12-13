@@ -13,7 +13,6 @@ import Events from "./pages/Events";
 import Jobs from "./pages/Jobs";
 import PostJob from "./pages/PostJob";
 import Donations from "./pages/Donations";
-import PersonalMessages from "./pages/PersonalMessages";
 import Communications from "./pages/Communications";
 import PostDetail from "./pages/PostDetail";
 import Connections from "./pages/Connections";
@@ -68,7 +67,6 @@ const App = () => (
               <Route path="jobs" element={<Jobs />} />
               <Route path="jobs/post" element={<PostJob />} />
               <Route path="donations" element={<Donations />} />
-              <Route path="messages" element={<PersonalMessages />} />
               <Route path="communications" element={<Communications />} />
               <Route path="communications/post/:postId" element={<PostDetail />} />
               <Route path="connections" element={<Connections />} />

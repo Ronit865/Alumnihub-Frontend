@@ -123,20 +123,27 @@ export function CommentCard({ comment, postId, onUpdate, depth = 0 }: CommentCar
       return;
     }
 
+    // Immediately update UI and close edit mode
+    const originalContent = comment.content;
+    comment.content = editText;
+    setIsEditing(false);
+    
+    toast({
+      title: "Comment updated",
+      description: "Your comment has been updated.",
+    });
+
+    // Call API in background
     try {
-      const response = await communicationService.updateComment(comment._id, {
+      await communicationService.updateComment(comment._id, {
         content: editText
       });
-
-      if (response.success) {
-        toast({
-          title: "Comment updated",
-          description: "Your comment has been updated.",
-        });
-        setIsEditing(false);
-        onUpdate();
-      }
+      onUpdate();
     } catch (error: any) {
+      // Revert on error
+      comment.content = originalContent;
+      setEditText(originalContent);
+      onUpdate();
       toast({
         title: "Error",
         description: error.message || "Failed to update comment",
@@ -148,19 +155,21 @@ export function CommentCard({ comment, postId, onUpdate, depth = 0 }: CommentCar
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this comment?")) return;
 
+    // Immediately update UI for instant feedback
+    onUpdate();
+    
+    toast({
+      title: "Comment deleted",
+      description: "Your comment has been removed.",
+    });
+    
+    // Call API in background
     try {
       await communicationService.deleteComment(comment._id);
-      toast({
-        title: "Comment deleted",
-        description: "Your comment has been removed.",
-      });
-      onUpdate();
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete comment",
-        variant: "destructive",
-      });
+      // Silently handle or show minimal error
+      console.error("Delete comment error:", error);
+      onUpdate(); // Refresh to restore if failed
     }
   };
 
