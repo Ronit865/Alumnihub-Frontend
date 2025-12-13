@@ -30,14 +30,17 @@ export function AppHeader() {
   const [chatDialogOpen, setChatDialogOpen] = useState(false);
   const [selectedConversation, setSelectedConversation] = useState<any>(null);
   const [recentConversations, setRecentConversations] = useState<any[]>([]);
+  const [unreadChatsCount, setUnreadChatsCount] = useState(0);
 
   // Fetch notifications and conversations
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
+        // Only fetch connection request notifications for navbar
         const response = await notificationService.getNotifications({
           page: 1,
-          limit: 10
+          limit: 10,
+          type: 'connection'
         });
         
         if (response.success && response.data) {
@@ -53,7 +56,19 @@ export function AppHeader() {
       try {
         const response = await messageService.getUserConversations();
         const conversations = response?.data || [];
-        setRecentConversations(Array.isArray(conversations) ? conversations.slice(0, 5) : []);
+        const conversationsArray = Array.isArray(conversations) ? conversations : [];
+        setRecentConversations(conversationsArray.slice(0, 5));
+        
+        // Count conversations with unread messages
+        const unreadCount = conversationsArray.filter((conv: any) => {
+          const lastMessage = conv.lastMessage;
+          const currentUserId = localStorage.getItem('userId');
+          // Check if last message exists, is not from current user, and is unread
+          return lastMessage && 
+                 lastMessage.sender !== currentUserId && 
+                 !lastMessage.read;
+        }).length;
+        setUnreadChatsCount(unreadCount);
       } catch (error) {
         console.error("Failed to fetch conversations:", error);
       }
@@ -195,6 +210,13 @@ export function AppHeader() {
             }}
           >
             <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+            {unreadChatsCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-primary rounded-full flex items-center justify-center">
+                <span className="text-[10px] sm:text-xs text-primary-foreground font-medium">
+                  {unreadChatsCount > 99 ? '99+' : unreadChatsCount}
+                </span>
+              </span>
+            )}
           </Button>
           
           {/* Recent Conversations Dropdown */}
