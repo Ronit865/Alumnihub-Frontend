@@ -201,7 +201,7 @@ export function ChatDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl h-[600px] p-0 flex flex-col">
+      <DialogContent className="w-[90vw] max-w-[80vw] h-[80vh] max-h-[80vh] p-0 flex flex-col backdrop-blur-sm border-border/50 shadow-2xl">
         {/* Header */}
         <DialogHeader className="px-6 py-4 border-b">
           <div className="flex items-center justify-between">
