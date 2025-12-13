@@ -100,11 +100,34 @@ export function AppHeader() {
       
       setNotificationsOpen(false);
       
-      if (notification.link) {
+      // Redirect to connections page for connection-type notifications
+      if (notification.type === 'connection') {
+        navigate('/connections');
+      } else if (notification.link) {
         navigate(notification.link);
       }
     } catch (error) {
       console.error("Failed to mark notification as read:", error);
+    }
+  };
+
+  // Handle mark all as read
+  const handleMarkAllAsRead = async () => {
+    try {
+      await notificationService.markAllAsRead();
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      setUnreadCount(0);
+      toast({
+        title: "Success",
+        description: "All notifications marked as read",
+      });
+    } catch (error) {
+      console.error("Failed to mark all as read:", error);
+      toast({
+        title: "Error",
+        description: "Failed to mark notifications as read",
+        variant: "destructive",
+      });
     }
   };
 
@@ -336,12 +359,9 @@ export function AppHeader() {
                   <Button
                     variant="ghost"
                     className="w-full text-sm"
-                    onClick={() => {
-                      setNotificationsOpen(false);
-                      navigate('/communications?tab=notifications');
-                    }}
+                    onClick={handleMarkAllAsRead}
                   >
-                    View all notifications
+                    Mark all as read
                   </Button>
                 </div>
               )}
