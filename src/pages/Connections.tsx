@@ -9,6 +9,7 @@ import { connectionService } from "@/services/ApiServices";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { ChatDialog } from "@/components/chat/ChatDialog";
+import { UserProfileDialog } from "@/components/profile/UserProfileDialog";
 
 export default function Connections() {
   const [pendingRequests, setPendingRequests] = useState<any[]>([]);
@@ -88,10 +89,17 @@ export default function Connections() {
 
   const [chatDialogOpen, setChatDialogOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
+  const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
   
   const handleMessage = (userId: string) => {
     setSelectedUserId(userId);
     setChatDialogOpen(true);
+  };
+
+  const handleAvatarClick = (userId: string) => {
+    setSelectedProfileId(userId);
+    setProfileDialogOpen(true);
   };
 
   const getUserInitials = (name: string) => {
@@ -168,8 +176,8 @@ export default function Connections() {
                       key={request._id}
                       className="flex items-center gap-4 p-4 border rounded-lg hover:bg-accent/50 transition-colors"
                     >
-                      <div className="relative">
-                        <Avatar className="w-12 h-12">
+                      <div className="relative cursor-pointer" onClick={() => handleAvatarClick(request.requester?._id)}>
+                        <Avatar className="w-12 h-12 hover:ring-4 ring-primary/20 transition-all">
                           <AvatarImage src={request.requester?.avatar} />
                           <AvatarFallback className="bg-primary/10 text-primary font-medium">
                             {getUserInitials(request.requester?.name || 'User')}
@@ -255,8 +263,8 @@ export default function Connections() {
                       key={connection._id}
                       className="flex items-center gap-4 p-4 border rounded-lg hover:bg-accent/50 transition-colors"
                     >
-                      <div className="relative">
-                        <Avatar className="w-12 h-12">
+                      <div className="relative cursor-pointer" onClick={() => handleAvatarClick(connection.user?._id)}>
+                        <Avatar className="w-12 h-12 hover:ring-4 ring-primary/20 transition-all">
                           <AvatarImage src={connection.user?.avatar} />
                           <AvatarFallback className="bg-primary/10 text-primary font-medium">
                             {getUserInitials(connection.user?.name || 'User')}
@@ -299,6 +307,17 @@ export default function Connections() {
         open={chatDialogOpen} 
         onOpenChange={setChatDialogOpen}
         userId={selectedUserId || undefined}
+      />
+      
+      {/* User Profile Dialog */}
+      <UserProfileDialog 
+        open={profileDialogOpen} 
+        onOpenChange={setProfileDialogOpen}
+        userId={selectedProfileId}
+        onMessageClick={(userId) => {
+          setSelectedUserId(userId);
+          setChatDialogOpen(true);
+        }}
       />
     </div>
   );

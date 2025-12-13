@@ -81,6 +81,10 @@ export const userService = {
     }
   },
 
+  getUserById: async (userId: string): Promise<ApiResponse> => {
+    return await api.get(`/users/${userId}`);
+  },
+
   updateAvatar: async (formData: FormData): Promise<ApiResponse> => {
     return await api.post('/users/update-avatar', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }

@@ -19,6 +19,7 @@ import { toast } from "@/components/ui/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { ChatDialog } from "@/components/chat/ChatDialog";
+import { UserProfileDialog } from "@/components/profile/UserProfileDialog";
 
 // Define the User interface to match your backend model
 interface User {
@@ -210,10 +211,17 @@ export default function Alumni() {
   // Handle message button click - open chat dialog
   const [chatDialogOpen, setChatDialogOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
+  const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
   
   const handleMessage = (userId: string) => {
     setSelectedUserId(userId);
     setChatDialogOpen(true);
+  };
+
+  const handleAvatarClick = (userId: string) => {
+    setSelectedProfileId(userId);
+    setProfileDialogOpen(true);
   };
 
   // Loading state
@@ -359,8 +367,8 @@ export default function Alumni() {
             <Card key={person._id} className="bento-card hover:shadow-md border-card-border/50 hover-lift group flex flex-col h-full">
               <CardHeader className="pb-4">
                 <div className="flex items-start gap-4">
-                  <div className="relative">
-                    <Avatar className="w-16 h-16 ring-2 ring-primary/20 flex-shrink-0">
+                  <div className="relative cursor-pointer" onClick={() => handleAvatarClick(person._id)}>
+                    <Avatar className="w-16 h-16 ring-2 ring-primary/20 flex-shrink-0 hover:ring-4 transition-all">
                       <AvatarImage src={person.avatar} alt={person.name} />
                       <AvatarFallback className="bg-primary/10 text-primary font-medium text-lg">
                         {person.name?.split(' ').map(n => n[0]).join('') || 'AL'}
@@ -464,6 +472,17 @@ export default function Alumni() {
         open={chatDialogOpen} 
         onOpenChange={setChatDialogOpen}
         userId={selectedUserId || undefined}
+      />
+      
+      {/* User Profile Dialog */}
+      <UserProfileDialog 
+        open={profileDialogOpen} 
+        onOpenChange={setProfileDialogOpen}
+        userId={selectedProfileId}
+        onMessageClick={(userId) => {
+          setSelectedUserId(userId);
+          setChatDialogOpen(true);
+        }}
       />
     </div>
   );
