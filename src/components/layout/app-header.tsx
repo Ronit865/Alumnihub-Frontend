@@ -28,6 +28,7 @@ export function AppHeader() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [chatDialogOpen, setChatDialogOpen] = useState(false);
+  const [selectedConversation, setSelectedConversation] = useState<any>(null);
   const [recentConversations, setRecentConversations] = useState<any[]>([]);
 
   // Fetch notifications and conversations
@@ -183,13 +184,26 @@ export function AppHeader() {
         </div>
 
         <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
-          {/* Personal Messages Button with Dropdown */}
+          {/* Personal Messages Button */}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="relative h-8 w-8 sm:h-10 sm:w-10"
+            onClick={() => {
+              setSelectedConversation(null);
+              setChatDialogOpen(true);
+            }}
+          >
+            <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+          </Button>
+          
+          {/* Recent Conversations Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="relative h-8 w-8 sm:h-10 sm:w-10"
+                className="relative h-8 w-8 sm:h-10 sm:w-10 hidden"
               >
                 <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
               </Button>
@@ -369,6 +383,9 @@ export function AppHeader() {
       <ChatDialog 
         open={chatDialogOpen} 
         onOpenChange={setChatDialogOpen}
+        conversationId={selectedConversation?._id}
+        participantName={selectedConversation?.participant?.name}
+        participantAvatar={selectedConversation?.participant?.avatar}
       />
     </header>
   );
