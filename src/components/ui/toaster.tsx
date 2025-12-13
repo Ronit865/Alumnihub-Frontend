@@ -23,15 +23,15 @@ export function Toaster() {
   const getIconBgColor = (variant?: string) => {
     switch (variant) {
       case "info":
-        return "bg-blue-500 dark:bg-blue-600";
+        return "bg-blue-500";
       case "success":
-        return "bg-green-500 dark:bg-green-600";
+        return "bg-green-500";
       case "warning":
-        return "bg-yellow-500 dark:bg-yellow-600";
+        return "bg-yellow-500";
       case "destructive":
-        return "bg-red-500 dark:bg-red-600";
+        return "bg-red-500";
       default:
-        return "bg-gray-500";
+        return "bg-zinc-600";
     }
   };
 
@@ -45,7 +45,7 @@ export function Toaster() {
           <Toast key={id} variant={variant} {...props}>
             <div className="flex items-center gap-4 flex-1">
               {icon && (
-                <div className={`flex-shrink-0 rounded-2xl p-3 text-white ${iconBgColor}`}>
+                <div className={`flex-shrink-0 rounded-lg p-2.5 text-white ${iconBgColor}`}>
                   {icon}
                 </div>
               )}
