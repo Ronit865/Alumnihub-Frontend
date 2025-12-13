@@ -75,7 +75,7 @@ export function AppHeader() {
   const handleNotificationClick = async (notification: any) => {
     try {
       if (!notification.read) {
-        await notificationService.markAsRead([notification._id]);
+        await notificationService.markAsRead(notification._id);
         setNotifications(prev => 
           prev.map(n => n._id === notification._id ? { ...n, read: true } : n)
         );
