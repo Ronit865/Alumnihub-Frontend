@@ -111,6 +111,30 @@ export function ChatDialog({
     }
   }, [open, userId, initialConversationId]);
 
+  // Auto-refresh messages every 5 seconds when conversation is open
+  useEffect(() => {
+    if (!open || !conversationId) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const response = await messageService.getConversationMessages(conversationId, { limit: 50 });
+        const messagesData = response?.data?.messages || response?.data || [];
+        const newMessages = Array.isArray(messagesData) ? messagesData : [];
+        
+        // Only update if there are new messages
+        if (newMessages.length > messages.length) {
+          setMessages(newMessages);
+          await messageService.markMessagesAsRead(conversationId);
+          setTimeout(() => scrollToBottom('smooth'), 100);
+        }
+      } catch (error) {
+        console.error('Error refreshing messages:', error);
+      }
+    }, 5000); // Poll every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [open, conversationId, messages.length]);
+
   const fetchConversations = async () => {
     try {
       setLoading(true);
