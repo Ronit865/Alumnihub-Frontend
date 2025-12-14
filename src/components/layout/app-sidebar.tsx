@@ -13,6 +13,8 @@ import {
   Moon,
   BarChart3,
   Mail,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 import {
@@ -49,7 +51,7 @@ const adminNavigation = [
 ];
 
 export function AppSidebar() {
-  const { open } = useSidebar();
+  const { open, toggleSidebar, isMobile, setOpenMobile } = useSidebar();
   const location = useLocation();
   const { user, userType } = useAuth();
   
@@ -64,6 +66,12 @@ export function AppSidebar() {
     return false;
   });
 
+  // Auto-close sidebar on mobile when navigating
+  useEffect(() => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  }, [location.pathname, isMobile, setOpenMobile]);
 
   // Determine if we're in admin mode
   const isAdminMode = location.pathname.startsWith('/admin');
@@ -100,7 +108,8 @@ export function AppSidebar() {
   };
 
   const getNavClasses = (path: string) => {
-    const baseClasses = "sidebar-nav-item w-full justify-start gap-2 sm:gap-3 h-9 sm:h-11 px-2 sm:px-3 font-medium text-sm sm:text-base";
+    const mobileClasses = isMobile ? "h-12 px-4 text-base" : "h-9 sm:h-11 px-2 sm:px-3 text-sm sm:text-base";
+    const baseClasses = `sidebar-nav-item w-full justify-start gap-3 ${mobileClasses} font-medium`;
     const active = isActive(path);
     return active
       ? `${baseClasses} active bg-primary text-primary-foreground`
@@ -111,9 +120,9 @@ export function AppSidebar() {
     <Sidebar className="border-r h-screen sticky top-0" collapsible="icon">
       <SidebarContent className="p-0 h-full">
         {/* Logo Section */}
-        <div className={`border-b h-14 sm:h-16 flex items-center ${open ? "justify-center p-3 sm:p-4" : "justify-center p-1 sm:p-2"}`}>
-          <div className={`flex items-center ${open ? "gap-3 sm:gap-4" : "justify-center"}`}>
-            <div className={`flex items-center justify-center shrink-0 ${open ? "w-10 h-10 sm:w-12 sm:h-12" : "w-7 h-7 sm:w-8 sm:h-8"}`}>
+        <div className={`border-b ${isMobile ? 'h-16' : 'h-14 sm:h-16'} flex items-center ${open ? "justify-between px-4" : "justify-center p-2"}`}>
+          <div className={`flex items-center ${open ? "gap-3" : "justify-center"}`}>
+            <div className={`flex items-center justify-center shrink-0 ${open ? (isMobile ? 'w-10 h-10' : 'w-10 h-10 sm:w-12 sm:h-12') : 'w-8 h-8'}`}>
               <img
                 src="/ANlogo.png"
                 alt="AllyNet Logo"
@@ -122,25 +131,49 @@ export function AppSidebar() {
             </div>
             {open && (
               <div className="min-w-0">
-                <h1 className="font-bold text-lg sm:text-xl md:text-2xl gradient-text truncate">AllyNet</h1>
+                <h1 className={`font-bold gradient-text truncate ${isMobile ? 'text-xl' : 'text-lg sm:text-xl md:text-2xl'}`}>AllyNet</h1>
               </div>
             )}
           </div>
+          {open && !isMobile && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleSidebar}
+              className="h-8 w-8 shrink-0"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+          )}
         </div>
 
+        {/* Toggle Button for Collapsed State */}
+        {!open && (
+          <div className="flex items-center justify-center py-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleSidebar}
+              className="h-8 w-8"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
+
         {/* Main Navigation */}
-        <SidebarGroup className={open ? "px-2 sm:px-3" : "px-1 sm:px-2"}>
-          <SidebarGroupLabel className={!open ? "sr-only" : "text-xs sm:text-sm"}>
+        <SidebarGroup className={open ? (isMobile ? "px-3 py-2" : "px-2 sm:px-3") : "px-2"}>
+          <SidebarGroupLabel className={!open ? "sr-only" : (isMobile ? "text-sm font-semibold mb-2" : "text-xs sm:text-sm")}>
             Main Menu
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-0.5 sm:space-y-1">
+            <SidebarMenu className={isMobile ? "space-y-1" : "space-y-0.5 sm:space-y-1"}>
               {(isAdminMode ? adminNavigation : baseNavigation).map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <Link to={item.url} className={getNavClasses(item.url)}>
-                      <item.icon className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
-                      {open && <span className="truncate text-sm sm:text-base">{item.title}</span>}
+                      <item.icon className={isMobile ? "w-5 h-5 shrink-0" : "w-4 h-4 sm:w-5 sm:h-5 shrink-0"} />
+                      {open && <span className="truncate">{item.title}</span>}
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -150,13 +183,13 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {/* Bottom Section */}
-        <div className={`mt-auto border-t ${open ? "p-2 sm:p-3" : "p-1 sm:p-2"}`}>
-          <SidebarMenu className="space-y-0.5 sm:space-y-1">
+        <div className={`mt-auto border-t ${open ? (isMobile ? "p-3" : "p-2 sm:p-3") : "p-2"}`}>
+          <SidebarMenu className={isMobile ? "space-y-1" : "space-y-0.5 sm:space-y-1"}>
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
                 <Link to={isAdminMode ? "/admin/settings" : "/settings"} className={getNavClasses(isAdminMode ? "/admin/settings" : "/settings")}>
-                  <Settings className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
-                  {open && <span className="truncate text-sm sm:text-base">Settings</span>}
+                  <Settings className={isMobile ? "w-5 h-5 shrink-0" : "w-4 h-4 sm:w-5 sm:h-5 shrink-0"} />
+                  {open && <span className="truncate">Settings</span>}
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -169,10 +202,10 @@ export function AppSidebar() {
                   variant="ghost"
                   size={!open ? "icon" : "default"}
                   onClick={toggleTheme}
-                  className={`${!open ? "w-9 h-9 sm:w-11 sm:h-11 justify-center" : "w-full justify-start gap-2 sm:gap-3 h-9 sm:h-11"} text-muted-foreground hover:text-foreground hover:bg-accent`}
+                  className={`${!open ? (isMobile ? "w-10 h-10 justify-center" : "w-9 h-9 sm:w-11 sm:h-11 justify-center") : (isMobile ? "w-full justify-start gap-3 h-12" : "w-full justify-start gap-2 sm:gap-3 h-9 sm:h-11")} text-muted-foreground hover:text-foreground hover:bg-accent`}
                 >
-                  {isDark ? <Sun className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" /> : <Moon className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />}
-                  {open && <span className="truncate text-sm sm:text-base">{isDark ? "Light Mode" : "Dark Mode"}</span>}
+                  {isDark ? <Sun className={isMobile ? "w-5 h-5 shrink-0" : "w-4 h-4 sm:w-5 sm:h-5 shrink-0"} /> : <Moon className={isMobile ? "w-5 h-5 shrink-0" : "w-4 h-4 sm:w-5 sm:h-5 shrink-0"} />}
+                  {open && <span className="truncate">{isDark ? "Light Mode" : "Dark Mode"}</span>}
                 </Button>
               </SidebarMenuButton>
             </SidebarMenuItem>

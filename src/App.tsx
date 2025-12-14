@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { MainLayout } from "@/components/layout/main-layout";
 import { AuthProvider } from "@/context/AuthContext";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 
 // User pages
 import Dashboard from "./pages/Dashboard";
@@ -45,6 +46,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <PWAInstallPrompt />
         <BrowserRouter>
           <Routes>
             {/* Auth Routes - No Sidebar */}

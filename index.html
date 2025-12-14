@@ -2,9 +2,27 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AllyNet</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#3b82f6" />
+    <meta name="description" content="Connect with alumni, explore events, find job opportunities, and stay engaged with your alma mater community." />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="AllyNet" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="/ANlogo.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/ANlogo.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/ANlogo.png" />
+    <link rel="apple-touch-icon" sizes="167x167" href="/ANlogo.png" />
+    
+    <title>AllyNet - Alumni Network Platform</title>
     
     <!-- Theme restoration script - must be before any other content -->
     <script>
@@ -122,6 +140,26 @@
 
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+
+    <!-- Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then(function(registration) {
+              console.log('ServiceWorker registration successful:', registration.scope);
+              
+              // Check for updates periodically
+              setInterval(() => {
+                registration.update();
+              }, 60000); // Check every minute
+            })
+            .catch(function(err) {
+              console.log('ServiceWorker registration failed:', err);
+            });
+        });
+      }
+    </script>
 
     <!-- Hide loading screen when React app mounts -->
     <script>
