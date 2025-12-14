@@ -72,7 +72,7 @@ export default function Donations() {
       const response = await donationService.contributeToCampaign(selectedCampaign._id, amount);
       
       if (response.success) {
-        toast.success(`Successfully contributed $${amount}!`);
+        toast.success(`Successfully contributed ₹${amount}!`);
         setContributeDialogOpen(false);
         setContributionAmount('');
         fetchCampaigns();
@@ -141,9 +141,9 @@ export default function Donations() {
                   {/* Progress Section */}
                   <div>
                     <div className="flex justify-between text-sm mb-2">
-                      <span className="font-semibold text-primary">${(campaign.raisedAmount ?? 0).toLocaleString()}</span>
-                      <span className="text-muted-foreground">
-                        of ${(campaign.goal ?? 0).toLocaleString()}
+                      <span className="font-semibold text-primary">₹{(campaign.raisedAmount ?? 0).toLocaleString()}</span>
+                      <span className="text-sm text-muted-foreground">
+                        of ₹{(campaign.goal ?? 0).toLocaleString()}
                       </span>
                     </div>
                     <Progress value={progress} className="h-2" />
@@ -158,7 +158,7 @@ export default function Donations() {
                       <Target className="h-4 w-4 text-primary flex-shrink-0" />
                       <div>
                         <p className="text-xs text-muted-foreground">Remaining</p>
-                        <p className="text-sm font-semibold">${remaining.toLocaleString()}</p>
+                        <p className="text-sm font-semibold">₹{remaining.toLocaleString()}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -199,7 +199,7 @@ export default function Donations() {
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="amount">Contribution Amount ($)</Label>
+              <Label htmlFor="amount">Contribution Amount (₹)</Label>
               <Input
                 id="amount"
                 type="number"
@@ -215,16 +215,16 @@ export default function Donations() {
               <div className="p-4 bg-muted rounded-lg space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Campaign Goal:</span>
-                  <span className="font-semibold">${(selectedCampaign.goal ?? 0).toLocaleString()}</span>
+                  <span className="font-semibold">₹{(selectedCampaign.goal ?? 0).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Amount Raised:</span>
-                  <span className="font-semibold">${(selectedCampaign.raisedAmount ?? 0).toLocaleString()}</span>
+                  <span className="font-semibold">₹{(selectedCampaign.raisedAmount ?? 0).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Remaining:</span>
                   <span className="font-semibold text-orange-600">
-                    ${((selectedCampaign.goal ?? 0) - (selectedCampaign.raisedAmount ?? 0)).toLocaleString()}
+                    ₹{((selectedCampaign.goal ?? 0) - (selectedCampaign.raisedAmount ?? 0)).toLocaleString()}
                   </span>
                 </div>
               </div>

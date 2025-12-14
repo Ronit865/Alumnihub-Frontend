@@ -70,6 +70,8 @@ export default function Jobs() {
   const [loadingApplicants, setLoadingApplicants] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [jobDetailsOpen, setJobDetailsOpen] = useState(false);
+  const [jobDetailsData, setJobDetailsData] = useState<Job | null>(null);
 
   // Get current user ID from localStorage
   useEffect(() => {
@@ -155,6 +157,30 @@ export default function Jobs() {
     }
   };
 
+  const handleUnapply = async (jobId: string) => {
+    if (!currentUserId) {
+      toast.error("Please log in to unapply");
+      return;
+    }
+
+    try {
+      const response = await jobService.unapplyForJob(jobId);
+      console.log('Unapply Response:', response); // Debug log
+
+      if (response.success) {
+        toast.success("Application withdrawn successfully!");
+        // Refresh jobs to get updated applicants list
+        await fetchAllJobs();
+      } else {
+        toast.error(response.message || "Failed to withdraw application");
+      }
+    } catch (error: any) {
+      console.error('Unapply Error:', error);
+      const errorMessage = error.message || "Failed to withdraw application. Please try again.";
+      toast.error(errorMessage);
+    }
+  };
+
   const handleEdit = (job: Job) => {
     setSelectedJob(job);
     setEditDialogOpen(true);
@@ -236,6 +262,11 @@ export default function Jobs() {
     return applied;
   };
 
+  const handleViewDetails = (job: Job) => {
+    setJobDetailsData(job);
+    setJobDetailsOpen(true);
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto p-6">
@@ -314,7 +345,7 @@ export default function Jobs() {
 
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <DollarSign className="w-4 h-4 text-primary flex-shrink-0" />
-                        <span>${job.salary.toLocaleString()}/year</span>
+                        <span>₹{job.salary.toLocaleString()}/year</span>
                       </div>
                     </div>
 
@@ -324,11 +355,18 @@ export default function Jobs() {
                       <Badge variant="secondary">{job.category}</Badge>
                     </div>
 
-                    <div className="pt-2 mt-auto">
+                    <div className="pt-2 mt-auto space-y-2">
                       <Button
-                        className={`w-full ${hasApplied(job) ? 'bg-green-600 hover:bg-green-700 text-white' : ''}`}
-                        onClick={() => handleApply(job._id)}
-                        disabled={hasApplied(job)}
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => handleViewDetails(job)}
+                      >
+                        <Eye className="w-4 h-4 mr-2" />
+                        View Details
+                      </Button>
+                      <Button
+                        className={`w-full ${hasApplied(job) ? 'bg-gradient-to-r from-green-400 to-emerald-500 hover:from-green-500 hover:to-emerald-600 text-white font-semibold shadow-lg' : ''}`}
+                        onClick={() => hasApplied(job) ? handleUnapply(job._id) : handleApply(job._id)}
                         variant={hasApplied(job) ? "default" : "default"}
                       >
                         {hasApplied(job) ? (
@@ -403,7 +441,7 @@ export default function Jobs() {
 
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <DollarSign className="w-4 h-4 text-primary flex-shrink-0" />
-                        <span>${job.salary.toLocaleString()}/year</span>
+                        <span>₹{job.salary.toLocaleString()}/year</span>
                       </div>
 
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -547,6 +585,116 @@ export default function Jobs() {
                   </CardContent>
                 </Card>
               ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Job Details Dialog */}
+      <Dialog open={jobDetailsOpen} onOpenChange={setJobDetailsOpen}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">{jobDetailsData?.title}</DialogTitle>
+            <DialogDescription className="flex items-center gap-2">
+              <Building2 className="w-4 h-4" />
+              {jobDetailsData?.company}
+            </DialogDescription>
+          </DialogHeader>
+
+          {jobDetailsData && (
+            <div className="space-y-6">
+              {/* Status Badge */}
+              {jobDetailsData.isVerified && (
+                <Badge variant="default" className="flex items-center gap-1 w-fit">
+                  <CheckCircle className="w-3 h-3" />
+                  Verified
+                </Badge>
+              )}
+
+              {/* Description */}
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Job Description</h3>
+                <p className="text-muted-foreground whitespace-pre-wrap">{jobDetailsData.description}</p>
+              </div>
+
+              {/* Job Details Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <MapPin className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Location</p>
+                      <p className="font-semibold">{jobDetailsData.location}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <DollarSign className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Salary</p>
+                      <p className="font-semibold">₹{jobDetailsData.salary.toLocaleString()}/year</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <Briefcase className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Job Type</p>
+                      <p className="font-semibold">{jobDetailsData.jobType}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <Building2 className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Category</p>
+                      <p className="font-semibold">{jobDetailsData.category}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <Calendar className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Experience Required</p>
+                      <p className="font-semibold">{jobDetailsData.experienceRequired}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <Calendar className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Posted On</p>
+                      <p className="font-semibold">{formatDate(jobDetailsData.createdAt)}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4 border-t">
+                <Button
+                  className={`flex-1 ${hasApplied(jobDetailsData) ? 'bg-gradient-to-r from-green-400 to-emerald-500 hover:from-green-500 hover:to-emerald-600 text-white font-semibold shadow-lg' : ''}`}
+                  onClick={() => {
+                    if (hasApplied(jobDetailsData)) {
+                      handleUnapply(jobDetailsData._id);
+                    } else {
+                      handleApply(jobDetailsData._id);
+                    }
+                    setJobDetailsOpen(false);
+                  }}
+                >
+                  {hasApplied(jobDetailsData) ? (
+                    <>
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Applied - Click to Withdraw
+                    </>
+                  ) : (
+                    "Apply Now"
+                  )}
+                </Button>
+              </div>
             </div>
           )}
         </DialogContent>

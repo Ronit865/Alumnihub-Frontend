@@ -249,7 +249,7 @@ export default function Communications() {
       {/* Header */}
       <div className="flex justify-between items-center mb-1">
         <div>
-          <h1 className="text-3xl font-bold gradient-text mb-1">Communications</h1>
+          <h1 className="text-3xl font-bold gradient-text mb-1">Community Chat</h1>
           <p className="text-muted-foreground text-sm">
             Stay connected with the alumni community
           </p>

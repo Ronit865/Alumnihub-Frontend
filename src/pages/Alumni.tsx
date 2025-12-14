@@ -110,9 +110,17 @@ export default function Alumni() {
   // Get all users first
   const allUsers: User[] = getAllUsersFromResponse(alumniResponse); 
 
-  // Filter for verified alumni only
+  // Get current user ID from localStorage
+  const currentUserId = localStorage.getItem('userId');
+
+  // Filter for verified alumni only and exclude the current user
   const alumniData: User[] = allUsers.filter(user => {
     if (!user || !user.name || !user.email) {
+      return false;
+    }
+    
+    // Exclude the current user from the list
+    if (currentUserId && user._id === currentUserId) {
       return false;
     }
     

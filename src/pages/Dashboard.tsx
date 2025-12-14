@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { adminService, eventService, userService } from "@/services/ApiServices";
+import { adminService, eventService, userService, jobService, donationService, connectionService, communicationService } from "@/services/ApiServices";
 import { toast } from "sonner";
 
 interface DashboardStats {
@@ -13,6 +13,17 @@ interface DashboardStats {
   totalEvents: number;
   activeEvents: number;
   totalDonations: string;
+  totalJobs: number;
+  totalConnections: number;
+}
+
+interface DonationStats {
+  totalRaised: number;
+  activeDonors: number;
+  avgDonation: number;
+  campaignGoalPercentage: number;
+  totalGoal: number;
+  totalCampaigns: number;
 }
 
 interface Event {
@@ -34,16 +45,39 @@ interface Alumni {
   course?: string;
   isVerified?: boolean;
 }
+
+interface Job {
+  _id: string;
+  title: string;
+  company: string;
+  salary: number;
+  location?: string;
+}
+
+interface Post {
+  _id: string;
+  content: string;
+  author: {
+    _id: string;
+    name: string;
+  };
+  createdAt: string;
+}
 export default function Dashboard() {
   const navigate = useNavigate();
   const [stats, setStats] = useState<DashboardStats>({
     totalAlumni: 0,
     totalEvents: 0,
     activeEvents: 0,
-    totalDonations: "₹0"
+    totalDonations: "₹0",
+    totalJobs: 0,
+    totalConnections: 0
   });
   const [recentEvents, setRecentEvents] = useState<Event[]>([]);
   const [featuredAlumni, setFeaturedAlumni] = useState<Alumni[]>([]);
+  const [recentJobs, setRecentJobs] = useState<Job[]>([]);
+  const [recentPosts, setRecentPosts] = useState<Post[]>([]);
+  const [donationStats, setDonationStats] = useState<DonationStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -89,11 +123,79 @@ export default function Dashboard() {
         .sort(() => 0.5 - Math.random())
         .slice(0, 3);
 
+      // Fetch jobs data
+      let jobs: Job[] = [];
+      try {
+        const jobsResponse = await jobService.getAllJobs();
+        jobs = Array.isArray(jobsResponse?.data) ? jobsResponse.data : [];
+        const verifiedJobs = jobs.filter((job: any) => job.isVerified);
+        setRecentJobs(verifiedJobs.slice(0, 5));
+      } catch (error) {
+        console.error("Error fetching jobs:", error);
+      }
+
+      // Fetch donation stats
+      let donationAmount = "₹0";
+      try {
+        const donationResponse = await donationService.getDonationStats();
+        if (donationResponse?.data) {
+          const stats = donationResponse.data;
+          setDonationStats(stats);
+          const amount = stats.totalRaised || 0;
+          donationAmount = amount >= 100000 
+            ? `₹${(amount / 100000).toFixed(1)}L`
+            : amount >= 1000
+            ? `₹${(amount / 1000).toFixed(1)}k`
+            : `₹${amount.toLocaleString()}`;
+        }
+      } catch (error) {
+        console.error("Error fetching donations:", error);
+      }
+
+      // Fetch connections count
+      let connectionsCount = 0;
+      try {
+        const connectionsResponse = await connectionService.getConnections({ status: 'accepted' });
+        if (connectionsResponse?.data) {
+          connectionsCount = Array.isArray(connectionsResponse.data) 
+            ? connectionsResponse.data.length 
+            : 0;
+        }
+      } catch (error) {
+        console.error("Error fetching connections:", error);
+      }
+
+      // Fetch recent posts
+      try {
+        const postsResponse = await communicationService.getAllPosts();
+        console.log('Posts Response:', postsResponse);
+        
+        // Handle different possible response structures
+        let allPosts = [];
+        if (postsResponse?.data) {
+          if (Array.isArray(postsResponse.data)) {
+            allPosts = postsResponse.data;
+          } else if (postsResponse.data.posts && Array.isArray(postsResponse.data.posts)) {
+            allPosts = postsResponse.data.posts;
+          }
+        } else if (Array.isArray(postsResponse)) {
+          allPosts = postsResponse;
+        }
+        
+        console.log('Processed Posts:', allPosts);
+        setRecentPosts(allPosts.slice(0, 3));
+      } catch (error) {
+        console.error("Error fetching posts:", error);
+        setRecentPosts([]);
+      }
+
       setStats({
         totalAlumni: verifiedAlumni.length,
         totalEvents: allEvents.length,
         activeEvents: activeEvents.length,
-        totalDonations: "₹2.4M" // This would come from donation service
+        totalDonations: donationAmount,
+        totalJobs: jobs.filter((job: any) => job.isVerified).length,
+        totalConnections: connectionsCount
       });
 
       setRecentEvents(upcomingEvents);
@@ -315,26 +417,18 @@ export default function Dashboard() {
           className="h-full"
         >
           <div className="space-y-3">
-            <div className="p-3 bg-muted/50 rounded-lg">
-              <h4 className="font-medium text-sm">Senior Software Engineer</h4>
-              <p className="text-xs text-muted-foreground">Google • ₹180k-220k</p>
-            </div>
-            <div className="p-3 bg-muted/50 rounded-lg">
-              <h4 className="font-medium text-sm">Product Manager</h4>
-              <p className="text-xs text-muted-foreground">Meta • ₹160k-200k</p>
-            </div>
-            <div className="p-3 bg-muted/50 rounded-lg">
-              <h4 className="font-medium text-sm">Data Scientist</h4>
-              <p className="text-xs text-muted-foreground">Microsoft • ₹140k-180k</p>
-            </div>
-            <div className="p-3 bg-muted/50 rounded-lg">
-              <h4 className="font-medium text-sm">DevOps Engineer</h4>
-              <p className="text-xs text-muted-foreground">Amazon • ₹150k-190k</p>
-            </div>
-            <div className="p-3 bg-muted/50 rounded-lg">
-              <h4 className="font-medium text-sm">UI/UX Designer</h4>
-              <p className="text-xs text-muted-foreground">Adobe • ₹120k-160k</p>
-            </div>
+            {recentJobs.length > 0 ? (
+              recentJobs.map((job) => (
+                <div key={job._id} className="p-3 bg-muted/50 rounded-lg">
+                  <h4 className="font-medium text-sm">{job.title}</h4>
+                  <p className="text-xs text-muted-foreground">
+                    {job.company} • ₹{(job.salary / 1000).toFixed(0)}k
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p className="text-muted-foreground text-center py-8">No jobs available</p>
+            )}
             <Button onClick={() => navigate('/jobs')} size="sm" className="w-full mt-2">
               View All Jobs
             </Button>
@@ -459,33 +553,21 @@ export default function Dashboard() {
           className="h-full"
         >
           <div className="space-y-4">
-            <div className="flex items-start space-x-3 p-2 rounded-lg">
-              <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
-                <MessageCircle className="w-4 h-4 text-primary" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs text-muted-foreground">Alumni '20</p>
-                <p className="text-sm">Looking for mentorship in AI/ML field</p>
-              </div>
-            </div>
-            <div className="flex items-start space-x-3 p-2 rounded-lg">
-              <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
-                <MessageCircle className="w-4 h-4 text-primary" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs text-muted-foreground">Alumni '18</p>
-                <p className="text-sm">Startup founder seeking investors</p>
-              </div>
-            </div>
-            <div className="flex items-start space-x-3 p-2 rounded-lg">
-              <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
-                <MessageCircle className="w-4 h-4 text-primary" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs text-muted-foreground">Alumni '22</p>
-                <p className="text-sm">Anyone attending tech conference?</p>
-              </div>
-            </div>
+            {recentPosts.length > 0 ? (
+              recentPosts.map((post) => (
+                <div key={post._id} className="flex items-start space-x-3 p-2 rounded-lg">
+                  <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
+                    <MessageCircle className="w-4 h-4 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-muted-foreground">{post.author?.name || 'Alumni'}</p>
+                    <p className="text-sm line-clamp-2">{post.content}</p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-muted-foreground text-center py-8">No recent posts</p>
+            )}
             <Button onClick={() => navigate('/communications')} size="sm" className="w-full">
               Join Conversation
             </Button>
@@ -503,36 +585,46 @@ export default function Dashboard() {
               <p className="text-3xl font-bold text-primary">{stats.totalDonations}</p>
               <p className="text-sm text-muted-foreground">Raised this year</p>
             </div>
-            <div className="space-y-3">
-              <div className="space-y-1">
-                <div className="flex justify-between text-sm">
-                  <span>Scholarships</span>
-                  <span>65%</span>
+            {donationStats ? (
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <div className="flex justify-between text-sm">
+                    <span>Campaign Progress</span>
+                    <span>{donationStats.campaignGoalPercentage.toFixed(0)}%</span>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div className="bg-primary h-2 rounded-full transition-all duration-500" style={{ width: `${Math.min(donationStats.campaignGoalPercentage, 100)}%` }}></div>
+                  </div>
                 </div>
-                <div className="w-full bg-muted rounded-full h-2">
-                  <div className="bg-primary h-2 rounded-full transition-all duration-500" style={{ width: '65%' }}></div>
+                <div className="grid grid-cols-2 gap-2 pt-2">
+                  <div className="text-center p-2 bg-muted/50 rounded-lg">
+                    <p className="text-xl font-bold text-primary">{donationStats.activeDonors}</p>
+                    <p className="text-xs text-muted-foreground">Active Donors</p>
+                  </div>
+                  <div className="text-center p-2 bg-muted/50 rounded-lg">
+                    <p className="text-xl font-bold text-primary">{donationStats.totalCampaigns}</p>
+                    <p className="text-xs text-muted-foreground">Campaigns</p>
+                  </div>
                 </div>
-              </div>
-              <div className="space-y-1">
-                <div className="flex justify-between text-sm">
-                  <span>Research</span>
-                  <span>25%</span>
-                </div>
-                <div className="w-full bg-muted rounded-full h-2">
-                  <div className="bg-primary h-2 rounded-full transition-all duration-500" style={{ width: '25%' }}></div>
-                </div>
-              </div>
-              <div className="space-y-1">
-                <div className="flex justify-between text-sm">
-                  <span>Infrastructure</span>
-                  <span>10%</span>
-                </div>
-                <div className="w-full bg-muted rounded-full h-2">
-                  <div className="bg-primary h-2 rounded-full transition-all duration-500" style={{ width: '10%' }}></div>
+                <div className="text-center p-2 bg-muted/50 rounded-lg">
+                  <p className="text-sm text-muted-foreground">Average Donation</p>
+                  <p className="text-lg font-bold text-primary">₹{donationStats.avgDonation.toFixed(0)}</p>
                 </div>
               </div>
-            </div>
-            <Button className="w-full">Support a Cause</Button>
+            ) : (
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <div className="flex justify-between text-sm">
+                    <span>Loading...</span>
+                    <span>--</span>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div className="bg-primary h-2 rounded-full transition-all duration-500" style={{ width: '0%' }}></div>
+                  </div>
+                </div>
+              </div>
+            )}
+            <Button onClick={() => navigate('/donations')} className="w-full">Support a Cause</Button>
           </div>
         </BentoCard>
       </div>

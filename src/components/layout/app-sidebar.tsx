@@ -36,7 +36,7 @@ const baseNavigation = [
   { title: "Events", url: "/events", icon: Calendar },
   { title: "Jobs & Mentorship", url: "/jobs", icon: Briefcase },
   { title: "Donations", url: "/donations", icon: Heart },
-  { title: "Communications", url: "/communications", icon: MessageSquare },
+  { title: "Community Chat", url: "/communications", icon: MessageSquare },
 ];
 
 const adminNavigation = [

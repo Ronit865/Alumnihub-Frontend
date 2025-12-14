@@ -307,6 +307,10 @@ export const jobService = {
   applyForJob: async (id: string): Promise<ApiResponse> => {
     return await api.post(`/jobs/jobApply/${id}`);
   },
+
+  unapplyForJob: async (id: string): Promise<ApiResponse> => {
+    return await api.delete(`/jobs/jobUnapply/${id}`);
+  },
   
   getJobApplicants: async (id: string): Promise<ApiResponse> => {
     return await api.get(`/jobs/jobApplicants/${id}`);
