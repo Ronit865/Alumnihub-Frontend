@@ -361,10 +361,6 @@ export function Dashboard() {
                   <DollarSign className="h-5 w-5 sm:h-6 sm:w-6 text-pink-600 dark:text-pink-400" />
                   <span className="text-xs sm:text-sm">Donations</span>
                 </Button>
-                <Button onClick={() => navigate('/admin/analytics')} variant="outline" className="h-16 sm:h-20 flex-col gap-1 sm:gap-2 bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-700 hover:text-purple-800 dark:bg-purple-950 dark:hover:bg-purple-900 dark:border-purple-800 dark:text-purple-300 dark:hover:text-purple-200 transition-smooth">
-                  <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-400" />
-                  <span className="text-xs sm:text-sm">Analytics</span>
-                </Button>
                 <Button onClick={() => navigate('/admin/jobs')} variant="outline" className="h-16 sm:h-20 flex-col gap-1 sm:gap-2 bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-700 hover:text-emerald-800 dark:bg-emerald-950 dark:hover:bg-emerald-900 dark:border-emerald-800 dark:text-emerald-300 dark:hover:text-emerald-200 transition-smooth">
                   <Award className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-600 dark:text-emerald-400" />
                   <span className="text-xs sm:text-sm">Jobs</span>

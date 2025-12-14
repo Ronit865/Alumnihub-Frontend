@@ -232,6 +232,15 @@ export const donationService = {
         throw error;
     }
   },
+
+  getRecentDonors: async (): Promise<ApiResponse> => {
+    try {
+        const response = await api.get('/donations/getRecentDonors');
+        return response || response.data;
+    } catch (error) {
+        throw error;
+    }
+  },
 };
 
 // Job Services

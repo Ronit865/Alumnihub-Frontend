@@ -46,7 +46,6 @@ const adminNavigation = [
   { title: "Manage Jobs", url: "/admin/jobs", icon: Briefcase },
   { title: "Manage Donations", url: "/admin/donations", icon: Heart },
   { title: "Communications", url: "/admin/communications", icon: Mail },
-  { title: "Analytics", url: "/admin/analytics", icon: BarChart3 },
 ];
 
 export function AppSidebar() {

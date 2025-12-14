@@ -32,7 +32,7 @@ import { Events as AdminEvents } from "./pages/admin/Events";
 import { Jobs as AdminJobs } from "./pages/admin/Jobs";
 import { Donations as AdminDonations } from "./pages/admin/Donations";
 import { Communications as AdminCommunications } from "./pages/admin/Communications";
-import { Analytics as AdminAnalytics } from "./pages/admin/Analytics";
+// import { Analytics as AdminAnalytics } from "./pages/admin/Analytics";
 import { Settings as AdminSettings } from "./pages/admin/Settings";
 import { AuthLayout } from "./components/layout/AuthLayout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -86,7 +86,7 @@ const App = () => (
               <Route path="jobs" element={<AdminJobs />} />
               <Route path="donations" element={<AdminDonations />} />
               <Route path="communications" element={<AdminCommunications />} />
-              <Route path="analytics" element={<AdminAnalytics />} />
+              {/* <Route path="analytics" element={<AdminAnalytics />} /> */}
               <Route path="settings" element={<AdminSettings />} />
             </Route>
             
