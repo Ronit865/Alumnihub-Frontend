@@ -71,11 +71,11 @@ export default function Jobs() {
   const [activeTab, setActiveTab] = useState("all");
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  // Add this useEffect to get current user ID from localStorage/auth context
+  // Get current user ID from localStorage
   useEffect(() => {
-    // Assuming you store user data in localStorage or have an auth context
-    const userData = JSON.parse(localStorage.getItem('user') || '{}');
-    setCurrentUserId(userData.id || userData._id);
+    const userId = localStorage.getItem('userId');
+    console.log('Current User ID:', userId); // Debug log
+    setCurrentUserId(userId);
   }, []);
 
   const fetchAllJobs = async () => {
@@ -85,6 +85,7 @@ export default function Jobs() {
       if (response.success) {
         // Ensure data is an array and filter only verified jobs
         const jobsData = Array.isArray(response.data) ? response.data : [];
+        console.log('Fetched Jobs:', jobsData); // Debug log
         const verifiedJobs = jobsData.filter((job: Job) => job.isVerified === true);
         setAllJobs(verifiedJobs);
       } else {
@@ -92,6 +93,7 @@ export default function Jobs() {
         setAllJobs([]);
       }
     } catch (error: any) {
+      console.error('Error fetching jobs:', error);
       toast.error(error.message || "Failed to load jobs");
       setAllJobs([]);
     }
@@ -129,17 +131,27 @@ export default function Jobs() {
   }, []);
 
   const handleApply = async (jobId: string) => {
+    if (!currentUserId) {
+      toast.error("Please log in to apply for jobs");
+      return;
+    }
+
     try {
       const response = await jobService.applyForJob(jobId);
+      console.log('Apply Response:', response); // Debug log
 
       if (response.success) {
-        toast.success("Application submitted successfully");
-        fetchAllJobs();
+        toast.success("Application submitted successfully!");
+        // Refresh jobs to get updated applicants list
+        await fetchAllJobs();
       } else {
         toast.error(response.message || "Failed to apply for job");
       }
     } catch (error: any) {
-      toast.error(error.message || "Failed to apply for job");
+      console.error('Apply Error:', error);
+      // Handle structured error from backend
+      const errorMessage = error.message || "Failed to apply for job. Please try again.";
+      toast.error(errorMessage);
     }
   };
 
@@ -212,10 +224,16 @@ export default function Jobs() {
   };
 
   const hasApplied = (job: Job) => {
-    if (!currentUserId || !job.applicants) return false;
-    return job.applicants.some((applicant: any) => 
-      (typeof applicant === 'string' ? applicant : applicant._id) === currentUserId
-    );
+    if (!currentUserId || !job.applicants || !Array.isArray(job.applicants)) {
+      console.log('hasApplied check:', { currentUserId, applicants: job.applicants, jobId: job._id });
+      return false;
+    }
+    const applied = job.applicants.some((applicant: any) => {
+      const applicantId = typeof applicant === 'string' ? applicant : applicant._id || applicant.id;
+      return applicantId === currentUserId;
+    });
+    console.log('Job:', job.title, 'Applied:', applied, 'Applicants:', job.applicants);
+    return applied;
   };
 
   if (loading) {
@@ -308,10 +326,10 @@ export default function Jobs() {
 
                     <div className="pt-2 mt-auto">
                       <Button
-                        className="w-full"
+                        className={`w-full ${hasApplied(job) ? 'bg-green-600 hover:bg-green-700 text-white' : ''}`}
                         onClick={() => handleApply(job._id)}
                         disabled={hasApplied(job)}
-                        variant={hasApplied(job) ? "secondary" : "default"}
+                        variant={hasApplied(job) ? "default" : "default"}
                       >
                         {hasApplied(job) ? (
                           <>
