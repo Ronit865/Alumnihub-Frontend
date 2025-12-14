@@ -1,135 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Mail, Send, Users, MessageSquare, Bell, Plus, Eye, Edit, Trash2, TrendingUp } from "lucide-react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { emailService } from "@/services/ApiServices";
-import { toast } from "sonner"; // or your toast library
-
-const communicationStats = [
-  {
-    title: "Newsletter Subscribers",
-    value: "9,432",
-    change: "+3.2%",
-    icon: Mail,
-    description: "Active subscriptions",
-  },
-  {
-    title: "Messages Sent",
-    value: "47,892",
-    change: "+12.1%",
-    icon: Send,
-    description: "This month",
-  },
-  {
-    title: "Open Rate",
-    value: "67.8%",
-    change: "+2.3%",
-    icon: Eye,
-    description: "Campaign average",
-  },
-  {
-    title: "Response Rate",
-    value: "23.4%",
-    change: "+5.7%",
-    icon: MessageSquare,
-    description: "User engagement",
-  },
-];
-
-const campaigns = [
-  {
-    id: 1,
-    title: "Monthly Alumni Newsletter - February",
-    subject: "Celebrating our Alumni Achievements",
-    type: "newsletter",
-    status: "sent",
-    sentDate: "2024-02-01",
-    recipients: 9432,
-    opened: 6394,
-    clicked: 1247,
-    openRate: 67.8,
-    clickRate: 13.2,
-  },
-  {
-    id: 2,
-    title: "Event Invitation - Tech Summit 2024",
-    subject: "Join us for our Annual Tech Innovation Summit",
-    type: "event",
-    status: "draft",
-    sentDate: null,
-    recipients: 2847,
-    opened: 0,
-    clicked: 0,
-    openRate: 0,
-    clickRate: 0,
-  },
-  {
-    id: 3,
-    title: "Fundraising Campaign - Scholarship Fund",
-    subject: "Help us support the next generation",
-    type: "fundraising",
-    status: "scheduled",
-    sentDate: "2024-02-15",
-    recipients: 8734,
-    opened: 0,
-    clicked: 0,
-    openRate: 0,
-    clickRate: 0,
-  },
-  {
-    id: 4,
-    title: "Alumni Spotlight - Success Stories",
-    subject: "Inspiring stories from our community",
-    type: "announcement",
-    status: "sent",
-    sentDate: "2024-01-28",
-    recipients: 9432,
-    opened: 7156,
-    clicked: 892,
-    openRate: 75.9,
-    clickRate: 9.5,
-  },
-];
-
-const notifications = [
-  {
-    id: 1,
-    title: "New Alumni Registration",
-    message: "15 new alumni have joined this week",
-    type: "info",
-    timestamp: "2024-01-20T10:30:00Z",
-    read: false,
-  },
-  {
-    id: 2,
-    title: "High Email Engagement",
-    message: "February newsletter achieved 67.8% open rate",
-    type: "success",
-    timestamp: "2024-01-20T09:15:00Z",
-    read: false,
-  },
-  {
-    id: 3,
-    title: "Campaign Scheduled",
-    message: "Scholarship fundraising email scheduled for Feb 15",
-    type: "info",
-    timestamp: "2024-01-19T16:45:00Z",
-    read: true,
-  },
-  {
-    id: 4,
-    title: "Low Response Rate Alert",
-    message: "Event invitations have lower than expected response",
-    type: "warning",
-    timestamp: "2024-01-19T14:20:00Z",
-    read: true,
-  },
-];
+import { Mail, Send, Users, MessageSquare, Bell, TrendingUp, Eye, Calendar, Briefcase } from "lucide-react";
+import { emailService, adminService, notificationService, eventService, jobService } from "@/services/ApiServices";
+import { toast } from "sonner";
 
 export function Communications() {
   const [selectedCampaign, setSelectedCampaign] = useState(null);
@@ -139,29 +16,20 @@ export function Communications() {
     filter: ""
   });
   const [isSending, setIsSending] = useState(false);
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "sent":
-        return <Badge className="bg-success/10 text-success border-success/20">Sent</Badge>;
-      case "draft":
-        return <Badge variant="outline" className="border-muted-foreground text-muted-foreground">Draft</Badge>;
-      case "scheduled":
-        return <Badge className="bg-warning/10 text-warning border-warning/20">Scheduled</Badge>;
-      default:
-        return <Badge variant="secondary">Unknown</Badge>;
-    }
-  };
-
-  const getTypeBadge = (type: string) => {
-    const variants = {
-      newsletter: "bg-blue-100 text-blue-800 border-blue-200",
-      event: "bg-green-100 text-green-800 border-green-200",
-      fundraising: "bg-purple-100 text-purple-800 border-purple-200",
-      announcement: "bg-orange-100 text-orange-800 border-orange-200",
-    };
-    return <Badge className={variants[type as keyof typeof variants] || ""}>{type}</Badge>;
-  };
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    alumniCount: 0,
+    studentCount: 0,
+    donorCount: 0,
+    messagesSent: 0
+  });
+  const [loading, setLoading] = useState(true);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notificationsLoading, setNotificationsLoading] = useState(true);
+  const [recentEvents, setRecentEvents] = useState<any[]>([]);
+  const [recentJobs, setRecentJobs] = useState<any[]>([]);
+  const [sendingEventEmail, setSendingEventEmail] = useState(false);
+  const [sendingJobEmail, setSendingJobEmail] = useState(false);
 
   const handleSendEmail = async () => {
     if (!emailForm.subject || !emailForm.body || !emailForm.filter) {
@@ -178,6 +46,15 @@ export function Communications() {
       });
       
       toast.success(response.message || "Emails sent successfully!");
+      
+      // Update messages sent count
+      setStats(prev => ({ 
+        ...prev, 
+        messagesSent: prev.messagesSent + (response.data?.totalSent || 1)
+      }));
+      
+      // Refresh notifications to show the email send activity
+      fetchNotifications();
       
       // Reset form
       setEmailForm({
@@ -196,6 +73,175 @@ export function Communications() {
     setEmailForm(prev => ({ ...prev, filter: type }));
   };
 
+  const handleSendEventEmails = async () => {
+    if (recentEvents.length === 0) {
+      toast.error("No recent events to share");
+      return;
+    }
+
+    try {
+      setSendingEventEmail(true);
+      
+      // Create email content with all recent events
+      const eventsList = recentEvents.map(event => 
+        `<div style="margin-bottom: 20px; padding: 15px; background-color: #f9f9f9; border-left: 4px solid #667eea;">
+          <h3 style="margin: 0 0 10px 0; color: #333;">${event.title}</h3>
+          <p style="margin: 5px 0; color: #666;"><strong>Date:</strong> ${new Date(event.date).toLocaleDateString()}</p>
+          <p style="margin: 5px 0; color: #666;"><strong>Location:</strong> ${event.location || 'TBA'}</p>
+          <p style="margin: 10px 0 0 0; color: #555;">${event.description}</p>
+        </div>`
+      ).join('');
+
+      const emailBody = `
+        <h2 style="color: #333; margin-bottom: 20px;">Upcoming Events</h2>
+        <p style="color: #666; margin-bottom: 20px;">Here are the latest events happening in our alumni network:</p>
+        ${eventsList}
+        <p style="margin-top: 30px; color: #666;">We look forward to seeing you there!</p>
+      `;
+
+      const response = await emailService.sendBulkEmails({
+        subject: "Upcoming Events - Alumni Network",
+        body: emailBody,
+        filter: "all"
+      });
+
+      if (response.success) {
+        toast.success("Event notifications sent successfully!");
+        fetchNotifications();
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to send event emails");
+    } finally {
+      setSendingEventEmail(false);
+    }
+  };
+
+  const handleSendJobEmails = async () => {
+    if (recentJobs.length === 0) {
+      toast.error("No recent jobs to share");
+      return;
+    }
+
+    try {
+      setSendingJobEmail(true);
+      
+      // Create email content with all recent jobs
+      const jobsList = recentJobs.map(job => 
+        `<div style="margin-bottom: 20px; padding: 15px; background-color: #f9f9f9; border-left: 4px solid #667eea;">
+          <h3 style="margin: 0 0 10px 0; color: #333;">${job.title}</h3>
+          <p style="margin: 5px 0; color: #666;"><strong>Company:</strong> ${job.company}</p>
+          <p style="margin: 5px 0; color: #666;"><strong>Location:</strong> ${job.location}</p>
+          <p style="margin: 5px 0; color: #666;"><strong>Type:</strong> ${job.jobType}</p>
+          <p style="margin: 5px 0; color: #666;"><strong>Experience:</strong> ${job.experienceRequired}</p>
+          ${job.salary ? `<p style="margin: 5px 0; color: #666;"><strong>Salary:</strong> ₹${job.salary.toLocaleString()}</p>` : ''}
+          <p style="margin: 10px 0 0 0; color: #555;">${job.description}</p>
+        </div>`
+      ).join('');
+
+      const emailBody = `
+        <h2 style="color: #333; margin-bottom: 20px;">New Job Opportunities</h2>
+        <p style="color: #666; margin-bottom: 20px;">Check out these latest job opportunities from our alumni network:</p>
+        ${jobsList}
+        <p style="margin-top: 30px; color: #666;">Best of luck with your applications!</p>
+      `;
+
+      const response = await emailService.sendBulkEmails({
+        subject: "New Job Opportunities - Alumni Network",
+        body: emailBody,
+        filter: "all"
+      });
+
+      if (response.success) {
+        toast.success("Job notifications sent successfully!");
+        fetchNotifications();
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to send job emails");
+    } finally {
+      setSendingJobEmail(false);
+    }
+  };
+
+  // Fetch notifications function (can be called to refresh)
+  const fetchNotifications = async () => {
+    try {
+      setNotificationsLoading(true);
+      const response = await notificationService.getNotifications({
+        page: 1,
+        limit: 20,
+        // Filter for communication-related notifications only
+        type: 'email,event,job,announcement'
+      });
+      
+      if (response.success && response.data) {
+        setNotifications(response.data.notifications || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error);
+    } finally {
+      setNotificationsLoading(false);
+    }
+  };
+
+  // Fetch stats and notifications on component mount
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setLoading(true);
+        // Fetch all users to calculate stats - using adminService for admin
+        const usersResponse = await adminService.getAllUsers();
+        
+        if (usersResponse.success && usersResponse.data) {
+          const users = usersResponse.data;
+          
+          // Calculate stats from users - using 'role' field instead of 'userType'
+          const alumniCount = users.filter((u: any) => u.role?.toLowerCase() === 'alumni').length;
+          const studentCount = users.filter((u: any) => u.role?.toLowerCase() === 'student').length;
+          const donorCount = users.filter((u: any) => u.role?.toLowerCase() === 'donor').length;
+          
+          setStats({
+            totalUsers: users.length,
+            alumniCount,
+            studentCount,
+            donorCount,
+            messagesSent: 0 // This would need email history from backend
+          });
+        }
+      } catch (error) {
+        console.error('Failed to fetch stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const fetchRecentEventsAndJobs = async () => {
+      try {
+        const [eventsRes, jobsRes] = await Promise.all([
+          eventService.getEvents(),
+          jobService.getAllJobs()
+        ]);
+        
+        if (eventsRes.success && eventsRes.data) {
+          // Get latest 5 events
+          const events = eventsRes.data.slice(0, 5);
+          setRecentEvents(events);
+        }
+        
+        if (jobsRes.success && jobsRes.data) {
+          // Get latest 5 jobs
+          const jobs = jobsRes.data.slice(0, 5);
+          setRecentJobs(jobs);
+        }
+      } catch (error) {
+        console.error('Failed to fetch events/jobs:', error);
+      }
+    };
+
+    fetchStats();
+    fetchNotifications();
+    fetchRecentEventsAndJobs();
+  }, []);
+
   return (
     <div className="space-y-4 sm:space-y-6 md:space-y-8">
       {/* Header */}
@@ -206,10 +252,6 @@ export function Communications() {
             Manage newsletters, announcements, and alumni communications.
           </p>
         </div>
-        {/* <Button className="gradient-primary text-primary-foreground hover:shadow-purple">
-          <Plus className="h-4 w-4 mr-2" />
-          Create Campaign
-        </Button> */}
       </div>
 
       {/* Stats Cards */}
@@ -217,11 +259,11 @@ export function Communications() {
         <div className="stats-card-pink">
           <div className="flex items-center justify-between">
             <div>
-              <p className="stats-card-label">Newsletter Subscribers</p>
-              <p className="stats-card-number">9,432</p>
+              <p className="stats-card-label">Total Users</p>
+              <p className="stats-card-number">{loading ? '...' : stats.totalUsers.toLocaleString()}</p>
               <p className="text-xs text-white/80 flex items-center gap-1 mt-1">
-                <TrendingUp className="w-3 h-3" />
-                +3.2% subscriptions
+                <Users className="w-3 h-3" />
+                All registered users
               </p>
             </div>
             <Mail className="stats-card-icon" />
@@ -231,11 +273,11 @@ export function Communications() {
         <div className="stats-card-blue">
           <div className="flex items-center justify-between">
             <div>
-              <p className="stats-card-label">Messages Sent</p>
-              <p className="stats-card-number">47,892</p>
+              <p className="stats-card-label">Alumni</p>
+              <p className="stats-card-number">{loading ? '...' : stats.alumniCount.toLocaleString()}</p>
               <p className="text-xs text-white/80 flex items-center gap-1 mt-1">
-                <Send className="w-3 h-3" />
-                +12.1% this month
+                <Users className="w-3 h-3" />
+                Active alumni
               </p>
             </div>
             <Send className="stats-card-icon" />
@@ -245,11 +287,11 @@ export function Communications() {
         <div className="stats-card-teal">
           <div className="flex items-center justify-between">
             <div>
-              <p className="stats-card-label">Open Rate</p>
-              <p className="stats-card-number">67.8%</p>
+              <p className="stats-card-label">Students</p>
+              <p className="stats-card-number">{loading ? '...' : stats.studentCount.toLocaleString()}</p>
               <p className="text-xs text-white/80 flex items-center gap-1 mt-1">
-                <Eye className="w-3 h-3" />
-                +2.3% average
+                <Users className="w-3 h-3" />
+                Current students
               </p>
             </div>
             <Eye className="stats-card-icon" />
@@ -259,16 +301,91 @@ export function Communications() {
         <div className="stats-card-orange">
           <div className="flex items-center justify-between">
             <div>
-              <p className="stats-card-label">Response Rate</p>
-              <p className="stats-card-number">23.4%</p>
+              <p className="stats-card-label">Donors</p>
+              <p className="stats-card-number">{loading ? '...' : stats.donorCount.toLocaleString()}</p>
               <p className="text-xs text-white/80 flex items-center gap-1 mt-1">
                 <MessageSquare className="w-3 h-3" />
-                +5.7% engagement
+                Active donors
               </p>
             </div>
             <MessageSquare className="stats-card-icon" />
           </div>
         </div>
+      </div>
+
+      {/* Event & Job Email Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card className="bento-card gradient-surface border-card-border/50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-primary" />
+              Send Event Notifications
+            </CardTitle>
+            <CardDescription>
+              Notify users about {recentEvents.length} recent event(s)
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {recentEvents.length > 0 ? (
+              <div className="space-y-3">
+                <div className="text-sm text-muted-foreground">
+                  Latest events:
+                  <ul className="mt-2 space-y-1 list-disc list-inside">
+                    {recentEvents.slice(0, 3).map((event, idx) => (
+                      <li key={idx} className="truncate">{event.title}</li>
+                    ))}
+                  </ul>
+                </div>
+                <Button 
+                  className="w-full"
+                  onClick={handleSendEventEmails}
+                  disabled={sendingEventEmail}
+                >
+                  <Send className="h-4 w-4 mr-2" />
+                  {sendingEventEmail ? "Sending..." : "Send to All Users"}
+                </Button>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">No recent events to share</p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="bento-card gradient-surface border-card-border/50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Briefcase className="h-5 w-5 text-primary" />
+              Send Job Notifications
+            </CardTitle>
+            <CardDescription>
+              Notify users about {recentJobs.length} recent job(s)
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {recentJobs.length > 0 ? (
+              <div className="space-y-3">
+                <div className="text-sm text-muted-foreground">
+                  Latest jobs:
+                  <ul className="mt-2 space-y-1 list-disc list-inside">
+                    {recentJobs.slice(0, 3).map((job, idx) => (
+                      <li key={idx} className="truncate">{job.title} - {job.company}</li>
+                    ))}
+                  </ul>
+                </div>
+                <Button 
+                  className="w-full"
+                  onClick={handleSendJobEmails}
+                  disabled={sendingJobEmail}
+                >
+                  <Send className="h-4 w-4 mr-2" />
+                  {sendingJobEmail ? "Sending..." : "Send to All Users"}
+                </Button>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">No recent jobs to share</p>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* Main Content */}
@@ -327,8 +444,8 @@ export function Communications() {
                 <Button 
                   variant="outline" 
                   size="sm"
-                  onClick={() => handleRecipientSelect("donors")}
-                  className={`text-xs sm:text-sm ${emailForm.filter === "donors" ? "bg-primary/10 border-primary" : ""}`}
+                  onClick={() => handleRecipientSelect("donor")}
+                  className={`text-xs sm:text-sm ${emailForm.filter === "donor" ? "bg-primary/10 border-primary" : ""}`}
                 >
                   <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                   Donors
@@ -363,148 +480,70 @@ export function Communications() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {notifications.map((notification, index) => (
-                <div 
-                  key={notification.id} 
-                  className={`p-4 rounded-lg border transition-smooth animate-fade-in ${
-                    notification.read 
-                      ? "border-card-border/50 bg-transparent" 
-                      : "border-primary/20 bg-primary/5"
-                  }`}
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h4 className="font-medium text-foreground">{notification.title}</h4>
-                      <p className="text-sm text-muted-foreground mt-1">{notification.message}</p>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        {new Date(notification.timestamp).toLocaleString()}
-                      </p>
+            {notificationsLoading ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">Loading notifications...</p>
+              </div>
+            ) : notifications.length === 0 ? (
+              <div className="text-center py-8">
+                <Bell className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
+                <p className="text-muted-foreground">No notifications yet</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {notifications.map((notification, index) => {
+                  // Format timestamp
+                  const formatTimestamp = (timestamp: string) => {
+                    const date = new Date(timestamp);
+                    const now = new Date();
+                    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+                    
+                    if (diffInSeconds < 60) return 'just now';
+                    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+                    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+                    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+                    
+                    return date.toLocaleDateString();
+                  };
+
+                  return (
+                    <div 
+                      key={notification._id || notification.id} 
+                      className={`p-4 rounded-lg border transition-smooth animate-fade-in ${
+                        notification.read 
+                          ? "border-card-border/50 bg-transparent" 
+                          : "border-primary/20 bg-primary/5"
+                      }`}
+                      style={{ animationDelay: `${index * 100}ms` }}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h4 className="font-medium text-foreground">{notification.title}</h4>
+                          <p className="text-sm text-muted-foreground mt-1">{notification.message}</p>
+                          <p className="text-xs text-muted-foreground mt-2">
+                            {formatTimestamp(notification.createdAt || notification.timestamp)}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge 
+                            variant="secondary"
+                            className="text-xs"
+                          >
+                            {notification.type}
+                          </Badge>
+                          {!notification.read && (
+                            <div className="w-2 h-2 bg-primary rounded-full" />
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Badge 
-                        variant={notification.type === "success" ? "default" : 
-                                notification.type === "warning" ? "destructive" : "secondary"}
-                        className={
-                          notification.type === "success" ? "bg-success/10 text-success border-success/20" :
-                          notification.type === "warning" ? "bg-warning/10 text-warning border-warning/20" :
-                          "bg-primary/10 text-primary border-primary/20"
-                        }
-                      >
-                        {notification.type}
-                      </Badge>
-                      {!notification.read && (
-                        <div className="w-2 h-2 bg-primary rounded-full" />
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                  );
+                })}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
-
-      {/* Campaign Management */}
-      <Card className="bento-card gradient-surface border-card-border/50">
-        <CardHeader>
-          <CardTitle>Email Campaigns</CardTitle>
-          <CardDescription>
-            Manage your email marketing campaigns and track performance
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Campaign</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Recipients</TableHead>
-                <TableHead>Open Rate</TableHead>
-                <TableHead>Click Rate</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {campaigns.map((campaign, index) => (
-                <TableRow 
-                  key={campaign.id} 
-                  className="hover:bg-accent/30 transition-smooth animate-fade-in"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <TableCell>
-                    <div>
-                      <p className="font-medium text-foreground">{campaign.title}</p>
-                      <p className="text-sm text-muted-foreground">{campaign.subject}</p>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {getTypeBadge(campaign.type)}
-                  </TableCell>
-                  <TableCell>
-                    {getStatusBadge(campaign.status)}
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    {campaign.recipients.toLocaleString()}
-                  </TableCell>
-                  <TableCell>
-                    {campaign.status === "sent" ? (
-                      <span className="font-medium text-foreground">
-                        {campaign.openRate}%
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {campaign.status === "sent" ? (
-                      <span className="font-medium text-foreground">
-                        {campaign.clickRate}%
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {campaign.sentDate ? new Date(campaign.sentDate).toLocaleDateString() : "—"}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem>
-                          <Eye className="h-4 w-4 mr-2" />
-                          View Campaign
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Edit className="h-4 w-4 mr-2" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          Duplicate
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-destructive">
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
     </div>
   );
 }

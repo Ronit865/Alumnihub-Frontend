@@ -13,99 +13,8 @@ import { useState, useEffect } from "react";
 import { donationService, handleApiError } from "@/services/ApiServices";
 import { useToast } from "@/hooks/use-toast";
 
-// Keep the static data for stats and recent donations
-const donationStats = [
-    {
-        title: "Total Raised",
-        // value: "₹1,95,65,743",
-        // change: "+12.5%",
-        changeType: "increase" as const,
-        icon: IndianRupee,
-        description: "This year",
-    },
-    {
-        title: "Active Donors",
-        // value: "1,248",
-        // change: "+8.3%",
-        changeType: "increase" as const,
-        icon: Users,
-        description: "Unique contributors",
-    },
-    {
-        title: "Avg. Donation",
-        // value: "₹1,56,891",
-        // change: "+5.7%",
-        changeType: "increase" as const,
-        icon: TrendingUp,
-        description: "Per donor",
-    },
-    {
-        title: "Campaign Goal",
-        // value: "78%",
-        // change: "+2.1%",
-        changeType: "increase" as const,
-        icon: Target,
-        // description: "Of ₹2.5Cr target",
-    },
-];
-
-const recentDonations = [
-    {
-        "id": 1,
-        "donor": "Rohit Sharma",
-        "email": "rohit.sharma@email.com",
-        "amount": 100000,
-        "campaign": "Scholarship Fund",
-        "date": "2024-01-20",
-        "status": "completed",
-        "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Rohit+Sharma",
-        "class": "2019"
-    },
-    {
-        "id": 2,
-        "donor": "Ananya Mehta",
-        "email": "ananya.mehta@email.com",
-        "amount": 500000,
-        "campaign": "Research Grant",
-        "date": "2024-01-18",
-        "status": "completed",
-        "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Ananya+Mehta",
-        "class": "2018"
-    },
-    {
-        "id": 3,
-        "donor": "Anonymous",
-        "email": "donor@anonymous.com",
-        "amount": 205000,
-        "campaign": "Campus Infrastructure",
-        "date": "2024-01-15",
-        "status": "completed",
-        "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Anonymous",
-        "class": "Unknown"
-    },
-    {
-        "id": 4,
-        "donor": "Priya Nair",
-        "email": "priya.nair@email.com",
-        "amount": 2500000,
-        "campaign": "Technology Lab",
-        "date": "2024-01-12",
-        "status": "pending",
-        "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Priya+Nair",
-        "class": "2020"
-    },
-    {
-        "id": 5,
-        "donor": "Karan Patel",
-        "email": "karan.patel@email.com",
-        "amount": 7500000,
-        "campaign": "Student Welfare Fund",
-        "date": "2024-01-10",
-        "status": "completed",
-        "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Karan+Patel",
-        "class": "2017"
-    }
-];
+// Keep the static data for stats (will be replaced with API data)
+// Removed static donationStats and recentDonations arrays - now using API data
 
 // Enhanced interface for campaign data from backend - matching user side
 interface Campaign {
@@ -163,6 +72,9 @@ export function Donations() {
     const [loadingDonors, setLoadingDonors] = useState(false);
     const [isDonorsDialogOpen, setIsDonorsDialogOpen] = useState(false);
     const [selectedCampaignName, setSelectedCampaignName] = useState("");
+    const [donationStats, setDonationStats] = useState<any>(null);
+    const [recentDonors, setRecentDonors] = useState<any[]>([]);
+    const [loadingStats, setLoadingStats] = useState(true);
     const { toast: toastHook } = useToast();
 
     // Get featured campaigns (campaigns that need the least amount to reach their goal)
@@ -239,6 +151,38 @@ export function Donations() {
 
         fetchCampaigns();
     }, [toastHook]);
+
+    // Fetch donation stats and recent donors
+    useEffect(() => {
+        const fetchStatsAndDonors = async () => {
+            try {
+                setLoadingStats(true);
+                
+                // Fetch donation stats
+                const statsResponse = await donationService.getDonationStats();
+                if (statsResponse.success) {
+                    setDonationStats(statsResponse.data);
+                } else {
+                    console.error("Failed to fetch donation stats:", statsResponse.message);
+                }
+                
+                // Fetch recent donors
+                const donorsResponse = await donationService.getRecentDonors();
+                if (donorsResponse.success) {
+                    // Take only the first 5 recent donors
+                    setRecentDonors((donorsResponse.data || []).slice(0, 5));
+                } else {
+                    console.error("Failed to fetch recent donors:", donorsResponse.message);
+                }
+            } catch (error: any) {
+                console.error("Error fetching stats and donors:", error);
+            } finally {
+                setLoadingStats(false);
+            }
+        };
+
+        fetchStatsAndDonors();
+    }, []);
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat("en-IN", { 
@@ -749,10 +693,12 @@ export function Donations() {
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="stats-card-label">Total Raised</p>
-                            <p className="stats-card-number">₹1.95Cr</p>
+                            <p className="stats-card-number">
+                                {loadingStats ? "Loading..." : formatCurrency(donationStats?.totalRaised || 0)}
+                            </p>
                             <p className="text-xs text-white/80 flex items-center gap-1 mt-1">
                                 <ArrowUpRight className="w-3 h-3" />
-                                +12.5% this year
+                                This year
                             </p>
                         </div>
                         <IndianRupee className="stats-card-icon" />
@@ -763,10 +709,12 @@ export function Donations() {
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="stats-card-label">Active Donors</p>
-                            <p className="stats-card-number">1,248</p>
+                            <p className="stats-card-number">
+                                {loadingStats ? "Loading..." : (donationStats?.activeDonors || 0).toLocaleString()}
+                            </p>
                             <p className="text-xs text-white/80 flex items-center gap-1 mt-1">
                                 <TrendingUp className="w-3 h-3" />
-                                +8.3% contributors
+                                Unique contributors
                             </p>
                         </div>
                         <Users className="stats-card-icon" />
@@ -777,10 +725,12 @@ export function Donations() {
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="stats-card-label">Avg. Donation</p>
-                            <p className="stats-card-number">₹1.57L</p>
+                            <p className="stats-card-number">
+                                {loadingStats ? "Loading..." : formatCurrency(donationStats?.avgDonation || 0)}
+                            </p>
                             <p className="text-xs text-white/80 flex items-center gap-1 mt-1">
                                 <TrendingUp className="w-3 h-3" />
-                                +5.7% per donor
+                                Per donor
                             </p>
                         </div>
                         <TrendingUp className="stats-card-icon" />
@@ -791,10 +741,12 @@ export function Donations() {
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="stats-card-label">Campaign Goal</p>
-                            <p className="stats-card-number">78%</p>
+                            <p className="stats-card-number">
+                                {loadingStats ? "Loading..." : `${(donationStats?.campaignGoalPercentage || 0).toFixed(0)}%`}
+                            </p>
                             <p className="text-xs text-white/80 flex items-center gap-1 mt-1">
                                 <Target className="w-3 h-3" />
-                                Of ₹2.5Cr target
+                                Of {loadingStats ? "..." : formatCurrency(donationStats?.totalGoal || 0)} target
                             </p>
                         </div>
                         <Target className="stats-card-icon" />
@@ -960,69 +912,88 @@ export function Donations() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="overflow-x-auto table-scrollbar">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Donor</TableHead>
-                                    <TableHead>Campaign</TableHead>
-                                    <TableHead>Amount</TableHead>
-                                    <TableHead>Date</TableHead>
-                                    <TableHead>Status</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {recentDonations.map((donation, index) => (
-                                    <TableRow 
-                                        key={`recent-donation-${donation.id}-${index}`}
-                                        className="animate-fade-in hover:bg-accent/30"
-                                        style={{ animationDelay: `${index * 100}ms` }}
-                                    >
-                                        <TableCell>
-                                            <div className="flex items-center gap-3">
-                                                <Avatar className="w-8 h-8">
-                                                    <AvatarImage src={donation.avatar} alt={donation.donor} />
-                                                    <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                                                        {donation.donor.split(' ').map(n => n[0]).join('')}
-                                                    </AvatarFallback>
-                                                </Avatar>
-                                                <div>
-                                                    <p className="font-medium">{donation.donor}</p>
-                                                    <p className="text-sm text-muted-foreground">{donation.email}</p>
-                                                </div>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div>
-                                                <p className="font-medium">{donation.campaign}</p>
-                                                <p className="text-sm text-muted-foreground">Class of {donation.class}</p>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <p className="font-semibold text-primary">
-                                                {formatCurrency(donation.amount)}
-                                            </p>
-                                        </TableCell>
-                                        <TableCell>
-                                            <p className="text-sm">{formatDate(donation.date)}</p>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge 
-                                                variant={donation.status === 'completed' ? 'default' : 'secondary'}
-                                                className={
-                                                    donation.status === 'completed' 
-                                                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-                                                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                                                }
-                                            >
-                                                {donation.status}
-                                            </Badge>
-                                        </TableCell>
+                    {loadingStats ? (
+                        <div className="flex items-center justify-center py-12">
+                            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        </div>
+                    ) : recentDonors.length === 0 ? (
+                        <div className="flex items-center justify-center py-12">
+                            <div className="text-center">
+                                <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                                <p className="text-muted-foreground mb-2">No recent donations</p>
+                                <p className="text-sm text-muted-foreground">Donations will appear here once received.</p>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="overflow-x-auto table-scrollbar">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Donor</TableHead>
+                                        <TableHead>Campaign</TableHead>
+                                        <TableHead>Amount</TableHead>
+                                        <TableHead>Date</TableHead>
+                                        <TableHead>Status</TableHead>
                                     </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
+                                </TableHeader>
+                                <TableBody>
+                                    {recentDonors.map((donation, index) => (
+                                        <TableRow 
+                                            key={`recent-donation-${donation._id}-${index}`}
+                                            className="animate-fade-in hover:bg-accent/30"
+                                            style={{ animationDelay: `${index * 100}ms` }}
+                                        >
+                                            <TableCell>
+                                                <div className="flex items-center gap-3">
+                                                    <Avatar className="w-8 h-8">
+                                                        <AvatarImage 
+                                                            src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(donation.name || 'Anonymous')}`} 
+                                                            alt={donation.name} 
+                                                        />
+                                                        <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                                                            {donation.name.split(' ').map((n: string) => n[0]).join('')}
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                    <div>
+                                                        <p className="font-medium">{donation.name}</p>
+                                                        <p className="text-sm text-muted-foreground">{donation.email}</p>
+                                                    </div>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div>
+                                                    <p className="font-medium">{donation.campaign}</p>
+                                                    <p className="text-sm text-muted-foreground">
+                                                        {donation.graduationYear ? `Class of ${donation.graduationYear}` : 'Alumni'}
+                                                    </p>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <p className="font-semibold text-primary">
+                                                    {formatCurrency(donation.amount)}
+                                                </p>
+                                            </TableCell>
+                                            <TableCell>
+                                                <p className="text-sm">{formatDate(donation.donatedAt)}</p>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge 
+                                                    variant={donation.status === 'completed' ? 'default' : 'secondary'}
+                                                    className={
+                                                        donation.status === 'completed' 
+                                                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                                                            : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                                    }
+                                                >
+                                                    {donation.status}
+                                                </Badge>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
 

@@ -241,6 +241,15 @@ export const donationService = {
         throw error;
     }
   },
+
+  getDonationStats: async (): Promise<ApiResponse> => {
+    try {
+        const response = await api.get('/donations/getDonationStats');
+        return response || response.data;
+    } catch (error) {
+        throw error;
+    }
+  },
 };
 
 // Job Services

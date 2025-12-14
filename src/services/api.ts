@@ -34,6 +34,13 @@ api.interceptors.response.use(
     if (error.response) {
       const apiError = error.response.data;
       
+      // If invalid token error (not expired), clear storage and redirect
+      if (apiError.statusCode === 404 && apiError.message === "Invalid Access Token") {
+        localStorage.clear();
+        window.location.href = '/auth/login';
+        return Promise.reject(apiError);
+      }
+      
       // Check if it's a 401 unauthorized error and attempt token refresh
       if (error.response.status === 401 && 
           !originalRequest._retry && 
