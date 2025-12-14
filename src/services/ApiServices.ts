@@ -160,6 +160,10 @@ export const adminService = {
       newPassword, 
       otp 
     });
+  },
+
+  getAllDonations: async (): Promise<ApiResponse> => {
+    return await api.get('/donations/getDonations');
   }
 };
 
@@ -319,8 +323,24 @@ export const emailService = {
     subject: string;
     body: string;
     filter: string;
+    type?: string;
   }): Promise<ApiResponse> => {
     return await api.post('/emails/sendEmail', emailData);
+  },
+
+  getEmailHistory: async (params?: {
+    page?: number;
+    limit?: number;
+  }): Promise<ApiResponse> => {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          queryParams.append(key, value.toString());
+        }
+      });
+    }
+    return await api.get(`/emails/history?${queryParams.toString()}`);
   }
 };
 
