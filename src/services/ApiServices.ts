@@ -204,6 +204,8 @@ export const donationService = {
     name: string;
     description: string;
     goal: number;
+    endDate?: string;
+    category?: string;
   }): Promise<ApiResponse> => {
     return await api.post('/donations/addDonation', campaignData);
   },
@@ -212,6 +214,8 @@ export const donationService = {
     name: string;
     description: string;
     goal: number;
+    endDate?: string;
+    category?: string;
   }): Promise<ApiResponse> => {
     return await api.patch(`/donations/editDonation/${id}`, campaignData);
   },
