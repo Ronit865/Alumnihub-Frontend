@@ -614,15 +614,6 @@ export function Communications() {
                   <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                   Students
                 </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => handleRecipientSelect("donor")}
-                  className={`text-xs sm:text-sm ${emailForm.filter === "donor" ? "bg-primary/10 border-primary" : ""}`}
-                >
-                  <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                  Donors
-                </Button>
               </div>
               {emailForm.filter && (
                 <p className="text-xs text-muted-foreground mt-2">

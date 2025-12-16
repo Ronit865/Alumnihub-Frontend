@@ -75,17 +75,20 @@ export function AppHeader() {
     };
 
     if (isInitialized && (user || admin)) {
-      fetchNotifications();
-      fetchRecentConversations();
-      
-      // Poll for new notifications every 30 seconds
-      const interval = setInterval(() => {
+      // Only fetch notifications and conversations for non-admin users
+      if (userType !== 'admin') {
         fetchNotifications();
         fetchRecentConversations();
-      }, 30000);
-      return () => clearInterval(interval);
+        
+        // Poll for new notifications every 30 seconds
+        const interval = setInterval(() => {
+          fetchNotifications();
+          fetchRecentConversations();
+        }, 30000);
+        return () => clearInterval(interval);
+      }
     }
-  }, [isInitialized, user, admin]);
+  }, [isInitialized, user, admin, userType]);
 
   // Handle notification click
   const handleNotificationClick = async (notification: any) => {
@@ -222,151 +225,106 @@ export function AppHeader() {
         </div>
 
         <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
-          {/* Personal Messages Button */}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="relative h-8 w-8 sm:h-10 sm:w-10"
-            onClick={() => {
-              setSelectedConversation(null);
-              setChatDialogOpen(true);
-            }}
-          >
-            <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-            {unreadChatsCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-primary rounded-full flex items-center justify-center">
-                <span className="text-[10px] sm:text-xs text-primary-foreground font-medium">
-                  {unreadChatsCount > 99 ? '99+' : unreadChatsCount}
-                </span>
-              </span>
-            )}
-          </Button>
-          
-          {/* Recent Conversations Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="relative h-8 w-8 sm:h-10 sm:w-10 hidden"
-              >
-                <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-72">
-              <DropdownMenuLabel>Recent Conversations</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {recentConversations.length === 0 ? (
-                <div className="p-4 text-center text-sm text-muted-foreground">
-                  No conversations yet
-                </div>
-              ) : (
-                <>
-                  {recentConversations.map((conv) => (
-                    <DropdownMenuItem
-                      key={conv._id}
-                      onClick={() => {
-                        setChatDialogOpen(true);
-                        // You can pass the conversation details here
-                      }}
-                      className="cursor-pointer p-3"
-                    >
-                      <div className="flex items-center gap-3 w-full">
-                        <Avatar className="w-8 h-8">
-                          <AvatarImage src={conv.participant?.avatar} />
-                          <AvatarFallback className="bg-primary/20 text-primary text-xs">
-                            {conv.participant?.name?.split(' ').map((n: string) => n[0]).join('') || 'U'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{conv.participant?.name}</p>
-                          <p className="text-xs text-muted-foreground truncate">
-                            {conv.lastMessage?.content || 'No messages yet'}
-                          </p>
-                        </div>
-                      </div>
-                    </DropdownMenuItem>
-                  ))}
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <DropdownMenu open={notificationsOpen} onOpenChange={setNotificationsOpen}>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative h-8 w-8 sm:h-10 sm:w-10">
-                <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-primary rounded-full flex items-center justify-center">
-                    <span className="text-[10px] sm:text-xs text-primary-foreground font-medium">
-                      {unreadCount > 99 ? '99+' : unreadCount}
-                    </span>
+          {/* Personal Messages Button - Hidden for Admin */}
+          {userType !== 'admin' && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="relative h-8 w-8 sm:h-10 sm:w-10"
+              onClick={() => {
+                setSelectedConversation(null);
+                setChatDialogOpen(true);
+              }}
+            >
+              <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+              {unreadChatsCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-primary rounded-full flex items-center justify-center">
+                  <span className="text-[10px] sm:text-xs text-primary-foreground font-medium">
+                    {unreadChatsCount > 99 ? '99+' : unreadChatsCount}
                   </span>
-                )}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80 sm:w-96 p-0">
-              <div className="flex items-center justify-between p-4 border-b">
-                <h3 className="font-semibold">Notifications</h3>
-                {unreadCount > 0 && (
-                  <Badge variant="secondary" className="text-xs">
-                    {unreadCount} new
-                  </Badge>
-                )}
-              </div>
-              <ScrollArea className="h-[400px]">
-                {notifications.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <Bell className="w-12 h-12 text-muted-foreground/30 mb-3" />
-                    <p className="text-sm text-muted-foreground">No notifications yet</p>
-                  </div>
-                ) : (
-                  <div className="p-2">
-                    {notifications.map((notification) => (
-                      <div
-                        key={notification._id}
-                        className={`flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-colors hover:bg-accent ${
-                          !notification.read ? 'bg-primary/5' : ''
-                        }`}
-                        onClick={() => handleNotificationClick(notification)}
-                      >
-                        <div className="flex-shrink-0 mt-1">
-                          {getNotificationIcon(notification.type)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
-                            <p className={`text-sm ${!notification.read ? 'font-medium' : ''}`}>
-                              {notification.title}
-                            </p>
-                            {!notification.read && (
-                              <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-1"></div>
-                            )}
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                            {notification.message}
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {formatTimestamp(notification.createdAt)}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </ScrollArea>
-              {notifications.length > 0 && (
-                <div className="p-2 border-t">
-                  <Button
-                    variant="ghost"
-                    className="w-full text-sm"
-                    onClick={handleMarkAllAsRead}
-                  >
-                    Mark all as read
-                  </Button>
-                </div>
+                </span>
               )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+            </Button>
+          )}
+
+          {/* Notifications Dropdown - Hidden for Admin */}
+          {userType !== 'admin' && (
+            <DropdownMenu open={notificationsOpen} onOpenChange={setNotificationsOpen}>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative h-8 w-8 sm:h-10 sm:w-10">
+                  <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-primary rounded-full flex items-center justify-center">
+                      <span className="text-[10px] sm:text-xs text-primary-foreground font-medium">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    </span>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-80 sm:w-96 p-0">
+                <div className="flex items-center justify-between p-4 border-b">
+                  <h3 className="font-semibold">Notifications</h3>
+                  {unreadCount > 0 && (
+                    <Badge variant="secondary" className="text-xs">
+                      {unreadCount} new
+                    </Badge>
+                  )}
+                </div>
+                <ScrollArea className="h-[400px]">
+                  {notifications.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <Bell className="w-12 h-12 text-muted-foreground/30 mb-3" />
+                      <p className="text-sm text-muted-foreground">No notifications yet</p>
+                    </div>
+                  ) : (
+                    <div className="p-2">
+                      {notifications.map((notification) => (
+                        <div
+                          key={notification._id}
+                          className={`flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-colors hover:bg-accent ${
+                            !notification.read ? 'bg-primary/5' : ''
+                          }`}
+                          onClick={() => handleNotificationClick(notification)}
+                        >
+                          <div className="flex-shrink-0 mt-1">
+                            {getNotificationIcon(notification.type)}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                              <p className={`text-sm ${!notification.read ? 'font-medium' : ''}`}>
+                                {notification.title}
+                              </p>
+                              {!notification.read && (
+                                <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-1"></div>
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                              {notification.message}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {formatTimestamp(notification.createdAt)}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </ScrollArea>
+                {notifications.length > 0 && (
+                  <div className="p-2 border-t">
+                    <Button
+                      variant="ghost"
+                      className="w-full text-sm"
+                      onClick={handleMarkAllAsRead}
+                    >
+                      Mark all as read
+                    </Button>
+                  </div>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -416,14 +374,16 @@ export function AppHeader() {
         </div>
       </div>
       
-      {/* Chat Dialog Popup */}
-      <ChatDialog 
-        open={chatDialogOpen} 
-        onOpenChange={setChatDialogOpen}
-        conversationId={selectedConversation?._id}
-        participantName={selectedConversation?.participant?.name}
-        participantAvatar={selectedConversation?.participant?.avatar}
-      />
+      {/* Chat Dialog Popup - Hidden for Admin */}
+      {userType !== 'admin' && (
+        <ChatDialog 
+          open={chatDialogOpen} 
+          onOpenChange={setChatDialogOpen}
+          conversationId={selectedConversation?._id}
+          participantName={selectedConversation?.participant?.name}
+          participantAvatar={selectedConversation?.participant?.avatar}
+        />
+      )}
     </header>
   );
 }
