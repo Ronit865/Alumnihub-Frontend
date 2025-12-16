@@ -620,175 +620,172 @@ export function Events() {
         </Card> */}
 
         {/* Events List */}
-        <Card className="bento-card gradient-surface border-card-border/50">
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <div>
-                <CardTitle>
-                  {date ? `Events for ${date.toLocaleDateString()}` : 'All Events'}
-                </CardTitle>
-                <CardDescription>
-                  {date ? 
-                    `Showing events for selected date` : 
-                    'Manage your event calendar'
-                  }
-                </CardDescription>
-              </div>
-              <div className="flex gap-2">
-                {date && (
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setDate(undefined)}
-                  >
-                    <X className="h-4 w-4 mr-2" />
-                    Clear Date
-                  </Button>
-                )}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline">
-                      Filter: {selectedFilter === "all" ? "All Events" : selectedFilter}
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem onClick={() => setSelectedFilter("all")}>
-                      All Events
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSelectedFilter("active")}>
-                      Active Events
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSelectedFilter("inactive")}>
-                      Inactive Events
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <Button onClick={fetchEvents} variant="outline" size="sm">
-                  Refresh
-                </Button>
-              </div>
+        <div>
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-foreground">
+                {date ? `Events for ${date.toLocaleDateString()}` : 'All Events'}
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                {date ? 
+                  `Showing events for selected date` : 
+                  'Manage your event calendar'
+                }
+              </p>
             </div>
-          </CardHeader>
-          <CardContent>
-            {eventsToDisplay.length === 0 ? (
-              <div className="text-center py-8">
-                <CalendarDays className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">
-                  {date ? 'No events found for selected date' : 'No events found'}
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {eventsToDisplay.map((event, index) => (
-                  <Card 
-                    key={event._id} 
-                    className="bento-card hover:shadow-md border-card-border/50 animate-fade-in relative group flex flex-col h-full"
-                    style={{ animationDelay: `${index * 100}ms` }}
-                  >
-                    <CardContent className="p-6 flex-1 flex flex-col">
-                      {/* Event Header with Status and Actions */}
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-lg font-semibold text-foreground line-clamp-1 mb-2 min-h-[1.75rem]">
-                            {event.title}
-                          </h3>
-                          {getStatusBadge(event.isactive)}
-                        </div>
-                        
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem>
-                              <Eye className="h-4 w-4 mr-2" />
-                              View Details
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Edit className="h-4 w-4 mr-2" />
-                              Edit Event
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleViewParticipants(event._id, event.title)}>
-                              <Users className="h-4 w-4 mr-2" />
-                              View Participants
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem 
-                              className="text-destructive"
-                              onClick={() => handleDeleteEvent(event._id)}
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Delete Event
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
+            <div className="flex gap-2">
+              {date && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setDate(undefined)}
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Clear Date
+                </Button>
+              )}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline">
+                    Filter: {selectedFilter === "all" ? "All Events" : selectedFilter}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => setSelectedFilter("all")}>
+                    All Events
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSelectedFilter("active")}>
+                    Active Events
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSelectedFilter("inactive")}>
+                    Inactive Events
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button onClick={fetchEvents} variant="outline" size="sm">
+                Refresh
+              </Button>
+            </div>
+          </div>
 
-                      {/* Event Description */}
-                      <p className="text-muted-foreground text-sm mb-4 line-clamp-2 min-h-[2.5rem]">
-                        {event.description}
-                      </p>
+          {eventsToDisplay.length === 0 ? (
+            <div className="text-center py-12">
+              <CalendarDays className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <p className="text-muted-foreground">
+                {date ? 'No events found for selected date' : 'No events found'}
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {eventsToDisplay.map((event, index) => (
+                <Card 
+                  key={event._id} 
+                  className="bento-card hover:shadow-md border-card-border/50 animate-fade-in relative group flex flex-col h-full"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <CardContent className="p-6 flex-1 flex flex-col">
+                    {/* Event Header with Status and Actions */}
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-lg font-semibold text-foreground line-clamp-1 mb-2 min-h-[1.75rem]">
+                          {event.title}
+                        </h3>
+                        {getStatusBadge(event.isactive)}
+                      </div>
                       
-                      {/* Event Details */}
-                      <div className="space-y-3">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem>
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Edit className="h-4 w-4 mr-2" />
+                            Edit Event
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleViewParticipants(event._id, event.title)}>
+                            <Users className="h-4 w-4 mr-2" />
+                            View Participants
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem 
+                            className="text-destructive"
+                            onClick={() => handleDeleteEvent(event._id)}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete Event
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+
+                    {/* Event Description */}
+                    <p className="text-muted-foreground text-sm mb-4 line-clamp-2 min-h-[2.5rem]">
+                      {event.description}
+                    </p>
+                    
+                    {/* Event Details */}
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-sm">
+                        <CalendarDays className="h-4 w-4 text-primary flex-shrink-0" />
+                        <span className="truncate">{new Date(event.date).toLocaleDateString()}</span>
+                      </div>
+                      
+                      {event.time && (
                         <div className="flex items-center gap-2 text-sm">
-                          <CalendarDays className="h-4 w-4 text-primary flex-shrink-0" />
-                          <span className="truncate">{new Date(event.date).toLocaleDateString()}</span>
+                          <Clock className="h-4 w-4 text-primary flex-shrink-0" />
+                          <span className="truncate">{event.time}</span>
                         </div>
-                        
-                        {event.time && (
-                          <div className="flex items-center gap-2 text-sm">
-                            <Clock className="h-4 w-4 text-primary flex-shrink-0" />
-                            <span className="truncate">{event.time}</span>
-                          </div>
-                        )}
-                        
-                        {event.location && (
-                          <div className="flex items-center gap-2 text-sm">
-                            <MapPin className="h-4 w-4 text-primary flex-shrink-0" />
-                            <span className="truncate" title={event.location}>
-                              {event.location}
-                            </span>
-                          </div>
-                        )}
-                        
+                      )}
+                      
+                      {event.location && (
                         <div className="flex items-center gap-2 text-sm">
-                          <Users className="h-4 w-4 text-primary flex-shrink-0" />
-                          <span className="truncate">
-                            {event.participants.length} participant{event.participants.length !== 1 ? 's' : ''}
+                          <MapPin className="h-4 w-4 text-primary flex-shrink-0" />
+                          <span className="truncate" title={event.location}>
+                            {event.location}
                           </span>
                         </div>
-                      </div>
-
-                      {/* Event Footer */}
-                      <div className="mt-auto pt-4 border-t border-card-border/20">
+                      )}
                       
-                        {/* Action Buttons */}
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="flex-1 border-card-border/50 hover:bg-accent h-8 text-xs"
-                            onClick={() => handleViewParticipants(event._id, event.title)}
-                          >
-                            <Users className="h-3 w-3 mr-1" />
-                            View Participants
-                          </Button>
-                        </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <Users className="h-4 w-4 text-primary flex-shrink-0" />
+                        <span className="truncate">
+                          {event.participants.length} participant{event.participants.length !== 1 ? 's' : ''}
+                        </span>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                    </div>
+
+                    {/* Event Footer */}
+                    <div className="mt-auto pt-4 border-t border-card-border/20">
+                    
+                      {/* Action Buttons */}
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 border-card-border/50 hover:bg-accent h-8 text-xs"
+                          onClick={() => handleViewParticipants(event._id, event.title)}
+                        >
+                          <Users className="h-3 w-3 mr-1" />
+                          View Participants
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
       {/* </div> */}
 
       {/* Participants Dialog */}
