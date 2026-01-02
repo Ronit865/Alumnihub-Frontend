@@ -232,37 +232,39 @@ export default function Alumni() {
     setProfileDialogOpen(true);
   };
 
-  // Loading state
-  if (isLoading) {
-    return (
-      <div className="space-y-6 animate-fade-in">
-        {/* Header Skeleton */}
-        <div>
-          <Skeleton className="h-9 w-64 mb-2" />
-          <Skeleton className="h-5 w-96" />
-        </div>
-
-        {/* Search and Filters Skeleton */}
-        <div className="flex flex-col sm:flex-row gap-4 items-center">
-          <Skeleton className="h-10 flex-1" />
-          <div className="flex gap-3">
-            <Skeleton className="h-10 w-[160px]" />
-            <Skeleton className="h-10 w-[140px]" />
-            <Skeleton className="h-10 w-10" />
+  // Data-only skeleton component - static UI renders immediately
+  const AlumniCardsSkeleton = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+      {[0, 1, 2, 3, 4, 5].map((i) => (
+        <div 
+          key={i} 
+          className="rounded-2xl bg-card border border-border/50 p-4 space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-300"
+          style={{ animationDelay: `${i * 40}ms` }}
+        >
+          <div className="flex gap-2.5">
+            <Skeleton className="h-12 w-12 sm:h-14 sm:w-14 rounded-lg flex-shrink-0" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-3.5 sm:h-4 w-24 sm:w-32" />
+              <Skeleton className="h-2.5 sm:h-3 w-20 sm:w-24" />
+            </div>
           </div>
+          <div className="space-y-2">
+            <Skeleton className="h-2.5 sm:h-3 w-12" />
+            <Skeleton className="h-3.5 sm:h-4 w-28 sm:w-36" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-2.5 sm:h-3 w-10" />
+            <Skeleton className="h-2.5 sm:h-3 w-36 sm:w-44" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-2.5 sm:h-3 w-14" />
+            <Skeleton className="h-3 sm:h-3.5 w-20 sm:w-24" />
+          </div>
+          <Skeleton className="h-8 sm:h-9 w-full rounded-lg mt-2" />
         </div>
-
-        <Skeleton className="h-5 w-48" />
-
-        {/* Alumni Grid Skeleton */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
-            <Skeleton key={i} className="h-80 rounded-lg" />
-          ))}
-        </div>
-      </div>
-    );
-  }
+      ))}
+    </div>
+  );
 
   // Error state
   if (error && !alumniResponse) {
@@ -348,8 +350,11 @@ export default function Alumni() {
         Showing {filteredAlumni.length} of {alumniData.length} verified alumni
       </div>
 
-      {/* Alumni Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Alumni Grid - Show skeleton or data */}
+      {isLoading ? (
+        <AlumniCardsSkeleton />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {filteredAlumni.length === 0 ? (
           <div className="col-span-full text-center py-12">
             <p className="text-muted-foreground text-lg">
@@ -372,63 +377,54 @@ export default function Alumni() {
           </div>
         ) : (
           filteredAlumni.map((person) => (
-            <Card key={person._id} className="bento-card hover:shadow-md border-card-border/50 hover-lift group flex flex-col h-full">
-              <CardHeader className="pb-4">
-                <div className="flex items-start gap-4">
-                  <div className="relative cursor-pointer" onClick={() => handleAvatarClick(person._id)}>
-                    <Avatar className="w-16 h-16 ring-2 ring-primary/20 flex-shrink-0 hover:ring-4 transition-all">
+            <Card key={person._id} className="overflow-hidden border-border/30 bg-card flex flex-col h-full group hover:shadow-lg transition-all duration-300">
+              <CardHeader className="pb-2 pt-4 px-4">
+                {/* Avatar and Name */}
+                <div className="flex gap-2.5 mb-2">
+                  <div className="relative cursor-pointer flex-shrink-0" onClick={() => handleAvatarClick(person._id)}>
+                    <Avatar className="w-14 h-14 rounded-lg ring-2 ring-primary/20 group-hover:ring-4 transition-all">
                       <AvatarImage src={person.avatar} alt={person.name} />
-                      <AvatarFallback className="bg-primary/10 text-primary font-medium text-lg">
+                      <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-white font-bold text-sm rounded-lg">
                         {person.name?.split(' ').map(n => n[0]).join('') || 'AL'}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-background rounded-full"></div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-lg group-hover:text-primary transition-colors truncate">
+                    <h3 className="font-bold text-sm text-foreground group-hover:text-primary transition-colors line-clamp-1">
                       {person.name || 'Unknown'}
                     </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {person.graduationYear ? `Class of ${person.graduationYear}` : 'Graduate'}
-                    </p>
-                    <p className="text-sm text-muted-foreground truncate">{person.course || 'N/A'}</p>
+                    <p className="text-xs text-muted-foreground">Graduated {person.graduationYear || 'N/A'}</p>
                   </div>
                 </div>
               </CardHeader>
-              
-              <CardContent className="flex-1 flex flex-col space-y-4">
-                <div className="space-y-2 flex-1">
-                  <div className="flex items-center gap-2 text-sm">
-                    <Briefcase className="w-4 h-4 text-primary flex-shrink-0" />
-                    <div className="min-w-0">
-                      <p className="font-medium truncate">{person.course || 'Course not specified'}</p>
-                      <p className="text-muted-foreground">Alumni</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Calendar className="w-4 h-4 text-primary flex-shrink-0" />
-                    <span>Graduated: {person.graduationYear || 'N/A'}</span>
-                  </div>
+
+              <CardContent className="flex-1 flex flex-col px-4 pb-4 space-y-2">
+                {/* Course */}
+                <div>
+                  <p className="text-xs text-muted-foreground mb-0.5">Course</p>
+                  <p className="text-sm font-semibold text-foreground line-clamp-1">{person.course || "-"}</p>
                 </div>
 
-                <div className="flex flex-wrap gap-1">
-                  <Badge variant="secondary">Alumni</Badge>
-                  <Badge variant="outline" className="text-xs text-green-600 border-green-600">
-                    Verified
-                  </Badge>
-                  {person.course && (
-                    <Badge variant="outline" className="text-xs">
-                      {person.course}
-                    </Badge>
-                  )}
+                {/* Email */}
+                <div>
+                  <p className="text-xs text-muted-foreground mb-0.5">Email</p>
+                  <p className="text-xs font-medium text-foreground truncate hover:text-primary transition-colors cursor-pointer" title={person.email || "-"}>
+                    {person.email || "-"}
+                  </p>
                 </div>
 
-                <div className="pt-2 mt-auto">
+                {/* Company */}
+                <div>
+                  <p className="text-xs text-muted-foreground mb-0.5">Company</p>
+                  <p className="text-sm font-medium text-foreground line-clamp-1">{(person as any).company || "-"}</p>
+                </div>
+
+                {/* Action Button */}
+                <div className="mt-auto pt-3">
                   {connectionStatuses[person._id] && connectionStatuses[person._id].status === 'accepted' ? (
                     <Button 
                       size="sm" 
-                      className="w-full gap-2"
+                      className="w-full font-semibold gap-2"
                       onClick={() => handleMessage(person._id)}
                     >
                       <MessageCircle className="w-4 h-4" />
@@ -438,7 +434,7 @@ export default function Alumni() {
                     <Button 
                       size="sm" 
                       variant="outline" 
-                      className="w-full gap-2"
+                      className="w-full font-semibold gap-2"
                       disabled
                     >
                       <UserCheck className="w-4 h-4" />
@@ -447,7 +443,7 @@ export default function Alumni() {
                   ) : (
                     <Button 
                       size="sm" 
-                      className="w-full gap-2"
+                      className="w-full font-semibold gap-2"
                       onClick={() => handleConnect(person._id)}
                       disabled={loadingConnections[person._id]}
                     >
@@ -465,9 +461,10 @@ export default function Alumni() {
           ))
         )}
       </div>
+      )}
 
       {/* Load More */}
-      {filteredAlumni.length > 0 && (
+      {!isLoading && filteredAlumni.length > 0 && (
         <div className="text-center pt-6">
           <Button variant="outline" size="lg" onClick={() => refetch()}>
             Refresh Data

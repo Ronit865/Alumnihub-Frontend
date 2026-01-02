@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CalendarDays, Clock, MapPin, Users, Plus, Eye, Edit, Trash2, Loader2, X } from "lucide-react";
+import { CalendarDays, Clock, MapPin, Users, Plus, MoreVertical, Edit, Trash2, Loader2, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,8 @@ interface Event {
   createdAt: string;
   updatedAt: string;
 }
+
+const ITEMS_PER_PAGE = 6;
 
 interface CreateEventForm {
   title: string;
@@ -61,7 +63,22 @@ export function Events() {
   const [isParticipantsDialogOpen, setIsParticipantsDialogOpen] = useState(false);
   const [loadingParticipants, setLoadingParticipants] = useState(false);
   const [selectedEventTitle, setSelectedEventTitle] = useState("");
+  const [activeEventPage, setActiveEventPage] = useState(0);
+  const [pastEventPage, setPastEventPage] = useState(0);
   const { toast } = useToast();
+  
+  // Edit Event State
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editFormData, setEditFormData] = useState<CreateEventForm>({
+    title: "",
+    description: "",
+    date: "",
+    time: "",
+    location: ""
+  });
+  const [editFormErrors, setEditFormErrors] = useState<Partial<CreateEventForm>>({});
 
   // Fetch events from backend
   useEffect(() => {
@@ -194,6 +211,72 @@ export function Events() {
     setFormErrors({});
   };
 
+  // Handle Edit Event
+  const handleEditEvent = (event: Event) => {
+    setEditingEvent(event);
+    setEditFormData({
+      title: event.title,
+      description: event.description,
+      date: event.date ? new Date(event.date).toISOString().split('T')[0] : "",
+      time: event.time || "",
+      location: event.location || ""
+    });
+    setEditFormErrors({});
+    setIsEditDialogOpen(true);
+  };
+
+  const handleEditInputChange = (field: keyof CreateEventForm, value: string) => {
+    setEditFormData(prev => ({ ...prev, [field]: value }));
+    if (editFormErrors[field]) {
+      setEditFormErrors(prev => ({ ...prev, [field]: undefined }));
+    }
+  };
+
+  const validateEditForm = (): boolean => {
+    const errors: Partial<CreateEventForm> = {};
+    if (!editFormData.title.trim()) errors.title = "Title is required";
+    if (!editFormData.description.trim()) errors.description = "Description is required";
+    if (!editFormData.date) errors.date = "Date is required";
+    setEditFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleUpdateEvent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateEditForm() || !editingEvent) return;
+
+    try {
+      setIsEditing(true);
+      const eventData = {
+        title: editFormData.title.trim(),
+        description: editFormData.description.trim(),
+        date: editFormData.date,
+        time: editFormData.time || undefined,
+        location: editFormData.location.trim() || undefined
+      };
+
+      await eventService.updateEvent(editingEvent._id, eventData);
+      toast({
+        title: "Event updated",
+        description: "Event has been successfully updated",
+        variant: "success",
+      });
+      
+      setIsEditDialogOpen(false);
+      setEditingEvent(null);
+      fetchEvents();
+    } catch (err: any) {
+      const errorInfo = handleApiError(err);
+      toast({
+        title: "Error",
+        description: `Failed to update event: ${errorInfo.message}`,
+        variant: "destructive",
+      });
+    } finally {
+      setIsEditing(false);
+    }
+  };
+
   const handleViewParticipants = async (eventId: string, eventTitle: string) => {
     try {
       setLoadingParticipants(true);
@@ -225,17 +308,27 @@ export function Events() {
     return true;
   });
 
-  const getStatusBadge = (isActive: boolean) => {
-    if (isActive) {
-      return <Badge className="bg-success/10 text-success border-success/20">Active</Badge>;
-    } else {
-      return <Badge variant="outline" className="border-warning text-warning">Inactive</Badge>;
-    }
-  };
+  // Categorize events
+  const activeEventsList = events.filter(event => event.isactive);
+  const pastEventsList = events.filter(event => !event.isactive);
+
+  // Pagination
+  const activeEventsTotalPages = Math.ceil(activeEventsList.length / ITEMS_PER_PAGE);
+  const pastEventsTotalPages = Math.ceil(pastEventsList.length / ITEMS_PER_PAGE);
+
+  const paginatedActiveEvents = activeEventsList.slice(
+    activeEventPage * ITEMS_PER_PAGE,
+    (activeEventPage + 1) * ITEMS_PER_PAGE
+  );
+
+  const paginatedPastEvents = pastEventsList.slice(
+    pastEventPage * ITEMS_PER_PAGE,
+    (pastEventPage + 1) * ITEMS_PER_PAGE
+  );
 
   // Calculate stats from actual data
   const totalEvents = events.length;
-  const activeEvents = events.filter(event => event.isactive).length;
+  const activeEventsCount = activeEventsList.length;
   const totalParticipants = events.reduce((total, event) => total + event.participants.length, 0);
   const averageParticipants = totalEvents > 0 ? Math.round(totalParticipants / totalEvents) : 0;
 
@@ -303,37 +396,211 @@ export function Events() {
   // Get events to display (either for selected date or all filtered events)
   const eventsToDisplay = date ? getFilteredEventsForSelectedDate() : filteredEvents;
 
+  // Pagination Controls Component
+  const PaginationControls = ({ 
+    currentPage, 
+    totalPages, 
+    onPrevious, 
+    onNext 
+  }: { 
+    currentPage: number; 
+    totalPages: number; 
+    onPrevious: () => void; 
+    onNext: () => void; 
+  }) => (
+    <div className="flex items-center justify-center gap-4 mt-6">
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onPrevious}
+        disabled={currentPage === 0}
+        className="gap-1"
+      >
+        <ChevronLeft className="h-4 w-4" />
+        Previous
+      </Button>
+      <span className="text-sm text-muted-foreground">
+        Page {currentPage + 1} of {totalPages}
+      </span>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onNext}
+        disabled={currentPage >= totalPages - 1}
+        className="gap-1"
+      >
+        Next
+        <ChevronRight className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+
+  // Event Card Component
+  const EventCard = ({ event, index }: { event: Event; index: number }) => (
+    <Card 
+      key={event._id} 
+      className="bento-card hover:shadow-md border-card-border/50 animate-fade-in relative group flex flex-col h-full"
+      style={{ animationDelay: `${index * 100}ms` }}
+    >
+      <CardContent className="p-6 flex-1 flex flex-col">
+        {/* Event Header with Actions */}
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex-1 min-w-0">
+            <h3 className="text-lg font-semibold text-foreground line-clamp-1 mb-2">
+              {event.title}
+            </h3>
+          </div>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-popover">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => handleEditEvent(event)}>
+                <Edit className="h-4 w-4 mr-2" />
+                Edit Event
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleViewParticipants(event._id, event.title)}>
+                <Users className="h-4 w-4 mr-2" />
+                View Participants
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                className="text-destructive"
+                onClick={() => handleDeleteEvent(event._id)}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Event
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        {/* Event Description */}
+        <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
+          {event.description}
+        </p>
+        
+        {/* Event Details Grid */}
+        <div className="grid grid-cols-2 gap-3 text-sm flex-1">
+          <div className="flex items-center gap-2">
+            <CalendarDays className="h-4 w-4 text-primary flex-shrink-0" />
+            <span className="text-foreground font-medium truncate">{new Date(event.date).toLocaleDateString()}</span>
+          </div>
+          {event.time && (
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-primary flex-shrink-0" />
+              <span className="text-foreground font-medium truncate">{event.time}</span>
+            </div>
+          )}
+          {event.location && (
+            <div className="flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-primary flex-shrink-0" />
+              <span className="text-foreground font-medium truncate">{event.location}</span>
+            </div>
+          )}
+          <div className="flex items-center gap-2">
+            <Users className="h-4 w-4 text-primary flex-shrink-0" />
+            <span className="text-foreground font-medium truncate">
+              {event.participants.length} participant{event.participants.length !== 1 ? 's' : ''}
+            </span>
+          </div>
+        </div>
+
+        {/* Event Footer */}
+        <div className="mt-auto pt-4">
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full border-card-border/50 hover:bg-accent h-8 text-xs"
+            onClick={() => handleViewParticipants(event._id, event.title)}
+          >
+            <Users className="h-3 w-3 mr-1" />
+            View Participants
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   if (loading) {
     return (
-      <div className="space-y-8">
-        {/* Header Skeleton */}
-        <div className="flex justify-between items-start animate-fade-in">
-          <div>
-            <Skeleton className="h-9 w-56 mb-2" />
-            <Skeleton className="h-5 w-96" />
+      <div className="space-y-6 animate-in fade-in duration-500">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-500">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-56 bg-muted/60" />
+            <Skeleton className="h-4 w-80 bg-muted/60" />
           </div>
-          <Skeleton className="h-10 w-32" />
+          <Skeleton className="h-10 w-32 rounded-lg bg-muted/60" />
         </div>
 
-        {/* Stats Cards Skeleton */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 animate-slide-up">
-          {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-32 rounded-lg" />
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-bottom-2 duration-500" style={{ animationDelay: '100ms' }}>
+          {[0, 1, 2, 3].map((i) => (
+            <div 
+              key={i} 
+              className="rounded-2xl p-4 sm:p-5 bg-card/50 border border-border/50"
+            >
+              <div className="flex items-center justify-between">
+                <div className="space-y-3">
+                  <Skeleton className="h-3 w-20 bg-muted/60" />
+                  <Skeleton className="h-8 w-16 bg-muted/60" />
+                  <Skeleton className="h-3 w-24 bg-muted/60" />
+                </div>
+                <Skeleton className="h-10 w-10 rounded-xl bg-muted/60" />
+              </div>
+            </div>
           ))}
         </div>
 
-        {/* Filters Skeleton */}
-        <div className="flex items-center gap-4">
-          <Skeleton className="h-9 w-24" />
-          {[...Array(3)].map((_, i) => (
-            <Skeleton key={i} className="h-9 w-20" />
-          ))}
+        {/* Section Title */}
+        <div className="animate-in fade-in slide-in-from-bottom-2 duration-500" style={{ animationDelay: '200ms' }}>
+          <Skeleton className="h-6 w-40 bg-muted/60" />
         </div>
 
-        {/* Events Grid Skeleton */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
-            <Skeleton key={i} className="h-80 rounded-lg" />
+        {/* Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <div 
+              key={i} 
+              className="rounded-2xl p-5 bg-card/50 border border-border/50 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500"
+              style={{ animationDelay: `${300 + i * 50}ms` }}
+            >
+              <div className="flex items-start justify-between">
+                <div className="space-y-2 flex-1">
+                  <Skeleton className="h-5 w-3/4 bg-muted/60" />
+                  <Skeleton className="h-6 w-20 rounded-full bg-muted/60" />
+                </div>
+                <Skeleton className="h-8 w-8 rounded-lg bg-muted/60" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-3 w-full bg-muted/60" />
+                <Skeleton className="h-3 w-4/5 bg-muted/60" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-4 w-4 rounded bg-muted/60" />
+                  <Skeleton className="h-4 w-24 bg-muted/60" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-4 w-4 rounded bg-muted/60" />
+                  <Skeleton className="h-4 w-16 bg-muted/60" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-4 w-4 rounded bg-muted/60" />
+                  <Skeleton className="h-4 w-20 bg-muted/60" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-4 w-4 rounded bg-muted/60" />
+                  <Skeleton className="h-4 w-28 bg-muted/60" />
+                </div>
+              </div>
+              <Skeleton className="h-8 w-full rounded-lg bg-muted/60" />
+            </div>
           ))}
         </div>
       </div>
@@ -522,7 +789,7 @@ export function Events() {
           <div className="flex items-center justify-between">
             <div>
               <p className="stats-card-label">Active Events</p>
-              <p className="stats-card-number">{activeEvents}</p>
+              <p className="stats-card-number">{activeEventsCount}</p>
             </div>
             <Clock className="stats-card-icon" />
           </div>
@@ -619,216 +886,128 @@ export function Events() {
           </CardContent>
         </Card> */}
 
-        {/* Events List */}
+        {/* Active Events Section */}
         <div>
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h2 className="text-2xl font-bold text-foreground">
-                {date ? `Events for ${date.toLocaleDateString()}` : 'All Events'}
-              </h2>
-              <p className="text-sm text-muted-foreground mt-1">
-                {date ? 
-                  `Showing events for selected date` : 
-                  'Manage your event calendar'
-                }
-              </p>
-            </div>
-            <div className="flex gap-2">
-              {date && (
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setDate(undefined)}
-                >
-                  <X className="h-4 w-4 mr-2" />
-                  Clear Date
-                </Button>
-              )}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline">
-                    Filter: {selectedFilter === "all" ? "All Events" : selectedFilter}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => setSelectedFilter("all")}>
-                    All Events
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSelectedFilter("active")}>
-                    Active Events
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSelectedFilter("inactive")}>
-                    Inactive Events
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <Button onClick={fetchEvents} variant="outline" size="sm">
-                Refresh
-              </Button>
-            </div>
+          <div className="flex items-center gap-2 mb-4">
+            <CalendarDays className="h-5 w-5 text-primary" />
+            <h2 className="text-xl font-semibold text-foreground">
+              Active Events ({activeEventsList.length})
+            </h2>
           </div>
 
-          {eventsToDisplay.length === 0 ? (
-            <div className="text-center py-12">
-              <CalendarDays className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">
-                {date ? 'No events found for selected date' : 'No events found'}
-              </p>
-            </div>
+          {activeEventsList.length === 0 ? (
+            <Card className="border-card-border/50">
+              <CardContent className="pt-12 pb-12 text-center">
+                <CalendarDays className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">No active events available.</p>
+              </CardContent>
+            </Card>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {eventsToDisplay.map((event, index) => (
-                <Card 
-                  key={event._id} 
-                  className="bento-card hover:shadow-md border-card-border/50 animate-fade-in relative group flex flex-col h-full"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <CardContent className="p-6 flex-1 flex flex-col">
-                    {/* Event Header with Status and Actions */}
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-semibold text-foreground line-clamp-1 mb-2 min-h-[1.75rem]">
-                          {event.title}
-                        </h3>
-                        {getStatusBadge(event.isactive)}
-                      </div>
-                      
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem>
-                            <Eye className="h-4 w-4 mr-2" />
-                            View Details
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Edit className="h-4 w-4 mr-2" />
-                            Edit Event
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleViewParticipants(event._id, event.title)}>
-                            <Users className="h-4 w-4 mr-2" />
-                            View Participants
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem 
-                            className="text-destructive"
-                            onClick={() => handleDeleteEvent(event._id)}
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete Event
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-
-                    {/* Event Description */}
-                    <p className="text-muted-foreground text-sm mb-4 line-clamp-2 min-h-[2.5rem]">
-                      {event.description}
-                    </p>
-                    
-                    {/* Event Details */}
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2 text-sm">
-                        <CalendarDays className="h-4 w-4 text-primary flex-shrink-0" />
-                        <span className="truncate">{new Date(event.date).toLocaleDateString()}</span>
-                      </div>
-                      
-                      {event.time && (
-                        <div className="flex items-center gap-2 text-sm">
-                          <Clock className="h-4 w-4 text-primary flex-shrink-0" />
-                          <span className="truncate">{event.time}</span>
-                        </div>
-                      )}
-                      
-                      {event.location && (
-                        <div className="flex items-center gap-2 text-sm">
-                          <MapPin className="h-4 w-4 text-primary flex-shrink-0" />
-                          <span className="truncate" title={event.location}>
-                            {event.location}
-                          </span>
-                        </div>
-                      )}
-                      
-                      <div className="flex items-center gap-2 text-sm">
-                        <Users className="h-4 w-4 text-primary flex-shrink-0" />
-                        <span className="truncate">
-                          {event.participants.length} participant{event.participants.length !== 1 ? 's' : ''}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Event Footer */}
-                    <div className="mt-auto pt-4 border-t border-card-border/20">
-                    
-                      {/* Action Buttons */}
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 border-card-border/50 hover:bg-accent h-8 text-xs"
-                          onClick={() => handleViewParticipants(event._id, event.title)}
-                        >
-                          <Users className="h-3 w-3 mr-1" />
-                          View Participants
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                {paginatedActiveEvents.map((event, index) => (
+                  <EventCard key={event._id} event={event} index={index} />
+                ))}
+              </div>
+              {activeEventsTotalPages > 1 && (
+                <PaginationControls
+                  currentPage={activeEventPage}
+                  totalPages={activeEventsTotalPages}
+                  onPrevious={() => setActiveEventPage(p => Math.max(0, p - 1))}
+                  onNext={() => setActiveEventPage(p => Math.min(activeEventsTotalPages - 1, p + 1))}
+                />
+              )}
+            </>
           )}
         </div>
-      {/* </div> */}
 
-      {/* Participants Dialog */}
+        {/* Past Events Section */}
+        <div>
+          <div className="flex items-center gap-2 mb-4">
+            <Clock className="h-5 w-5 text-muted-foreground" />
+            <h2 className="text-xl font-semibold text-foreground">
+              Past Events ({pastEventsList.length})
+            </h2>
+          </div>
+
+          {pastEventsList.length === 0 ? (
+            <Card className="border-card-border/50">
+              <CardContent className="pt-12 pb-12 text-center">
+                <Clock className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">No past events to display.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                {paginatedPastEvents.map((event, index) => (
+                  <EventCard key={event._id} event={event} index={index} />
+                ))}
+              </div>
+              {pastEventsTotalPages > 1 && (
+                <PaginationControls
+                  currentPage={pastEventPage}
+                  totalPages={pastEventsTotalPages}
+                  onPrevious={() => setPastEventPage(p => Math.max(0, p - 1))}
+                  onNext={() => setPastEventPage(p => Math.min(pastEventsTotalPages - 1, p + 1))}
+                />
+              )}
+            </>
+          )}
+        </div>
+
+      {/* Participants Dialog - Redesigned */}
       <Dialog open={isParticipantsDialogOpen} onOpenChange={setIsParticipantsDialogOpen}>
         <DialogContent 
           className="sm:max-w-[700px] max-w-[95vw] bento-card gradient-surface border-card-border/50" 
           style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
         >
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-primary" />
-              Event Participants
-            </DialogTitle>
-            <DialogDescription className="text-muted-foreground">
-              {selectedEventTitle}
-            </DialogDescription>
+          <DialogHeader className="pb-4 border-b border-card-border/20">
+            <div className="flex items-center gap-3">
+              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+                <Users className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <DialogTitle className="text-xl font-semibold text-foreground">
+                  Event Participants
+                </DialogTitle>
+                <DialogDescription className="text-muted-foreground mt-1">
+                  {selectedEventTitle} • {selectedEventParticipants.length} registered
+                </DialogDescription>
+              </div>
+            </div>
           </DialogHeader>
           
           <div className="mt-4">
             {loadingParticipants ? (
-              <div className="flex items-center justify-center py-12">
+              <div className="flex items-center justify-center py-16">
                 <div className="text-center">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-2" />
-                  <p className="text-muted-foreground">Loading participants...</p>
+                  <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4 animate-pulse">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                  <p className="text-muted-foreground font-medium">Loading participants...</p>
                 </div>
               </div>
             ) : selectedEventParticipants.length === 0 ? (
-              <div className="flex items-center justify-center py-12">
+              <div className="flex items-center justify-center py-16">
                 <div className="text-center">
-                  <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground mb-2">No participants yet</p>
-                  <p className="text-sm text-muted-foreground">This event hasn't received any registrations.</p>
+                  <div className="h-20 w-20 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4">
+                    <Users className="h-10 w-10 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">No participants yet</h3>
+                  <p className="text-sm text-muted-foreground max-w-xs mx-auto">This event hasn't received any registrations. Share the event to get more participants.</p>
                 </div>
               </div>
             ) : (
-              <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+              <div className="space-y-3 max-h-[55vh] overflow-y-auto pr-2 custom-scrollbar">
                 {selectedEventParticipants.map((participant, index) => (
                   <div 
                     key={`participant-${participant._id}-${index}`}
-                    className="flex items-center justify-between p-4 rounded-lg border border-card-border/50 hover:bg-accent/30 transition-colors"
+                    className="flex items-center justify-between p-4 rounded-xl bg-accent/30 border border-card-border/30 hover:bg-accent/50 hover:border-primary/30 transition-all duration-200 group animate-fade-in"
+                    style={{ animationDelay: `${index * 50}ms` }}
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+                    <div className="flex items-center gap-4">
+                      <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary/20 to-accent/50 flex items-center justify-center overflow-hidden flex-shrink-0 ring-2 ring-background shadow-sm">
                         {participant.avatar ? (
                           <img 
                             src={participant.avatar} 
@@ -836,19 +1015,24 @@ export function Events() {
                             className="h-full w-full object-cover"
                           />
                         ) : (
-                          <Users className="h-6 w-6 text-primary" />
+                          <span className="text-lg font-semibold text-primary">
+                            {participant.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                          </span>
                         )}
                       </div>
                       <div>
-                        <h4 className="font-semibold text-foreground">{participant.name}</h4>
+                        <h4 className="font-semibold text-foreground group-hover:text-primary transition-colors">{participant.name}</h4>
                         <p className="text-sm text-muted-foreground">{participant.email}</p>
                         {participant.course && (
-                          <p className="text-xs text-muted-foreground mt-0.5">
+                          <Badge variant="secondary" className="mt-1 text-xs">
                             {participant.course}
-                          </p>
+                          </Badge>
                         )}
                       </div>
                     </div>
+                    <Badge variant="outline" className="bg-success/10 text-success border-success/30">
+                      Registered
+                    </Badge>
                   </div>
                 ))}
               </div>
@@ -866,6 +1050,119 @@ export function Events() {
               </Button>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Event Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[500px] bento-card gradient-surface border-card-border/50" style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+          <DialogHeader className="pb-4 border-b border-card-border/20">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+                <Edit className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <DialogTitle className="text-xl font-semibold text-foreground">Edit Event</DialogTitle>
+                <DialogDescription className="text-muted-foreground">
+                  Update event details below
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+          
+          <form onSubmit={handleUpdateEvent} className="space-y-5 mt-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-title" className="text-sm font-medium text-foreground">
+                Event Title *
+              </Label>
+              <Input
+                id="edit-title"
+                placeholder="Enter event title"
+                value={editFormData.title}
+                onChange={(e) => handleEditInputChange("title", e.target.value)}
+                className={`border-card-border/50 focus:border-primary ${editFormErrors.title ? "border-destructive" : ""}`}
+              />
+              {editFormErrors.title && <p className="text-sm text-destructive">{editFormErrors.title}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-description" className="text-sm font-medium text-foreground">
+                Description *
+              </Label>
+              <Textarea
+                id="edit-description"
+                placeholder="Describe your event"
+                value={editFormData.description}
+                onChange={(e) => handleEditInputChange("description", e.target.value)}
+                className={`min-h-[100px] border-card-border/50 focus:border-primary resize-none ${editFormErrors.description ? "border-destructive" : ""}`}
+              />
+              {editFormErrors.description && <p className="text-sm text-destructive">{editFormErrors.description}</p>}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-date" className="text-sm font-medium text-foreground">Date *</Label>
+                <Input
+                  id="edit-date"
+                  type="date"
+                  value={editFormData.date}
+                  onChange={(e) => handleEditInputChange("date", e.target.value)}
+                  className={`border-card-border/50 focus:border-primary ${editFormErrors.date ? "border-destructive" : ""}`}
+                />
+                {editFormErrors.date && <p className="text-sm text-destructive">{editFormErrors.date}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-time" className="text-sm font-medium text-foreground">Time</Label>
+                <Input
+                  id="edit-time"
+                  type="time"
+                  value={editFormData.time}
+                  onChange={(e) => handleEditInputChange("time", e.target.value)}
+                  className="border-card-border/50 focus:border-primary"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-location" className="text-sm font-medium text-foreground">Location</Label>
+              <Input
+                id="edit-location"
+                placeholder="Enter event location"
+                value={editFormData.location}
+                onChange={(e) => handleEditInputChange("location", e.target.value)}
+                className="border-card-border/50 focus:border-primary"
+              />
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-card-border/20">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsEditDialogOpen(false)}
+                disabled={isEditing}
+                className="border-card-border/50"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isEditing}
+                className="gradient-primary text-primary-foreground hover:shadow-purple"
+              >
+                {isEditing ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Updating...
+                  </>
+                ) : (
+                  <>
+                    <Edit className="h-4 w-4 mr-2" />
+                    Update Event
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
