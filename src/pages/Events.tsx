@@ -51,7 +51,7 @@ export default function Events() {
                 setEvents(cachedEvents);
                 await checkRegisteredEvents(cachedEvents);
                 setLoading(false);
-                
+
                 // Refresh in background if cache is stale
                 if (cache.getTTL(CACHE_KEYS.USER_EVENTS) < CACHE_TTL.SHORT) {
                     refreshEventsInBackground();
@@ -96,24 +96,24 @@ export default function Events() {
     const checkRegisteredEvents = async (events: Event[]) => {
         try {
             const userResponse = await userService.getCurrentUser();
-            
+
             if (userResponse.success && userResponse.data) {
                 const userId = userResponse.data._id;
-                
+
                 const registered = new Set<string>();
                 events.forEach(event => {
                     const isRegistered = event.participants.some((participant: any) => {
-                        const participantId = typeof participant === 'string' 
-                            ? participant 
+                        const participantId = typeof participant === 'string'
+                            ? participant
                             : participant._id || participant.userId || participant.user;
                         return participantId === userId;
                     });
-                    
+
                     if (isRegistered) {
                         registered.add(event._id);
                     }
                 });
-                
+
                 setRegisteredEvents(registered);
             }
         } catch (error) {
@@ -134,25 +134,25 @@ export default function Events() {
     const handleJoinEvent = async (eventId: string) => {
         try {
             setJoiningEvent(eventId);
-            
+
             const userId = await getCurrentUserId();
             if (!userId) {
                 toast.error("Please login to join events");
                 return;
             }
-            
+
             const response = await eventService.joinEvent(eventId);
 
             if (response.success) {
                 toast.success("Successfully joined the event!", {
                     description: "You will receive event updates via email.",
                 });
-                
+
                 setRegisteredEvents(prev => new Set(prev).add(eventId));
-                
-                setEvents(prevEvents => 
-                    prevEvents.map(event => 
-                        event._id === eventId 
+
+                setEvents(prevEvents =>
+                    prevEvents.map(event =>
+                        event._id === eventId
                             ? { ...event, participants: [...event.participants, userId] }
                             : event
                     )
@@ -171,31 +171,31 @@ export default function Events() {
     const handleLeaveEvent = async (eventId: string) => {
         try {
             setJoiningEvent(eventId);
-            
+
             const userId = await getCurrentUserId();
             if (!userId) {
                 toast.error("Unable to leave event");
                 return;
             }
-            
+
             const response = await eventService.leaveEvent(eventId);
 
             if (response.success) {
                 toast.success("Successfully left the event");
-                
+
                 setRegisteredEvents(prev => {
                     const newSet = new Set(prev);
                     newSet.delete(eventId);
                     return newSet;
                 });
-                
-                setEvents(prevEvents => 
-                    prevEvents.map(event => 
-                        event._id === eventId 
-                            ? { 
-                                ...event, 
+
+                setEvents(prevEvents =>
+                    prevEvents.map(event =>
+                        event._id === eventId
+                            ? {
+                                ...event,
                                 participants: event.participants.filter(p => p !== userId)
-                              }
+                            }
                             : event
                     )
                 );
@@ -226,8 +226,21 @@ export default function Events() {
         event.description.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const activeEvents = filteredEvents.filter(event => event.isactive);
-    const pastEvents = filteredEvents.filter(event => !event.isactive);
+    // Categorize based on date - past events are those with dates before today
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const activeEvents = filteredEvents.filter(event => {
+        const eventDate = new Date(event.date);
+        eventDate.setHours(0, 0, 0, 0);
+        return eventDate >= today && event.isactive;
+    });
+
+    const pastEvents = filteredEvents.filter(event => {
+        const eventDate = new Date(event.date);
+        eventDate.setHours(0, 0, 0, 0);
+        return eventDate < today || !event.isactive;
+    });
 
     // Pagination
     const activeEventsTotalPages = Math.ceil(activeEvents.length / ITEMS_PER_PAGE);
@@ -244,8 +257,8 @@ export default function Events() {
     );
 
     const EventCard = ({ event, index }: { event: Event; index: number }) => (
-        <Card 
-            key={event._id} 
+        <Card
+            key={event._id}
             className="overflow-hidden border-border/30 bg-card animate-fade-in group flex flex-col h-full"
             style={{ animationDelay: `${index * 100}ms` }}
         >
@@ -269,7 +282,7 @@ export default function Events() {
                 <p className="text-foreground/80 text-sm leading-relaxed line-clamp-2 mb-4">
                     {event.description}
                 </p>
-                
+
                 {/* Event Details Grid */}
                 <div className="grid grid-cols-2 gap-3 text-sm flex-1 mb-4">
                     <div className="flex items-center gap-2">
@@ -298,8 +311,8 @@ export default function Events() {
                 <Button
                     size="sm"
                     className="w-full h-10 font-medium"
-                    onClick={() => registeredEvents.has(event._id) 
-                        ? handleLeaveEvent(event._id) 
+                    onClick={() => registeredEvents.has(event._id)
+                        ? handleLeaveEvent(event._id)
                         : handleJoinEvent(event._id)
                     }
                     disabled={
@@ -328,16 +341,16 @@ export default function Events() {
         </Card>
     );
 
-    const PaginationControls = ({ 
-        currentPage, 
-        totalPages, 
-        onPrevious, 
-        onNext 
-    }: { 
-        currentPage: number; 
-        totalPages: number; 
-        onPrevious: () => void; 
-        onNext: () => void; 
+    const PaginationControls = ({
+        currentPage,
+        totalPages,
+        onPrevious,
+        onNext
+    }: {
+        currentPage: number;
+        totalPages: number;
+        onPrevious: () => void;
+        onNext: () => void;
     }) => (
         <div className="flex items-center justify-center gap-4 mt-6">
             <Button
@@ -370,8 +383,8 @@ export default function Events() {
     const EventCardsSkeleton = () => (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {[0, 1, 2, 3, 4, 5].map((i) => (
-                <div 
-                    key={i} 
+                <div
+                    key={i}
                     className="rounded-2xl bg-card border border-border/50 p-4 sm:p-5 space-y-3 sm:space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300"
                     style={{ animationDelay: `${i * 40}ms` }}
                 >

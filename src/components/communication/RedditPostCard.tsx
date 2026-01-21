@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MessageCircle, Share, Bookmark, MoreHorizontal, Trash2, Edit } from "lucide-react";
+import { MessageCircle, Share, Bookmark, MoreHorizontal, Trash2, Edit, Flag } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -29,7 +29,7 @@ export function RedditPostCard({ post, onUpdate }: RedditPostProps) {
     // Don't navigate if clicking on interactive elements
     const target = e.target as HTMLElement;
     if (
-      target.closest('button') || 
+      target.closest('button') ||
       target.closest('a') ||
       target.closest('[role="menuitem"]')
     ) {
@@ -42,11 +42,11 @@ export function RedditPostCard({ post, onUpdate }: RedditPostProps) {
     // Immediately update UI for instant feedback
     const newSavedState = !isSaved;
     setIsSaved(newSavedState);
-    
+
     toast({
       title: newSavedState ? "Post saved" : "Post unsaved",
-      description: newSavedState 
-        ? "You can find this post in your saved items" 
+      description: newSavedState
+        ? "You can find this post in your saved items"
         : "Post removed from saved items",
     });
 
@@ -66,17 +66,17 @@ export function RedditPostCard({ post, onUpdate }: RedditPostProps) {
 
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this post?")) return;
-    
+
     // Immediately update UI for instant feedback
     if (onUpdate) {
       onUpdate();
     }
-    
+
     toast({
       title: "Post deleted",
       description: "Your post has been removed.",
     });
-    
+
     // Call API in background
     try {
       await communicationService.deletePost(post._id);
@@ -89,16 +89,50 @@ export function RedditPostCard({ post, onUpdate }: RedditPostProps) {
     }
   };
 
+  const handleReport = async () => {
+    toast({
+      title: "Post reported",
+      description: "Thank you for helping keep our community safe. We'll review this post.",
+    });
+  };
+
+  const handleShare = async () => {
+    const postUrl = `${window.location.origin}/communications/post/${post._id}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Post by ${post.author?.name || 'Anonymous'}`,
+          text: post.content.substring(0, 100),
+          url: postUrl,
+        });
+      } catch (error) {
+        // User cancelled or share failed, fallback to clipboard
+        await navigator.clipboard.writeText(postUrl);
+        toast({
+          title: "Link copied",
+          description: "Post link copied to clipboard",
+        });
+      }
+    } else {
+      await navigator.clipboard.writeText(postUrl);
+      toast({
+        title: "Link copied",
+        description: "Post link copied to clipboard",
+      });
+    }
+  };
+
   const formatTimestamp = (timestamp: string) => {
     const date = new Date(timestamp);
     const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-    
+
     if (diffInSeconds < 60) return 'just now';
     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
     if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
     if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`;
-    
+
     return date.toLocaleDateString();
   };
 
@@ -123,7 +157,7 @@ export function RedditPostCard({ post, onUpdate }: RedditPostProps) {
   console.log('Can delete:', canDelete);
 
   return (
-    <Card 
+    <Card
       className="bg-card border border-border hover:border-accent-foreground/20 transition-all duration-200 cursor-pointer"
       onClick={handleCardClick}
     >
@@ -170,7 +204,7 @@ export function RedditPostCard({ post, onUpdate }: RedditPostProps) {
                 <span className="text-xs text-muted-foreground">{formatTimestamp(post.createdAt)}</span>
               </div>
             </div>
-            
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="p-1 h-auto">
@@ -182,18 +216,18 @@ export function RedditPostCard({ post, onUpdate }: RedditPostProps) {
                   <Bookmark className={`mr-2 h-4 w-4 ${isSaved ? 'fill-current' : ''}`} />
                   {isSaved ? 'Unsave' : 'Save'}
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={handleShare}>
                   <Share className="mr-2 h-4 w-4" />
                   Share
                 </DropdownMenuItem>
-                {isAuthor && (
+                {isAuthor ? (
                   <>
                     <DropdownMenuItem>
                       <Edit className="mr-2 h-4 w-4" />
                       Edit
                     </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={handleDelete} 
+                    <DropdownMenuItem
+                      onClick={handleDelete}
                       disabled={!canDelete}
                       className="text-destructive focus:text-destructive cursor-pointer"
                     >
@@ -201,6 +235,14 @@ export function RedditPostCard({ post, onUpdate }: RedditPostProps) {
                       {canDelete ? 'Delete' : 'Delete (expired)'}
                     </DropdownMenuItem>
                   </>
+                ) : (
+                  <DropdownMenuItem
+                    onClick={handleReport}
+                    className="text-orange-600 focus:text-orange-600 cursor-pointer"
+                  >
+                    <Flag className="mr-2 h-4 w-4" />
+                    Report
+                  </DropdownMenuItem>
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
@@ -209,18 +251,17 @@ export function RedditPostCard({ post, onUpdate }: RedditPostProps) {
           {/* Message Content */}
           <div className="mb-3">
             <p className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">{post.content}</p>
-            
+
             {/* Images */}
             {post.images && post.images.length > 0 && (
-              <div className={`mt-2 grid gap-2 ${
-                post.images.length === 1 ? 'grid-cols-1' : 
-                post.images.length === 2 ? 'grid-cols-2' : 
-                'grid-cols-3'
-              }`}>
+              <div className={`mt-2 grid gap-2 ${post.images.length === 1 ? 'grid-cols-1' :
+                post.images.length === 2 ? 'grid-cols-2' :
+                  'grid-cols-3'
+                }`}>
                 {post.images.map((image: string, index: number) => (
-                  <img 
+                  <img
                     key={index}
-                    src={image} 
+                    src={image}
                     alt={`Post image ${index + 1}`}
                     className="w-full h-auto rounded-md border object-cover max-h-96"
                   />
@@ -231,34 +272,37 @@ export function RedditPostCard({ post, onUpdate }: RedditPostProps) {
 
           {/* Actions */}
           <div className="flex items-center gap-4">
-            <Button 
+            <Button
               onClick={(e) => {
                 e.stopPropagation();
                 navigate(`/communications/post/${post._id}`);
               }}
-              variant="ghost" 
-              size="sm" 
+              variant="ghost"
+              size="sm"
               className="gap-2 text-muted-foreground hover:text-foreground hover:bg-accent"
             >
               <MessageCircle className="w-4 h-4" />
               <span className="text-xs">{post.commentsCount || 0} comments</span>
             </Button>
-            
-            <Button 
-              variant="ghost" 
-              size="sm" 
+
+            <Button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleShare();
+              }}
+              variant="ghost"
+              size="sm"
               className="gap-2 text-muted-foreground hover:text-foreground hover:bg-accent"
             >
               <Share className="w-4 h-4" />
               <span className="text-xs">Share</span>
             </Button>
-            
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className={`gap-2 hover:bg-accent ${
-                isSaved ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
-              }`}
+
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`gap-2 hover:bg-accent ${isSaved ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+                }`}
               onClick={handleSave}
             >
               <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
