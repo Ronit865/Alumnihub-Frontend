@@ -46,22 +46,22 @@ export function Communications() {
         filter: emailForm.filter,
         type: 'quick_message'
       });
-      
+
       if (response?.success) {
         toast.success(response.message || "Emails sent successfully!");
       } else {
         throw new Error(response?.message || "Failed to send emails");
       }
-      
+
       // Update messages sent count
-      setStats(prev => ({ 
-        ...prev, 
+      setStats(prev => ({
+        ...prev,
         messagesSent: prev.messagesSent + (response.data?.totalSent || 1)
       }));
-      
+
       // Refresh email history to show the email send activity
       fetchEmailHistory();
-      
+
       // Reset form
       setEmailForm({
         subject: "",
@@ -117,7 +117,7 @@ export function Communications() {
 
       // Create email content based on campaign type
       if (campaignType === 'event') {
-        const eventsList = recentEvents.map(event => 
+        const eventsList = recentEvents.map(event =>
           `<div style="margin-bottom: 20px; padding: 15px; background-color: #f9f9f9; border-left: 4px solid #667eea;">
             <h3 style="margin: 0 0 10px 0; color: #333;">${event.title}</h3>
             <p style="margin: 5px 0; color: #666;"><strong>Date:</strong> ${new Date(event.date).toLocaleDateString()}</p>
@@ -133,7 +133,7 @@ export function Communications() {
           <p style="margin-top: 30px; color: #666;">We look forward to seeing you there!</p>
         `;
       } else if (campaignType === 'job') {
-        const jobsList = recentJobs.map(job => 
+        const jobsList = recentJobs.map(job =>
           `<div style="margin-bottom: 20px; padding: 15px; background-color: #f9f9f9; border-left: 4px solid #667eea;">
             <h3 style="margin: 0 0 10px 0; color: #333;">${job.title}</h3>
             <p style="margin: 5px 0; color: #666;"><strong>Company:</strong> ${job.company}</p>
@@ -152,7 +152,7 @@ export function Communications() {
           <p style="margin-top: 30px; color: #666;">Best of luck with your applications!</p>
         `;
       } else if (campaignType === 'donation') {
-        const donationsList = recentDonations.map(donation => 
+        const donationsList = recentDonations.map(donation =>
           `<div style="margin-bottom: 20px; padding: 15px; background-color: #f9f9f9; border-left: 4px solid #667eea;">
             <h3 style="margin: 0 0 10px 0; color: #333;">${donation.name}</h3>
             <p style="margin: 5px 0; color: #666;"><strong>Goal:</strong> ₹${donation.goal?.toLocaleString()}</p>
@@ -198,9 +198,9 @@ export function Communications() {
 
     try {
       setSendingCampaign('event');
-      
+
       // Create email content with all recent events
-      const eventsList = recentEvents.map(event => 
+      const eventsList = recentEvents.map(event =>
         `<div style="margin-bottom: 20px; padding: 15px; background-color: #f9f9f9; border-left: 4px solid #667eea;">
           <h3 style="margin: 0 0 10px 0; color: #333;">${event.title}</h3>
           <p style="margin: 5px 0; color: #666;"><strong>Date:</strong> ${new Date(event.date).toLocaleDateString()}</p>
@@ -245,9 +245,9 @@ export function Communications() {
 
     try {
       setSendingCampaign('job');
-      
+
       // Create email content with all recent jobs
-      const jobsList = recentJobs.map(job => 
+      const jobsList = recentJobs.map(job =>
         `<div style="margin-bottom: 20px; padding: 15px; background-color: #f9f9f9; border-left: 4px solid #667eea;">
           <h3 style="margin: 0 0 10px 0; color: #333;">${job.title}</h3>
           <p style="margin: 5px 0; color: #666;"><strong>Company:</strong> ${job.company}</p>
@@ -295,7 +295,7 @@ export function Communications() {
         page: 1,
         limit: 20
       });
-      
+
       if (response?.success && response?.data) {
         setEmailHistory(response.data.emails || []);
       }
@@ -314,15 +314,15 @@ export function Communications() {
         setLoading(true);
         // Fetch all users to calculate stats - using adminService for admin
         const usersResponse = await adminService.getAllUsers();
-        
+
         if (usersResponse.success && usersResponse.data) {
           const users = usersResponse.data;
-          
+
           // Calculate stats from users - using 'role' field instead of 'userType'
           const alumniCount = users.filter((u: any) => u.role?.toLowerCase() === 'alumni').length;
           const studentCount = users.filter((u: any) => u.role?.toLowerCase() === 'student').length;
           const donorCount = users.filter((u: any) => u.role?.toLowerCase() === 'donor').length;
-          
+
           setStats({
             totalUsers: users.length,
             alumniCount,
@@ -345,23 +345,39 @@ export function Communications() {
           jobService.getAllJobs(),
           adminService.getAllDonations().catch(() => ({ success: false, data: [] }))
         ]);
-        
+
+        // Calculate start of current month
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
         if (eventsRes?.success && eventsRes?.data) {
-          // Get latest 5 events
-          const events = Array.isArray(eventsRes.data) ? eventsRes.data.slice(0, 5) : [];
-          setRecentEvents(events);
+          // Filter events for current month (and future)
+          const events = Array.isArray(eventsRes.data)
+            ? eventsRes.data.filter((e: any) => new Date(e.date) >= startOfMonth)
+            : [];
+          setRecentEvents(events.slice(0, 5));
         }
-        
+
         if (jobsRes?.success && jobsRes?.data) {
-          // Get latest 5 jobs
-          const jobs = Array.isArray(jobsRes.data) ? jobsRes.data.slice(0, 5) : [];
-          setRecentJobs(jobs);
+          // Filter verified jobs and sort by date (newest first)
+          const jobs = Array.isArray(jobsRes.data)
+            ? jobsRes.data
+              .filter((j: any) => j.isVerified)
+              .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+            : [];
+          setRecentJobs(jobs.slice(0, 5));
         }
 
         if (donationsRes?.success && donationsRes?.data) {
-          // Get latest 5 donations
-          const donations = Array.isArray(donationsRes.data) ? donationsRes.data.slice(0, 5) : [];
-          setRecentDonations(donations);
+          // Filter pending campaigns (incomplete)
+          const donations = Array.isArray(donationsRes.data)
+            ? donationsRes.data.filter((d: any) => {
+              const raised = d.raised || d.raisedAmount || 0;
+              const goal = d.goal || 1;
+              return raised < goal;
+            })
+            : [];
+          setRecentDonations(donations.slice(0, 5));
         }
       } catch (error) {
         console.error('Failed to fetch campaign data:', error);
@@ -434,7 +450,7 @@ export function Communications() {
             <Mail className="stats-card-icon" />
           </div>
         </div>
-        
+
         <div className="stats-card-blue">
           <div className="flex items-center justify-between">
             <div>
@@ -448,7 +464,7 @@ export function Communications() {
             <Send className="stats-card-icon" />
           </div>
         </div>
-        
+
         <div className="stats-card-teal">
           <div className="flex items-center justify-between">
             <div>
@@ -462,7 +478,7 @@ export function Communications() {
             <Eye className="stats-card-icon" />
           </div>
         </div>
-        
+
         <div className="stats-card-orange">
           <div className="flex items-center justify-between">
             <div>
@@ -490,116 +506,131 @@ export function Communications() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Events Campaign */}
-            <div className="p-4 rounded-lg border border-blue-500/20 bg-blue-500/5">
-              <div className="flex items-center gap-2 mb-3">
-                <Calendar className="h-5 w-5 text-blue-500" />
-                <h3 className="font-semibold text-foreground">Events</h3>
-              </div>
-              {recentEvents.length > 0 ? (
-                <div className="space-y-3">
-                  <div className="text-sm text-muted-foreground">
-                    <p className="mb-2">{recentEvents.length} upcoming event(s):</p>
-                    <ul className="space-y-1 text-xs">
-                      {recentEvents.slice(0, 2).map((event, idx) => (
-                        <li key={idx} className="truncate">• {event.title}</li>
-                      ))}
-                      {recentEvents.length > 2 && (
-                        <li className="text-muted-foreground/70">+{recentEvents.length - 2} more</li>
-                      )}
-                    </ul>
-                  </div>
-                  <Button 
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                    size="sm"
-                    onClick={() => handleSendCampaignEmail('event')}
-                    disabled={sendingCampaign !== null}
-                  >
-                    <Send className="h-3 w-3 mr-2" />
-                    {sendingCampaign === 'event' ? "Sending..." : "Send Campaign"}
-                  </Button>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Event Campaign */}
+            <div className="rounded-2xl p-5 bg-blue-500/15 border border-blue-500/30 hover:border-blue-500/50 transition-all duration-300 flex flex-col h-full">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-10 w-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                  <Calendar className="h-5 w-5 text-blue-600" />
                 </div>
-              ) : (
-                <p className="text-xs text-muted-foreground mb-3">No upcoming events</p>
-              )}
+                <h3 className="font-semibold text-lg text-blue-950 dark:text-blue-50">Events</h3>
+              </div>
+
+              <div className="flex-1 min-h-[80px]">
+                {recentEvents.length > 0 ? (
+                  <div className="space-y-3">
+                    <div className="text-sm text-muted-foreground">
+                      <p className="mb-2 font-medium text-blue-900/70 dark:text-blue-100/70">{recentEvents.length} upcoming event(s):</p>
+                      <ul className="space-y-1 text-xs">
+                        {recentEvents.slice(0, 2).map((event, idx) => (
+                          <li key={idx} className="truncate">• {event.title}</li>
+                        ))}
+                        {recentEvents.length > 2 && <li className="text-muted-foreground/70">+ {recentEvents.length - 2} more</li>}
+                      </ul>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground mb-3">No upcoming events</p>
+                )}
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-blue-500/20">
+                <Button
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+                  onClick={() => handleSendCampaignEmail('event')}
+                  disabled={recentEvents.length === 0 || sendingCampaign !== null}
+                >
+                  {sendingCampaign === 'event' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
+                  {sendingCampaign === 'event' ? "Sending..." : "Send Campaign"}
+                </Button>
+              </div>
             </div>
 
-            {/* Jobs Campaign */}
-            <div className="p-4 rounded-lg border border-green-500/20 bg-green-500/5">
-              <div className="flex items-center gap-2 mb-3">
-                <Briefcase className="h-5 w-5 text-green-500" />
-                <h3 className="font-semibold text-foreground">Jobs</h3>
-              </div>
-              {recentJobs.length > 0 ? (
-                <div className="space-y-3">
-                  <div className="text-sm text-muted-foreground">
-                    <p className="mb-2">{recentJobs.length} job opening(s):</p>
-                    <ul className="space-y-1 text-xs">
-                      {recentJobs.slice(0, 2).map((job, idx) => (
-                        <li key={idx} className="truncate">• {job.title}</li>
-                      ))}
-                      {recentJobs.length > 2 && (
-                        <li className="text-muted-foreground/70">+{recentJobs.length - 2} more</li>
-                      )}
-                    </ul>
-                  </div>
-                  <Button 
-                    className="w-full bg-green-600 hover:bg-green-700 text-white"
-                    size="sm"
-                    onClick={() => handleSendCampaignEmail('job')}
-                    disabled={sendingCampaign !== null}
-                  >
-                    <Send className="h-3 w-3 mr-2" />
-                    {sendingCampaign === 'job' ? "Sending..." : "Send Campaign"}
-                  </Button>
+            {/* Job Campaign */}
+            <div className="rounded-2xl p-5 bg-green-500/15 border border-green-500/30 hover:border-green-500/50 transition-all duration-300 flex flex-col h-full">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-10 w-10 rounded-lg bg-green-500/20 flex items-center justify-center">
+                  <Briefcase className="h-5 w-5 text-green-600" />
                 </div>
-              ) : (
-                <p className="text-xs text-muted-foreground mb-3">No job openings</p>
-              )}
+                <h3 className="font-semibold text-lg text-green-950 dark:text-green-50">Jobs</h3>
+              </div>
+
+              <div className="flex-1 min-h-[80px]">
+                {recentJobs.length > 0 ? (
+                  <div className="space-y-3">
+                    <div className="text-sm text-muted-foreground">
+                      <p className="mb-2 font-medium text-green-900/70 dark:text-green-100/70">{recentJobs.length} new job(s):</p>
+                      <ul className="space-y-1 text-xs">
+                        {recentJobs.slice(0, 2).map((job, idx) => (
+                          <li key={idx} className="truncate">• {job.title}</li>
+                        ))}
+                        {recentJobs.length > 2 && <li className="text-muted-foreground/70">+ {recentJobs.length - 2} more</li>}
+                      </ul>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground mb-3">No new job openings</p>
+                )}
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-green-500/20">
+                <Button
+                  className="w-full bg-green-600 hover:bg-green-700 text-white shadow-sm"
+                  onClick={() => handleSendCampaignEmail('job')}
+                  disabled={recentJobs.length === 0 || sendingCampaign !== null}
+                >
+                  {sendingCampaign === 'job' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
+                  {sendingCampaign === 'job' ? "Sending..." : "Send Campaign"}
+                </Button>
+              </div>
             </div>
 
-            {/* Donations Campaign */}
-            <div className="p-4 rounded-lg border border-purple-500/20 bg-purple-500/5">
-              <div className="flex items-center gap-2 mb-3">
-                <Heart className="h-5 w-5 text-purple-500" />
-                <h3 className="font-semibold text-foreground">Donations</h3>
-              </div>
-              {recentDonations.length > 0 ? (
-                <div className="space-y-3">
-                  <div className="text-sm text-muted-foreground">
-                    <p className="mb-2">{recentDonations.length} campaign(s):</p>
-                    <ul className="space-y-1 text-xs">
-                      {recentDonations.slice(0, 2).map((donation, idx) => (
-                        <li key={idx} className="truncate">• {donation.name || donation.description}</li>
-                      ))}
-                      {recentDonations.length > 2 && (
-                        <li className="text-muted-foreground/70">+{recentDonations.length - 2} more</li>
-                      )}
-                    </ul>
-                  </div>
-                  <Button 
-                    className="w-full bg-purple-600 hover:bg-purple-700 text-white"
-                    size="sm"
-                    onClick={() => handleSendCampaignEmail('donation')}
-                    disabled={sendingCampaign !== null}
-                  >
-                    <Send className="h-3 w-3 mr-2" />
-                    {sendingCampaign === 'donation' ? "Sending..." : "Send Campaign"}
-                  </Button>
+            {/* Donation Campaign */}
+            <div className="rounded-2xl p-5 bg-purple-500/15 border border-purple-500/30 hover:border-purple-500/50 transition-all duration-300 flex flex-col h-full">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-10 w-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                  <Heart className="h-5 w-5 text-purple-600" />
                 </div>
-              ) : (
-                <p className="text-xs text-muted-foreground mb-3">No active campaigns</p>
-              )}
+                <h3 className="font-semibold text-lg text-purple-950 dark:text-purple-50">Donations</h3>
+              </div>
+
+              <div className="flex-1 min-h-[80px]">
+                {recentDonations.length > 0 ? (
+                  <div className="space-y-3">
+                    <div className="text-sm text-muted-foreground">
+                      <p className="mb-2 font-medium text-purple-900/70 dark:text-purple-100/70">{recentDonations.length} pending campaign(s):</p>
+                      <ul className="space-y-1 text-xs">
+                        {recentDonations.slice(0, 2).map((donation, idx) => (
+                          <li key={idx} className="truncate">• {donation.name || donation.description}</li>
+                        ))}
+                        {recentDonations.length > 2 && <li className="text-muted-foreground/70">+ {recentDonations.length - 2} more</li>}
+                      </ul>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground mb-3">No pending campaigns</p>
+                )}
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-purple-500/20">
+                <Button
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white shadow-sm"
+                  onClick={() => handleSendCampaignEmail('donation')}
+                  disabled={recentDonations.length === 0 || sendingCampaign !== null}
+                >
+                  {sendingCampaign === 'donation' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
+                  {sendingCampaign === 'donation' ? "Sending..." : "Send Campaign"}
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>
-      </Card>
+      </Card >
 
       {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+      < div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6" >
         {/* Quick Compose */}
-        <Card className="bento-card gradient-surface border-card-border/50 lg:col-span-2">
+        < Card className="bento-card gradient-surface border-card-border/50 lg:col-span-2" >
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Send className="h-5 w-5 text-primary" />
@@ -612,8 +643,8 @@ export function Communications() {
           <CardContent className="space-y-4">
             <div>
               <label className="text-sm font-medium text-foreground">Subject</label>
-              <Input 
-                placeholder="Enter email subject..." 
+              <Input
+                placeholder="Enter email subject..."
                 className="mt-1"
                 value={emailForm.subject}
                 onChange={(e) => setEmailForm(prev => ({ ...prev, subject: e.target.value }))}
@@ -621,8 +652,8 @@ export function Communications() {
             </div>
             <div>
               <label className="text-sm font-medium text-foreground">Message</label>
-              <Textarea 
-                placeholder="Write your message..." 
+              <Textarea
+                placeholder="Write your message..."
                 className="mt-1 min-h-[100px]"
                 value={emailForm.body}
                 onChange={(e) => setEmailForm(prev => ({ ...prev, body: e.target.value }))}
@@ -631,8 +662,8 @@ export function Communications() {
             <div>
               <label className="text-sm font-medium text-foreground">Recipients</label>
               <div className="flex flex-wrap gap-2 mt-2">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="sm"
                   onClick={() => handleRecipientSelect("alumni")}
                   className={`text-xs sm:text-sm ${emailForm.filter === "alumni" ? "bg-primary/10 border-primary" : ""}`}
@@ -640,8 +671,8 @@ export function Communications() {
                   <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                   Alumni
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="sm"
                   onClick={() => handleRecipientSelect("student")}
                   className={`text-xs sm:text-sm ${emailForm.filter === "student" ? "bg-primary/10 border-primary" : ""}`}
@@ -656,7 +687,7 @@ export function Communications() {
                 </p>
               )}
             </div>
-            <Button 
+            <Button
               className="w-full bg-primary hover:bg-primary/90"
               onClick={handleSendEmail}
               disabled={isSending}
@@ -665,10 +696,10 @@ export function Communications() {
               {isSending ? "Sending..." : "Send Message"}
             </Button>
           </CardContent>
-        </Card>
+        </Card >
 
         {/* Email History */}
-        <Card className="bento-card gradient-surface border-card-border/50">
+        < Card className="bento-card gradient-surface border-card-border/50" >
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Mail className="h-5 w-5 text-primary" />
@@ -696,18 +727,18 @@ export function Communications() {
                     const date = new Date(timestamp);
                     const now = new Date();
                     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-                    
+
                     if (diffInSeconds < 60) return 'just now';
                     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
                     if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
                     if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
-                    
+
                     return date.toLocaleDateString();
                   };
 
                   // Get email type badge color
                   const getTypeBadgeClass = (type: string) => {
-                    switch(type) {
+                    switch (type) {
                       case 'event': return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
                       case 'job': return 'bg-green-500/10 text-green-500 border-green-500/20';
                       case 'donation': return 'bg-purple-500/10 text-purple-500 border-purple-500/20';
@@ -717,8 +748,8 @@ export function Communications() {
                   };
 
                   return (
-                    <div 
-                      key={email._id || email.id} 
+                    <div
+                      key={email._id || email.id}
                       className="p-4 rounded-lg border border-card-border/50 transition-smooth animate-fade-in bg-gradient-to-br from-card/50 to-transparent"
                       style={{ animationDelay: `${index * 100}ms` }}
                     >
@@ -737,7 +768,7 @@ export function Communications() {
                             <span>{formatTimestamp(email.createdAt)}</span>
                           </div>
                         </div>
-                        <Badge 
+                        <Badge
                           variant="outline"
                           className={`text-xs whitespace-nowrap ${getTypeBadgeClass(email.type)}`}
                         >
@@ -750,8 +781,8 @@ export function Communications() {
               </div>
             )}
           </CardContent>
-        </Card>
-      </div>
-    </div>
+        </Card >
+      </div >
+    </div >
   );
 }

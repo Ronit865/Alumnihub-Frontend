@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import { jobService } from "@/services/ApiServices";
 import PostJobDialog from "@/components/PostJobDialog";
 import { cache, CACHE_KEYS, CACHE_TTL } from "@/lib/cache";
@@ -57,9 +58,7 @@ interface Job {
 }
 
 export default function Jobs() {
-  const [allJobs, setAllJobs] = useState<Job[]>([]);
-  const [postedJobs, setPostedJobs] = useState<Job[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [postDialogOpen, setPostDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
@@ -69,10 +68,11 @@ export default function Jobs() {
   const [applicantsDialogOpen, setApplicantsDialogOpen] = useState(false);
   const [applicants, setApplicants] = useState<any[]>([]);
   const [loadingApplicants, setLoadingApplicants] = useState(false);
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState("new");
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [jobDetailsOpen, setJobDetailsOpen] = useState(false);
   const [jobDetailsData, setJobDetailsData] = useState<Job | null>(null);
+  const { toast } = useToast();
 
   // Get current user ID from localStorage
   useEffect(() => {
@@ -80,111 +80,151 @@ export default function Jobs() {
     setCurrentUserId(userId);
   }, []);
 
-  const fetchAllJobs = async () => {
-    try {
-      // Check cache first
-      const cachedJobs = cache.get<Job[]>(CACHE_KEYS.USER_JOBS);
-      if (cachedJobs) {
-        const verifiedJobs = cachedJobs.filter((job: Job) => job.isVerified === true);
-        setAllJobs(verifiedJobs);
-        return;
-      }
-
+  // Fetch All Jobs
+  const { data: allJobs = [], isLoading: loadingJobs } = useQuery({
+    queryKey: [CACHE_KEYS.USER_JOBS],
+    queryFn: async () => {
       const response = await jobService.getAllJobs();
-
       if (response.success) {
-        const jobsData = Array.isArray(response.data) ? response.data : [];
-        cache.set(CACHE_KEYS.USER_JOBS, jobsData, CACHE_TTL.MEDIUM);
-        const verifiedJobs = jobsData.filter((job: Job) => job.isVerified === true);
-        setAllJobs(verifiedJobs);
-        setAllJobs(verifiedJobs);
-      } else {
-        toast.error(response.message || "Failed to fetch jobs");
-        setAllJobs([]);
+        return (Array.isArray(response.data) ? response.data : []).filter((job: Job) => job.isVerified);
       }
-    } catch (error: any) {
-      console.error('Error fetching jobs:', error);
-      toast.error(error.message || "Failed to load jobs");
-      setAllJobs([]);
-    }
-  };
+      throw new Error(response.message || "Failed to fetch jobs");
+    },
+    staleTime: CACHE_TTL.MEDIUM,
+  });
 
-  const fetchPostedJobs = async () => {
-    try {
+  // Fetch Posted Jobs
+  const { data: postedJobs = [], isLoading: loadingPosted, refetch: refetchPostedJobs } = useQuery({
+    queryKey: ['myPostedJobs'],
+    queryFn: async () => {
       const response = await jobService.getMyPostedJobs();
-
       if (response.success) {
-        // Ensure data is an array
-        const jobsData = Array.isArray(response.data) ? response.data : [];
-        setPostedJobs(jobsData);
-      } else {
-        toast.error(response.message || "Failed to fetch posted jobs");
-        setPostedJobs([]);
+        return Array.isArray(response.data) ? response.data : [];
       }
-    } catch (error: any) {
-      toast.error(error.message || "Failed to load posted jobs");
-      setPostedJobs([]);
-    }
-  };
+      throw new Error(response.message || "Failed to fetch posted jobs");
+    },
+    enabled: !!currentUserId,
+    staleTime: CACHE_TTL.MEDIUM,
+  });
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      await Promise.all([fetchAllJobs(), fetchPostedJobs()]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const loading = loadingJobs || loadingPosted;
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  // Optimistic Apply Mutation
+  const applyMutation = useMutation({
+    mutationFn: (jobId: string) => jobService.applyForJob(jobId),
+    onMutate: async (jobId) => {
+      await queryClient.cancelQueries({ queryKey: [CACHE_KEYS.USER_JOBS] });
+      const previousJobs = queryClient.getQueryData<Job[]>([CACHE_KEYS.USER_JOBS]);
 
-  const handleApply = async (jobId: string) => {
+      if (previousJobs && currentUserId) {
+        queryClient.setQueryData<Job[]>([CACHE_KEYS.USER_JOBS], (old) =>
+          old?.map(job =>
+            job._id === jobId
+              ? { ...job, applicants: [...(job.applicants || []), { _id: currentUserId }] }
+              : job
+          )
+        );
+      }
+      return { previousJobs };
+    },
+    onSuccess: (response) => {
+      if (response.success) {
+        toast({
+          title: "Success",
+          description: "Application submitted successfully!",
+          variant: "success",
+        });
+      } else {
+        throw new Error(response.message);
+      }
+    },
+    onError: (error: any, variables, context) => {
+      if (context?.previousJobs) {
+        queryClient.setQueryData([CACHE_KEYS.USER_JOBS], context.previousJobs);
+      }
+      toast({
+        title: "Error",
+        description: error.message || "Failed to apply for job",
+        variant: "destructive",
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: [CACHE_KEYS.USER_JOBS] });
+    },
+  });
+
+  // Optimistic Unapply Mutation
+  const unapplyMutation = useMutation({
+    mutationFn: (jobId: string) => jobService.unapplyForJob(jobId),
+    onMutate: async (jobId) => {
+      await queryClient.cancelQueries({ queryKey: [CACHE_KEYS.USER_JOBS] });
+      const previousJobs = queryClient.getQueryData<Job[]>([CACHE_KEYS.USER_JOBS]);
+
+      if (previousJobs && currentUserId) {
+        queryClient.setQueryData<Job[]>([CACHE_KEYS.USER_JOBS], (old) =>
+          old?.map(job =>
+            job._id === jobId
+              ? {
+                ...job,
+                applicants: (job.applicants || []).filter((a: any) => {
+                  const id = typeof a === 'string' ? a : a._id || a.id;
+                  return id !== currentUserId;
+                })
+              }
+              : job
+          )
+        );
+      }
+      return { previousJobs };
+    },
+    onSuccess: (response) => {
+      if (response.success) {
+        toast({
+          title: "Success",
+          description: "Application withdrawn successfully!",
+          variant: "success",
+        });
+      } else {
+        throw new Error(response.message);
+      }
+    },
+    onError: (error: any, variables, context) => {
+      if (context?.previousJobs) {
+        queryClient.setQueryData([CACHE_KEYS.USER_JOBS], context.previousJobs);
+      }
+      toast({
+        title: "Error",
+        description: error.message || "Failed to withdraw application",
+        variant: "destructive",
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: [CACHE_KEYS.USER_JOBS] });
+    },
+  });
+
+  const handleApply = (jobId: string) => {
     if (!currentUserId) {
-      toast.error("Please log in to apply for jobs");
+      toast({
+        title: "Error",
+        description: "Please log in to apply for jobs",
+        variant: "destructive",
+      });
       return;
     }
-
-    try {
-      const response = await jobService.applyForJob(jobId);
-
-      if (response.success) {
-        toast.success("Application submitted successfully!");
-        // Refresh jobs to get updated applicants list
-        await fetchAllJobs();
-      } else {
-        toast.error(response.message || "Failed to apply for job");
-      }
-    } catch (error: any) {
-      console.error('Apply Error:', error);
-      // Handle structured error from backend
-      const errorMessage = error.message || "Failed to apply for job. Please try again.";
-      toast.error(errorMessage);
-    }
+    applyMutation.mutate(jobId);
   };
 
-  const handleUnapply = async (jobId: string) => {
+  const handleUnapply = (jobId: string) => {
     if (!currentUserId) {
-      toast.error("Please log in to unapply");
+      toast({
+        title: "Error",
+        description: "Please log in to unapply",
+        variant: "destructive",
+      });
       return;
     }
-
-    try {
-      const response = await jobService.unapplyForJob(jobId);
-
-      if (response.success) {
-        toast.success("Application withdrawn successfully!");
-        // Refresh jobs to get updated applicants list
-        await fetchAllJobs();
-      } else {
-        toast.error(response.message || "Failed to withdraw application");
-      }
-    } catch (error: any) {
-      console.error('Unapply Error:', error);
-      const errorMessage = error.message || "Failed to withdraw application. Please try again.";
-      toast.error(errorMessage);
-    }
+    unapplyMutation.mutate(jobId);
   };
 
   const handleEdit = (job: Job) => {
@@ -205,13 +245,25 @@ export default function Jobs() {
       const response = await jobService.deleteJob(jobToDelete);
 
       if (response.success) {
-        toast.success("Job deleted successfully");
-        fetchPostedJobs();
+        toast({
+          title: "Success",
+          description: "Job deleted successfully",
+          variant: "success",
+        });
+        refetchPostedJobs();
       } else {
-        toast.error(response.message || "Failed to delete job");
+        toast({
+          title: "Error",
+          description: response.message || "Failed to delete job",
+          variant: "destructive",
+        });
       }
     } catch (error: any) {
-      toast.error(error.message || "Failed to delete job");
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete job",
+        variant: "destructive",
+      });
     } finally {
       setDeleting(false);
       setDeleteDialogOpen(false);
@@ -231,11 +283,19 @@ export default function Jobs() {
         const applicantsData = Array.isArray(response.data) ? response.data : [];
         setApplicants(applicantsData);
       } else {
-        toast.error(response.message || "Failed to fetch applicants");
+        toast({
+          title: "Error",
+          description: response.message || "Failed to fetch applicants",
+          variant: "destructive",
+        });
         setApplicants([]);
       }
     } catch (error: any) {
-      toast.error(error.message || "Failed to load applicants");
+      toast({
+        title: "Error",
+        description: error.message || "Failed to load applicants",
+        variant: "destructive",
+      });
       setApplicants([]);
     } finally {
       setLoadingApplicants(false);
@@ -270,8 +330,8 @@ export default function Jobs() {
   const JobCardsSkeleton = () => (
     <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
       {[0, 1, 2, 3, 4, 5].map((i) => (
-        <div 
-          key={i} 
+        <div
+          key={i}
           className="rounded-2xl bg-card border border-border/50 p-4 sm:p-5 space-y-3 sm:space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300"
           style={{ animationDelay: `${i * 40}ms` }}
         >
@@ -300,6 +360,124 @@ export default function Jobs() {
     </div>
   );
 
+  // Filter jobs based on application status
+  const appliedJobs = allJobs.filter(job => hasApplied(job));
+  const newJobs = allJobs.filter(job => !hasApplied(job));
+
+  // Helper function to render job cards
+  const renderJobCards = (jobs: Job[], emptyMessage: string, emptySubMessage: string) => {
+    if (jobs.length === 0) {
+      return (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-10 sm:py-12">
+            <Briefcase className="w-10 h-10 sm:w-12 sm:h-12 text-muted-foreground mb-4" />
+            <h3 className="text-base sm:text-lg font-semibold mb-2">{emptyMessage}</h3>
+            <p className="text-sm text-muted-foreground text-center">
+              {emptySubMessage}
+            </p>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    return (
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        {jobs.map((job) => (
+          <Card key={job._id} className="overflow-hidden border-border/30 bg-card flex flex-col h-full group hover:shadow-lg transition-all duration-300">
+            <CardHeader className="pb-2 pt-5 px-5">
+              <div className="flex justify-between items-start gap-3">
+                <CardTitle className="text-lg font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2 flex-1">
+                  {job.title}
+                </CardTitle>
+                {job.isVerified && (
+                  <Badge className="bg-green-500/15 text-green-600 border-green-200/50 text-xs shrink-0">✓ Verified</Badge>
+                )}
+              </div>
+            </CardHeader>
+
+            <CardContent className="flex-1 flex flex-col px-5 pb-5">
+              {/* Company */}
+              <p className="text-sm font-medium text-muted-foreground mb-4">
+                {job.company || 'Company Not Specified'}
+              </p>
+
+              {/* Category */}
+              {job.category && (
+                <Badge variant="secondary" className="text-xs font-medium w-fit mb-4">
+                  {job.category}
+                </Badge>
+              )}
+
+              {/* Job Details - Stacked */}
+              <div className="space-y-3 text-sm flex-1 mb-4">
+                {job.location && (
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-primary flex-shrink-0" />
+                    <span className="text-foreground font-medium">{job.location}</span>
+                  </div>
+                )}
+                {job.salary && (
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="h-4 w-4 text-primary flex-shrink-0" />
+                    <span className="text-foreground font-medium">₹{job.salary.toLocaleString()}/yr</span>
+                  </div>
+                )}
+                {job.jobType && (
+                  <div className="flex items-center gap-2">
+                    <Briefcase className="h-4 w-4 text-primary flex-shrink-0" />
+                    <span className="text-foreground font-medium">{job.jobType}</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-primary flex-shrink-0" />
+                  <span className="text-foreground font-medium">{new Date(job.createdAt).toLocaleDateString()}</span>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="mt-auto pt-4 flex gap-2">
+                <Button
+                  onClick={() => handleViewDetails(job)}
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                >
+                  <Eye className="h-4 w-4 mr-2" />
+                  Details
+                </Button>
+                {hasApplied(job) ? (
+                  <Button
+                    onClick={() => handleUnapply(job._id)}
+                    size="sm"
+                    className="flex-1 bg-emerald-100 text-emerald-700 hover:bg-rose-100 hover:text-rose-700 border-0 group transition-colors duration-200"
+                  >
+                    <span className="flex items-center group-hover:hidden">
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Applied
+                    </span>
+                    <span className="hidden items-center group-hover:flex">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Withdraw
+                    </span>
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={() => handleApply(job._id)}
+                    size="sm"
+                    className="flex-1"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Apply
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-4 sm:space-y-6 animate-fade-in">
       {/* Header - Always visible */}
@@ -316,114 +494,27 @@ export default function Jobs() {
         </Button>
       </div>
 
-      {/* Tabs - Always visible */}
+      {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="all" className="text-xs sm:text-sm">All Jobs {!loading && `(${allJobs.length})`}</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="new" className="text-xs sm:text-sm">New Jobs {!loading && `(${newJobs.length})`}</TabsTrigger>
+          <TabsTrigger value="applied" className="text-xs sm:text-sm">Applied Jobs {!loading && `(${appliedJobs.length})`}</TabsTrigger>
           <TabsTrigger value="posted" className="text-xs sm:text-sm">My Posted {!loading && `(${postedJobs.length})`}</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="all" className="mt-4 sm:mt-6">
+        <TabsContent value="new" className="mt-4 sm:mt-6">
           {loading ? (
             <JobCardsSkeleton />
-          ) : allJobs.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-10 sm:py-12">
-                <Briefcase className="w-10 h-10 sm:w-12 sm:h-12 text-muted-foreground mb-4" />
-                <h3 className="text-base sm:text-lg font-semibold mb-2">No Jobs Available</h3>
-                <p className="text-sm text-muted-foreground text-center">
-                  There are no job postings at the moment. Check back later!
-                </p>
-              </CardContent>
-            </Card>
           ) : (
-            <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-              {allJobs.map((job) => (
-                <Card key={job._id} className="overflow-hidden border-border/30 bg-card flex flex-col h-full group hover:shadow-lg transition-all duration-300">
-                  <CardHeader className="pb-2 pt-5 px-5">
-                    <div className="flex justify-between items-start gap-3">
-                      <CardTitle className="text-lg font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2 flex-1">
-                        {job.title}
-                      </CardTitle>
-                      {job.isVerified && (
-                        <Badge className="bg-green-500/15 text-green-600 border-green-200/50 text-xs shrink-0">✓ Verified</Badge>
-                      )}
-                    </div>
-                  </CardHeader>
+            renderJobCards(newJobs, "No New Jobs Available", "There are no new job postings at the moment. Check back later!")
+          )}
+        </TabsContent>
 
-                  <CardContent className="flex-1 flex flex-col px-5 pb-5">
-                    {/* Company */}
-                    <p className="text-sm font-medium text-muted-foreground mb-4">
-                      {job.company || 'Company Not Specified'}
-                    </p>
-
-                    {/* Category */}
-                    {job.category && (
-                      <Badge variant="secondary" className="text-xs font-medium w-fit mb-4">
-                        {job.category}
-                      </Badge>
-                    )}
-
-                    {/* Job Details - Stacked */}
-                    <div className="space-y-3 text-sm flex-1 mb-4">
-                      {job.location && (
-                        <div className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4 text-primary flex-shrink-0" />
-                          <span className="text-foreground font-medium">{job.location}</span>
-                        </div>
-                      )}
-                      {job.salary && (
-                        <div className="flex items-center gap-2">
-                          <DollarSign className="h-4 w-4 text-primary flex-shrink-0" />
-                          <span className="text-foreground font-medium">₹{job.salary.toLocaleString()}/yr</span>
-                        </div>
-                      )}
-                      {job.jobType && (
-                        <div className="flex items-center gap-2">
-                          <Briefcase className="h-4 w-4 text-primary flex-shrink-0" />
-                          <span className="text-foreground font-medium">{job.jobType}</span>
-                        </div>
-                      )}
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-primary flex-shrink-0" />
-                        <span className="text-foreground font-medium">{new Date(job.createdAt).toLocaleDateString()}</span>
-                      </div>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="mt-auto pt-4 flex gap-2">
-                      <Button
-                        onClick={() => handleViewDetails(job)}
-                        variant="outline"
-                        size="sm"
-                        className="flex-1"
-                      >
-                        <Eye className="h-4 w-4 mr-2" />
-                        Details
-                      </Button>
-                      <Button
-                        onClick={() => hasApplied(job) ? handleUnapply(job._id) : handleApply(job._id)}
-                        size="sm"
-                        className="flex-1"
-                        variant={hasApplied(job) ? "default" : "default"}
-                      >
-                        {hasApplied(job) ? (
-                          <>
-                            <CheckCircle className="h-4 w-4 mr-2" />
-                            Applied
-                          </>
-                        ) : (
-                          <>
-                            <Plus className="h-4 w-4 mr-2" />
-                            Apply
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+        <TabsContent value="applied" className="mt-4 sm:mt-6">
+          {loading ? (
+            <JobCardsSkeleton />
+          ) : (
+            renderJobCards(appliedJobs, "No Applied Jobs", "You haven't applied to any jobs yet. Browse the New Jobs tab to find opportunities!")
           )}
         </TabsContent>
 
@@ -538,14 +629,14 @@ export default function Jobs() {
       <PostJobDialog
         open={postDialogOpen}
         onOpenChange={setPostDialogOpen}
-        onSuccess={fetchPostedJobs}
+        onSuccess={refetchPostedJobs}
       />
 
       {/* Edit Job Dialog */}
       <PostJobDialog
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
-        onSuccess={fetchPostedJobs}
+        onSuccess={refetchPostedJobs}
         jobData={selectedJob ? {
           id: selectedJob._id,
           title: selectedJob.title,

@@ -45,7 +45,7 @@ export default function Donations() {
 
       setLoading(true);
       const response = await donationService.getCampaigns();
-      
+
       if (response.success) {
         setCampaigns(response.data);
         cache.set(CACHE_KEYS.USER_DONATIONS, response.data, CACHE_TTL.MEDIUM);
@@ -84,7 +84,7 @@ export default function Donations() {
     try {
       setContributing(true);
       const response = await donationService.contributeToCampaign(selectedCampaign._id, amount);
-      
+
       if (response.success) {
         toast.success(`Successfully contributed ₹${amount}!`);
         setContributeDialogOpen(false);
@@ -121,7 +121,7 @@ export default function Donations() {
   const CampaignCard = ({ campaign, isCompleted = false }: { campaign: DonationCampaign; isCompleted?: boolean }) => {
     const progress = ((campaign.raisedAmount ?? 0) / (campaign.goal ?? 1)) * 100;
     const remaining = (campaign.goal ?? 0) - (campaign.raisedAmount ?? 0);
-    
+
     return (
       <Card className="bento-card hover:shadow-md border-card-border/50 hover-lift flex flex-col h-full">
         <CardHeader className="pb-3">
@@ -130,7 +130,7 @@ export default function Donations() {
             <span className="line-clamp-2">{campaign.name}</span>
           </CardTitle>
         </CardHeader>
-        
+
         <CardContent className="flex-1 flex flex-col space-y-4">
           {/* Progress Section */}
           <div>
@@ -164,8 +164,8 @@ export default function Donations() {
 
           {/* Button */}
           <div className="pt-2 mt-auto">
-            <Button 
-              className="w-full" 
+            <Button
+              className="w-full"
               onClick={() => handleContribute(campaign)}
               disabled={isCompleted}
               variant={isCompleted ? "outline" : "default"}
@@ -178,16 +178,16 @@ export default function Donations() {
     );
   };
 
-  const PaginationControls = ({ 
-    currentPage, 
-    totalPages, 
-    onPrevious, 
-    onNext 
-  }: { 
-    currentPage: number; 
-    totalPages: number; 
-    onPrevious: () => void; 
-    onNext: () => void; 
+  const PaginationControls = ({
+    currentPage,
+    totalPages,
+    onPrevious,
+    onNext
+  }: {
+    currentPage: number;
+    totalPages: number;
+    onPrevious: () => void;
+    onNext: () => void;
   }) => (
     <div className="flex items-center justify-center gap-4 mt-6">
       <Button
@@ -220,8 +220,8 @@ export default function Donations() {
   const CampaignCardsSkeleton = () => (
     <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
       {[0, 1, 2, 3, 4, 5].map((i) => (
-        <div 
-          key={i} 
+        <div
+          key={i}
           className="rounded-2xl bg-card border border-border/50 p-4 sm:p-5 space-y-3 sm:space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300"
           style={{ animationDelay: `${i * 40}ms` }}
         >
@@ -351,15 +351,31 @@ export default function Donations() {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="amount">Contribution Amount (₹)</Label>
-              <Input
-                id="amount"
-                type="number"
-                placeholder="Enter amount"
-                value={contributionAmount}
-                onChange={(e) => setContributionAmount(e.target.value)}
-                min="1"
-                step="0.01"
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="amount"
+                  type="number"
+                  placeholder="Enter amount"
+                  value={contributionAmount}
+                  onChange={(e) => setContributionAmount(e.target.value)}
+                  min="1"
+                  step="0.01"
+                  className="flex-1"
+                />
+                {selectedCampaign && (selectedCampaign.goal ?? 0) > (selectedCampaign.raisedAmount ?? 0) && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      const remaining = (selectedCampaign.goal ?? 0) - (selectedCampaign.raisedAmount ?? 0);
+                      setContributionAmount(remaining.toString());
+                    }}
+                    className="shrink-0"
+                  >
+                    Max
+                  </Button>
+                )}
+              </div>
             </div>
 
             {selectedCampaign && (

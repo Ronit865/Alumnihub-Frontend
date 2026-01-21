@@ -1,5 +1,4 @@
 import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -33,6 +32,7 @@ import { Events as AdminEvents } from "./pages/admin/Events";
 import { Jobs as AdminJobs } from "./pages/admin/Jobs";
 import { Donations as AdminDonations } from "./pages/admin/Donations";
 import { Communications as AdminCommunications } from "./pages/admin/Communications";
+import { Reports as AdminReports } from "./pages/admin/Reports";
 // import { Analytics as AdminAnalytics } from "./pages/admin/Analytics";
 import { Settings as AdminSettings } from "./pages/admin/Settings";
 import { AuthLayout } from "./components/layout/AuthLayout";
@@ -45,7 +45,6 @@ const App = () => (
     <AuthProvider>
       <TooltipProvider>
         <Toaster />
-        <Sonner />
         <PWAInstallPrompt />
         <BrowserRouter>
           <Routes>
@@ -56,7 +55,7 @@ const App = () => (
               <Route path="otp-verification" element={<OTPVerification />} />
               <Route path="reset-password" element={<ResetPassword />} />
             </Route>
-            
+
             {/* Protected User Routes - With Sidebar */}
             <Route path="/" element={
               <ProtectedRoute>
@@ -74,7 +73,7 @@ const App = () => (
               <Route path="connections" element={<Connections />} />
               <Route path="settings" element={<Settings />} />
             </Route>
-            
+
             {/* Protected Admin Routes - With Sidebar */}
             <Route path="/admin" element={
               <ProtectedRoute requireAdmin={true}>
@@ -88,10 +87,11 @@ const App = () => (
               <Route path="jobs" element={<AdminJobs />} />
               <Route path="donations" element={<AdminDonations />} />
               <Route path="communications" element={<AdminCommunications />} />
+              <Route path="reports" element={<AdminReports />} />
               {/* <Route path="analytics" element={<AdminAnalytics />} /> */}
               <Route path="settings" element={<AdminSettings />} />
             </Route>
-            
+
             {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />
           </Routes>

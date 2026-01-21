@@ -72,6 +72,10 @@ import {
   X,
   Edit,
   Trash2,
+  Users,
+  GraduationCap,
+  BookOpen,
+  Activity,
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { Transform } from "stream";
@@ -107,7 +111,7 @@ export function Alumni() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
-  
+
   // Edit dialog states
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -119,7 +123,7 @@ export function Alumni() {
     phone: "",
     role: "",
   });
-  
+
   // Delete dialog states
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
@@ -224,8 +228,8 @@ export function Alumni() {
   }, [error]);
 
   // Fix: Extract data from the response object
-  const alumniData: User[] = Array.isArray(alumniResponse?.data) 
-    ? alumniResponse.data 
+  const alumniData: User[] = Array.isArray(alumniResponse?.data)
+    ? alumniResponse.data
     : [];
 
   const filteredAlumni = alumniData.filter((alumni) => {
@@ -245,7 +249,7 @@ export function Alumni() {
   });
 
   // Calculate stats from actual data
-   const totalUsers = alumniData.length;
+  const totalUsers = alumniData.length;
   const alumniCount = alumniData.filter(
     (user) => user?.role?.toLowerCase() === "alumni"
   ).length;
@@ -278,7 +282,7 @@ export function Alumni() {
   // Handle edit form submission
   const handleEditSubmit = () => {
     if (!editingUser) return;
-    
+
     editUserMutation.mutate({
       userId: editingUser._id,
       formData: editFormData
@@ -398,8 +402,8 @@ export function Alumni() {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-2 duration-500" style={{ animationDelay: '100ms' }}>
           {[0, 1, 2].map((i) => (
-            <div 
-              key={i} 
+            <div
+              key={i}
               className="rounded-2xl p-4 sm:p-5 bg-card/50 border border-border/50"
             >
               <div className="flex items-center justify-between">
@@ -464,7 +468,7 @@ export function Alumni() {
             Manage alumni profiles, verify registrations, and track engagement.
           </p>
         </div>
-        
+
         {/* Add Alumni Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
@@ -483,17 +487,16 @@ export function Alumni() {
                 Upload a CSV file containing alumni data. The file should include columns for name, email, graduation year, course, and phone.
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="space-y-4">
               {/* File Upload Area */}
               <div className="space-y-2">
                 <Label htmlFor="csv-file">CSV File</Label>
                 <div
-                  className={`relative border-2 border-dashed rounded-lg p-6 transition-colors ${
-                    dragActive
-                      ? "border-primary bg-primary/5"
-                      : "border-card-border/50 hover:border-primary/50"
-                  }`}
+                  className={`relative border-2 border-dashed rounded-lg p-6 transition-colors ${dragActive
+                    ? "border-primary bg-primary/5"
+                    : "border-card-border/50 hover:border-primary/50"
+                    }`}
                   onDragEnter={handleDrag}
                   onDragLeave={handleDrag}
                   onDragOver={handleDrag}
@@ -506,7 +509,7 @@ export function Alumni() {
                     onChange={handleFileSelect}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   />
-                  
+
                   {selectedFile ? (
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -595,7 +598,7 @@ export function Alumni() {
               Update the user information below. All fields are required.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -618,7 +621,7 @@ export function Alumni() {
                 />
               </div>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="edit-graduation">Graduation Year</Label>
@@ -639,7 +642,7 @@ export function Alumni() {
                 />
               </div>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="edit-phone">Phone</Label>
@@ -652,8 +655,8 @@ export function Alumni() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-role">Role</Label>
-                <Select 
-                  value={editFormData.role} 
+                <Select
+                  value={editFormData.role}
                   onValueChange={(value) => handleEditFormChange('role', value)}
                 >
                   <SelectTrigger>
@@ -662,8 +665,6 @@ export function Alumni() {
                   <SelectContent>
                     <SelectItem value="alumni">Alumni</SelectItem>
                     <SelectItem value="student">Student</SelectItem>
-                    <SelectItem value="faculty">Faculty</SelectItem>
-                    <SelectItem value="admin">Admin</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -737,7 +738,7 @@ export function Alumni() {
               <p className="stats-card-label">Alumni</p>
               <p className="stats-card-number">{alumniCount.toLocaleString()}</p>
             </div>
-            <UserCheck className="stats-card-icon" />
+            <GraduationCap className="stats-card-icon" />
           </div>
         </div>
 
@@ -747,7 +748,7 @@ export function Alumni() {
               <p className="stats-card-label">Students</p>
               <p className="stats-card-number">{studentCount.toLocaleString()}</p>
             </div>
-            <UserCheck className="stats-card-icon" />
+            <BookOpen className="stats-card-icon" />
           </div>
         </div>
 
@@ -757,7 +758,7 @@ export function Alumni() {
               <p className="stats-card-label">Total Users</p>
               <p className="stats-card-number">{totalUsers.toLocaleString()}</p>
             </div>
-            <UserX className="stats-card-icon" />
+            <Users className="stats-card-icon" />
           </div>
         </div>
 
@@ -767,7 +768,7 @@ export function Alumni() {
               <p className="stats-card-label">Active This Month</p>
               <p className="stats-card-number">{Math.floor(totalUsers * 0.68).toLocaleString()}</p>
             </div>
-            <UserCheck className="stats-card-icon" />
+            <Activity className="stats-card-icon" />
           </div>
         </div>
       </div>
@@ -914,7 +915,7 @@ export function Alumni() {
                               Edit
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               className="text-destructive text-xs sm:text-sm"
                               onClick={() => handleDeleteUser(alumni)}
                             >

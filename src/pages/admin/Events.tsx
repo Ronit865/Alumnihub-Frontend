@@ -3,7 +3,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CalendarDays, Clock, MapPin, Users, Plus, MoreVertical, Edit, Trash2, Loader2, X, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  CalendarDays,
+  Clock,
+  MapPin,
+  Users,
+  Plus,
+  MoreVertical,
+  Edit,
+  Trash2,
+  Loader2,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Activity,
+  TrendingUp,
+} from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -66,7 +81,7 @@ export function Events() {
   const [activeEventPage, setActiveEventPage] = useState(0);
   const [pastEventPage, setPastEventPage] = useState(0);
   const { toast } = useToast();
-  
+
   // Edit Event State
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
@@ -133,33 +148,33 @@ export function Events() {
 
   const validateForm = (): boolean => {
     const errors: Partial<CreateEventForm> = {};
-    
+
     if (!formData.title.trim()) {
       errors.title = "Title is required";
     }
-    
+
     if (!formData.description.trim()) {
       errors.description = "Description is required";
     }
-    
+
     if (!formData.date) {
       errors.date = "Date is required";
     }
-    
+
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
   const handleCreateEvent = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
     try {
       setIsCreating(true);
-      
+
       const eventData = {
         title: formData.title.trim(),
         description: formData.description.trim(),
@@ -174,7 +189,7 @@ export function Events() {
         description: "Event has been successfully created",
         variant: "success",
       });
-      
+
       // Reset form and close dialog
       setFormData({
         title: "",
@@ -185,7 +200,7 @@ export function Events() {
       });
       setFormErrors({});
       setIsCreateDialogOpen(false);
-      
+
       // Refresh events list
       fetchEvents();
     } catch (err: any) {
@@ -261,7 +276,7 @@ export function Events() {
         description: "Event has been successfully updated",
         variant: "success",
       });
-      
+
       setIsEditDialogOpen(false);
       setEditingEvent(null);
       fetchEvents();
@@ -282,9 +297,9 @@ export function Events() {
       setLoadingParticipants(true);
       setSelectedEventTitle(eventTitle);
       setIsParticipantsDialogOpen(true);
-      
+
       const response = await eventService.getEventParticipants(eventId);
-      
+
       // Handle the response - response.data should contain the participants array
       const participants = response.data || [];
       setSelectedEventParticipants(participants);
@@ -309,8 +324,20 @@ export function Events() {
   });
 
   // Categorize events
-  const activeEventsList = events.filter(event => event.isactive);
-  const pastEventsList = events.filter(event => !event.isactive);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const activeEventsList = events.filter(event => {
+    const eventDate = new Date(event.date);
+    eventDate.setHours(0, 0, 0, 0);
+    return event.isactive && eventDate >= today;
+  });
+
+  const pastEventsList = events.filter(event => {
+    const eventDate = new Date(event.date);
+    eventDate.setHours(0, 0, 0, 0);
+    return !event.isactive || eventDate < today;
+  });
 
   // Pagination
   const activeEventsTotalPages = Math.ceil(activeEventsList.length / ITEMS_PER_PAGE);
@@ -356,7 +383,7 @@ export function Events() {
     const dayEvents = getEventsForDate(day);
     const hasActiveEvents = dayEvents.some(event => event.isactive);
     const hasInactiveEvents = dayEvents.some(event => !event.isactive);
-    
+
     return (
       <div className="relative w-full h-full flex items-center justify-center p-1">
         <span className={`relative z-10 text-center ${dayEvents.length > 0 ? 'font-semibold' : ''}`}>
@@ -365,14 +392,12 @@ export function Events() {
         {dayEvents.length > 0 && (
           <>
             {/* Event indicator dot */}
-            <div className={`absolute bottom-0.5 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 rounded-full ${
-              hasActiveEvents ? 'bg-primary' : 'bg-muted-foreground'
-            }`} />
+            <div className={`absolute bottom-0.5 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 rounded-full ${hasActiveEvents ? 'bg-primary' : 'bg-muted-foreground'
+              }`} />
             {/* Multiple events indicator */}
             {dayEvents.length > 1 && (
-              <div className={`absolute bottom-0.5 left-1/2 transform translate-x-0.5 w-1 h-1 rounded-full ${
-                hasActiveEvents ? 'bg-primary' : 'bg-muted-foreground'
-              }`} />
+              <div className={`absolute bottom-0.5 left-1/2 transform translate-x-0.5 w-1 h-1 rounded-full ${hasActiveEvents ? 'bg-primary' : 'bg-muted-foreground'
+                }`} />
             )}
           </>
         )}
@@ -383,7 +408,7 @@ export function Events() {
   // Filter events based on selected date
   const getFilteredEventsForSelectedDate = () => {
     if (!date) return filteredEvents;
-    
+
     const selectedDateEvents = getEventsForDate(date);
     return selectedDateEvents.filter(event => {
       if (selectedFilter === "all") return true;
@@ -397,16 +422,16 @@ export function Events() {
   const eventsToDisplay = date ? getFilteredEventsForSelectedDate() : filteredEvents;
 
   // Pagination Controls Component
-  const PaginationControls = ({ 
-    currentPage, 
-    totalPages, 
-    onPrevious, 
-    onNext 
-  }: { 
-    currentPage: number; 
-    totalPages: number; 
-    onPrevious: () => void; 
-    onNext: () => void; 
+  const PaginationControls = ({
+    currentPage,
+    totalPages,
+    onPrevious,
+    onNext
+  }: {
+    currentPage: number;
+    totalPages: number;
+    onPrevious: () => void;
+    onNext: () => void;
   }) => (
     <div className="flex items-center justify-center gap-4 mt-6">
       <Button
@@ -437,8 +462,8 @@ export function Events() {
 
   // Event Card Component
   const EventCard = ({ event, index }: { event: Event; index: number }) => (
-    <Card 
-      key={event._id} 
+    <Card
+      key={event._id}
       className="bento-card hover:shadow-md border-card-border/50 animate-fade-in relative group flex flex-col h-full"
       style={{ animationDelay: `${index * 100}ms` }}
     >
@@ -450,7 +475,7 @@ export function Events() {
               {event.title}
             </h3>
           </div>
-          
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm">
@@ -468,7 +493,7 @@ export function Events() {
                 View Participants
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 className="text-destructive"
                 onClick={() => handleDeleteEvent(event._id)}
               >
@@ -483,7 +508,7 @@ export function Events() {
         <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
           {event.description}
         </p>
-        
+
         {/* Event Details Grid */}
         <div className="grid grid-cols-2 gap-3 text-sm flex-1">
           <div className="flex items-center gap-2">
@@ -541,8 +566,8 @@ export function Events() {
         {/* Stats Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-bottom-2 duration-500" style={{ animationDelay: '100ms' }}>
           {[0, 1, 2, 3].map((i) => (
-            <div 
-              key={i} 
+            <div
+              key={i}
               className="rounded-2xl p-4 sm:p-5 bg-card/50 border border-border/50"
             >
               <div className="flex items-center justify-between">
@@ -565,8 +590,8 @@ export function Events() {
         {/* Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {[0, 1, 2, 3, 4, 5].map((i) => (
-            <div 
-              key={i} 
+            <div
+              key={i}
               className="rounded-2xl p-5 bg-card/50 border border-border/50 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500"
               style={{ animationDelay: `${300 + i * 50}ms` }}
             >
@@ -617,11 +642,11 @@ export function Events() {
             Create, manage, and track alumni events and gatherings.
           </p>
         </div>
-        
+
         {/* Create Event Dialog */}
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button 
+            <Button
               className="gradient-primary text-primary-foreground hover:shadow-purple"
               onClick={() => setIsCreateDialogOpen(true)}
             >
@@ -636,7 +661,7 @@ export function Events() {
                 Fill in the details below to create a new event for the alumni community.
               </DialogDescription>
             </DialogHeader>
-            
+
             <form onSubmit={handleCreateEvent} className="space-y-6 mt-4">
               {/* Event Title */}
               <div className="space-y-2">
@@ -648,9 +673,8 @@ export function Events() {
                   placeholder="Enter event title"
                   value={formData.title}
                   onChange={(e) => handleInputChange("title", e.target.value)}
-                  className={`border-card-border/50 focus:border-primary ${
-                    formErrors.title ? "border-destructive" : ""
-                  }`}
+                  className={`border-card-border/50 focus:border-primary ${formErrors.title ? "border-destructive" : ""
+                    }`}
                 />
                 {formErrors.title && (
                   <p className="text-sm text-destructive">{formErrors.title}</p>
@@ -667,9 +691,8 @@ export function Events() {
                   placeholder="Describe your event"
                   value={formData.description}
                   onChange={(e) => handleInputChange("description", e.target.value)}
-                  className={`min-h-[100px] border-card-border/50 focus:border-primary resize-none ${
-                    formErrors.description ? "border-destructive" : ""
-                  }`}
+                  className={`min-h-[100px] border-card-border/50 focus:border-primary resize-none ${formErrors.description ? "border-destructive" : ""
+                    }`}
                 />
                 {formErrors.description && (
                   <p className="text-sm text-destructive">{formErrors.description}</p>
@@ -687,9 +710,8 @@ export function Events() {
                     type="date"
                     value={formData.date}
                     onChange={(e) => handleInputChange("date", e.target.value)}
-                    className={`border-card-border/50 focus:border-primary ${
-                      formErrors.date ? "border-destructive" : ""
-                    }`}
+                    className={`border-card-border/50 focus:border-primary ${formErrors.date ? "border-destructive" : ""
+                      }`}
                   />
                   {formErrors.date && (
                     <p className="text-sm text-destructive">{formErrors.date}</p>
@@ -784,17 +806,17 @@ export function Events() {
             <CalendarDays className="stats-card-icon" />
           </div>
         </div>
-        
+
         <div className="stats-card-blue">
           <div className="flex items-center justify-between">
             <div>
               <p className="stats-card-label">Active Events</p>
               <p className="stats-card-number">{activeEventsCount}</p>
             </div>
-            <Clock className="stats-card-icon" />
+            <Activity className="stats-card-icon" />
           </div>
         </div>
-        
+
         <div className="stats-card-teal">
           <div className="flex items-center justify-between">
             <div>
@@ -804,21 +826,21 @@ export function Events() {
             <Users className="stats-card-icon" />
           </div>
         </div>
-        
+
         <div className="stats-card-pink">
           <div className="flex items-center justify-between">
             <div>
               <p className="stats-card-label">Avg. Participants</p>
               <p className="stats-card-number">{averageParticipants}</p>
             </div>
-            <CalendarDays className="stats-card-icon" />
+            <TrendingUp className="stats-card-icon" />
           </div>
         </div>
       </div>
 
       {/* <div className="grid grid-cols-1 lg:grid-cols-4 gap-6"> */}
-        {/* Calendar */}
-        {/* <Card className="lg:col-span-1 bento-card gradient-surface border-card-border/50 h-fit">
+      {/* Calendar */}
+      {/* <Card className="lg:col-span-1 bento-card gradient-surface border-card-border/50 h-fit">
           <CardHeader>
             <CardTitle className="text-lg">Event Calendar</CardTitle>
             <CardDescription>
@@ -886,80 +908,80 @@ export function Events() {
           </CardContent>
         </Card> */}
 
-        {/* Active Events Section */}
-        <div>
-          <div className="flex items-center gap-2 mb-4">
-            <CalendarDays className="h-5 w-5 text-primary" />
-            <h2 className="text-xl font-semibold text-foreground">
-              Active Events ({activeEventsList.length})
-            </h2>
-          </div>
-
-          {activeEventsList.length === 0 ? (
-            <Card className="border-card-border/50">
-              <CardContent className="pt-12 pb-12 text-center">
-                <CalendarDays className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">No active events available.</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {paginatedActiveEvents.map((event, index) => (
-                  <EventCard key={event._id} event={event} index={index} />
-                ))}
-              </div>
-              {activeEventsTotalPages > 1 && (
-                <PaginationControls
-                  currentPage={activeEventPage}
-                  totalPages={activeEventsTotalPages}
-                  onPrevious={() => setActiveEventPage(p => Math.max(0, p - 1))}
-                  onNext={() => setActiveEventPage(p => Math.min(activeEventsTotalPages - 1, p + 1))}
-                />
-              )}
-            </>
-          )}
+      {/* Active Events Section */}
+      <div>
+        <div className="flex items-center gap-2 mb-4">
+          <CalendarDays className="h-5 w-5 text-primary" />
+          <h2 className="text-xl font-semibold text-foreground">
+            Active Events ({activeEventsList.length})
+          </h2>
         </div>
 
-        {/* Past Events Section */}
-        <div>
-          <div className="flex items-center gap-2 mb-4">
-            <Clock className="h-5 w-5 text-muted-foreground" />
-            <h2 className="text-xl font-semibold text-foreground">
-              Past Events ({pastEventsList.length})
-            </h2>
-          </div>
+        {activeEventsList.length === 0 ? (
+          <Card className="border-card-border/50">
+            <CardContent className="pt-12 pb-12 text-center">
+              <CalendarDays className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <p className="text-muted-foreground">No active events available.</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {paginatedActiveEvents.map((event, index) => (
+                <EventCard key={event._id} event={event} index={index} />
+              ))}
+            </div>
+            {activeEventsTotalPages > 1 && (
+              <PaginationControls
+                currentPage={activeEventPage}
+                totalPages={activeEventsTotalPages}
+                onPrevious={() => setActiveEventPage(p => Math.max(0, p - 1))}
+                onNext={() => setActiveEventPage(p => Math.min(activeEventsTotalPages - 1, p + 1))}
+              />
+            )}
+          </>
+        )}
+      </div>
 
-          {pastEventsList.length === 0 ? (
-            <Card className="border-card-border/50">
-              <CardContent className="pt-12 pb-12 text-center">
-                <Clock className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">No past events to display.</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {paginatedPastEvents.map((event, index) => (
-                  <EventCard key={event._id} event={event} index={index} />
-                ))}
-              </div>
-              {pastEventsTotalPages > 1 && (
-                <PaginationControls
-                  currentPage={pastEventPage}
-                  totalPages={pastEventsTotalPages}
-                  onPrevious={() => setPastEventPage(p => Math.max(0, p - 1))}
-                  onNext={() => setPastEventPage(p => Math.min(pastEventsTotalPages - 1, p + 1))}
-                />
-              )}
-            </>
-          )}
+      {/* Past Events Section */}
+      <div>
+        <div className="flex items-center gap-2 mb-4">
+          <Clock className="h-5 w-5 text-muted-foreground" />
+          <h2 className="text-xl font-semibold text-foreground">
+            Past Events ({pastEventsList.length})
+          </h2>
         </div>
+
+        {pastEventsList.length === 0 ? (
+          <Card className="border-card-border/50">
+            <CardContent className="pt-12 pb-12 text-center">
+              <Clock className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <p className="text-muted-foreground">No past events to display.</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {paginatedPastEvents.map((event, index) => (
+                <EventCard key={event._id} event={event} index={index} />
+              ))}
+            </div>
+            {pastEventsTotalPages > 1 && (
+              <PaginationControls
+                currentPage={pastEventPage}
+                totalPages={pastEventsTotalPages}
+                onPrevious={() => setPastEventPage(p => Math.max(0, p - 1))}
+                onNext={() => setPastEventPage(p => Math.min(pastEventsTotalPages - 1, p + 1))}
+              />
+            )}
+          </>
+        )}
+      </div>
 
       {/* Participants Dialog - Redesigned */}
       <Dialog open={isParticipantsDialogOpen} onOpenChange={setIsParticipantsDialogOpen}>
-        <DialogContent 
-          className="sm:max-w-[700px] max-w-[95vw] bento-card gradient-surface border-card-border/50" 
+        <DialogContent
+          className="sm:max-w-[700px] max-w-[95vw] bento-card gradient-surface border-card-border/50"
           style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
         >
           <DialogHeader className="pb-4 border-b border-card-border/20">
@@ -977,7 +999,7 @@ export function Events() {
               </div>
             </div>
           </DialogHeader>
-          
+
           <div className="mt-4">
             {loadingParticipants ? (
               <div className="flex items-center justify-center py-16">
@@ -1001,7 +1023,7 @@ export function Events() {
             ) : (
               <div className="space-y-3 max-h-[55vh] overflow-y-auto pr-2 custom-scrollbar">
                 {selectedEventParticipants.map((participant, index) => (
-                  <div 
+                  <div
                     key={`participant-${participant._id}-${index}`}
                     className="flex items-center justify-between p-4 rounded-xl bg-accent/30 border border-card-border/30 hover:bg-accent/50 hover:border-primary/30 transition-all duration-200 group animate-fade-in"
                     style={{ animationDelay: `${index * 50}ms` }}
@@ -1009,8 +1031,8 @@ export function Events() {
                     <div className="flex items-center gap-4">
                       <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary/20 to-accent/50 flex items-center justify-center overflow-hidden flex-shrink-0 ring-2 ring-background shadow-sm">
                         {participant.avatar ? (
-                          <img 
-                            src={participant.avatar} 
+                          <img
+                            src={participant.avatar}
                             alt={participant.name}
                             className="h-full w-full object-cover"
                           />
@@ -1069,7 +1091,7 @@ export function Events() {
               </div>
             </div>
           </DialogHeader>
-          
+
           <form onSubmit={handleUpdateEvent} className="space-y-5 mt-4">
             <div className="space-y-2">
               <Label htmlFor="edit-title" className="text-sm font-medium text-foreground">

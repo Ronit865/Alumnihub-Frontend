@@ -446,7 +446,7 @@ export default function Events() {
                     placeholder="Search events..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 bg-background border-input text-foreground placeholder:text-muted-foreground"
                 />
             </div>
 

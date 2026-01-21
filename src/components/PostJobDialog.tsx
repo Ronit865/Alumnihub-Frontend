@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import { jobService } from "@/services/ApiServices";
 
 interface PostJobDialogProps {
@@ -40,6 +40,7 @@ interface PostJobDialogProps {
 }
 
 export default function PostJobDialog({ open, onOpenChange, onSuccess, jobData }: PostJobDialogProps) {
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
@@ -82,9 +83,13 @@ export default function PostJobDialog({ open, onOpenChange, onSuccess, jobData }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.title || !formData.description || !formData.location || !formData.company || !formData.category || !formData.experienceRequired || !formData.salary) {
-      toast.error("Please fill in all required fields");
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -110,15 +115,27 @@ export default function PostJobDialog({ open, onOpenChange, onSuccess, jobData }
       }
 
       if (response.success) {
-        toast.success(jobData ? "Job updated successfully!" : "Job posted successfully!");
+        toast({
+          title: "Success",
+          description: jobData ? "Job updated successfully!" : "Job posted successfully!",
+          variant: "success",
+        });
         resetForm();
         onOpenChange(false);
         onSuccess?.();
       } else {
-        toast.error(response.message || "Failed to post job");
+        toast({
+          title: "Error",
+          description: response.message || "Failed to post job",
+          variant: "destructive",
+        });
       }
     } catch (error: any) {
-      toast.error(error.message || "Failed to post job");
+      toast({
+        title: "Error",
+        description: error.message || "Failed to post job",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -240,13 +257,13 @@ export default function PostJobDialog({ open, onOpenChange, onSuccess, jobData }
           </div>
 
           <DialogFooter>
-            <Button 
-              type="button" 
-              variant="outline" 
+            <Button
+              type="button"
+              variant="outline"
               onClick={() => {
                 resetForm();
                 onOpenChange(false);
-              }} 
+              }}
               disabled={loading}
             >
               Cancel

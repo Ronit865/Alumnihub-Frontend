@@ -15,6 +15,7 @@ import {
   Mail,
   ChevronLeft,
   ChevronRight,
+  Flag,
 } from "lucide-react";
 
 import {
@@ -48,13 +49,14 @@ const adminNavigation = [
   { title: "Manage Jobs", url: "/admin/jobs", icon: Briefcase },
   { title: "Manage Donations", url: "/admin/donations", icon: Heart },
   { title: "Communications", url: "/admin/communications", icon: Mail },
+  { title: "Reports", url: "/admin/reports", icon: Flag },
 ];
 
 export function AppSidebar() {
   const { open, toggleSidebar, isMobile, setOpenMobile } = useSidebar();
   const location = useLocation();
   const { user, userType } = useAuth();
-  
+
   const [isDark, setIsDark] = useState(() => {
     if (typeof window !== "undefined") {
       const savedTheme = localStorage.getItem("theme");

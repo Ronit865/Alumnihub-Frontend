@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MessageCircle, Share, Bookmark, MoreHorizontal, Trash2, Edit, Flag } from "lucide-react";
+import { MessageCircle, Share, Bookmark, MoreHorizontal, Trash2, Edit, Flag, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -11,9 +11,26 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { VoteButtons } from "./VoteButtons";
 import { communicationService } from "@/services/ApiServices";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface RedditPostProps {
   post: any;
@@ -23,7 +40,13 @@ interface RedditPostProps {
 export function RedditPostCard({ post, onUpdate }: RedditPostProps) {
   const navigate = useNavigate();
   const [isSaved, setIsSaved] = useState(post.savedBy?.includes(localStorage.getItem('userId')) || false);
-  const { toast } = useToast();
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editContent, setEditContent] = useState(post.content || "");
+  const [isEditing, setIsEditing] = useState(false);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [reportDescription, setReportDescription] = useState("");
+  const [isReporting, setIsReporting] = useState(false);
 
   const handleCardClick = (e: React.MouseEvent) => {
     // Don't navigate if clicking on interactive elements
@@ -43,12 +66,7 @@ export function RedditPostCard({ post, onUpdate }: RedditPostProps) {
     const newSavedState = !isSaved;
     setIsSaved(newSavedState);
 
-    toast({
-      title: newSavedState ? "Post saved" : "Post unsaved",
-      description: newSavedState
-        ? "You can find this post in your saved items"
-        : "Post removed from saved items",
-    });
+    toast.success(newSavedState ? "Post saved" : "Post unsaved");
 
     // Call API in background
     try {
@@ -56,11 +74,7 @@ export function RedditPostCard({ post, onUpdate }: RedditPostProps) {
     } catch (error: any) {
       // Revert on error
       setIsSaved(!newSavedState);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to save post. Please try again.",
-        variant: "destructive",
-      });
+      toast.error(error.message || "Failed to save post. Please try again.");
     }
   };
 
@@ -72,10 +86,7 @@ export function RedditPostCard({ post, onUpdate }: RedditPostProps) {
       onUpdate();
     }
 
-    toast({
-      title: "Post deleted",
-      description: "Your post has been removed.",
-    });
+    toast.success("Post deleted successfully");
 
     // Call API in background
     try {
@@ -89,11 +100,35 @@ export function RedditPostCard({ post, onUpdate }: RedditPostProps) {
     }
   };
 
-  const handleReport = async () => {
-    toast({
-      title: "Post reported",
-      description: "Thank you for helping keep our community safe. We'll review this post.",
-    });
+  const handleReport = () => {
+    setReportReason("");
+    setReportDescription("");
+    setReportDialogOpen(true);
+  };
+
+  const submitReport = async () => {
+    if (!reportReason) {
+      toast.error("Please select a reason for reporting");
+      return;
+    }
+
+    setIsReporting(true);
+    try {
+      await communicationService.reportPost(post._id, {
+        reason: reportReason,
+        description: reportDescription
+      });
+      toast.success("Post reported - We'll review this post");
+      setReportDialogOpen(false);
+    } catch (error: any) {
+      if (error.response?.data?.message?.includes("already reported")) {
+        toast.error("You have already reported this post");
+      } else {
+        toast.error(error.message || "Failed to submit report");
+      }
+    } finally {
+      setIsReporting(false);
+    }
   };
 
   const handleShare = async () => {
@@ -109,17 +144,30 @@ export function RedditPostCard({ post, onUpdate }: RedditPostProps) {
       } catch (error) {
         // User cancelled or share failed, fallback to clipboard
         await navigator.clipboard.writeText(postUrl);
-        toast({
-          title: "Link copied",
-          description: "Post link copied to clipboard",
-        });
+        toast.success("Link copied to clipboard");
       }
     } else {
       await navigator.clipboard.writeText(postUrl);
-      toast({
-        title: "Link copied",
-        description: "Post link copied to clipboard",
-      });
+      toast.success("Link copied to clipboard");
+    }
+  };
+
+  const handleEdit = async () => {
+    if (!editContent.trim()) {
+      toast.error("Post content cannot be empty");
+      return;
+    }
+
+    setIsEditing(true);
+    try {
+      await communicationService.updatePost(post._id, { content: editContent });
+      toast.success("Post updated successfully");
+      setEditDialogOpen(false);
+      if (onUpdate) onUpdate();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to update post");
+    } finally {
+      setIsEditing(false);
     }
   };
 
@@ -141,10 +189,8 @@ export function RedditPostCard({ post, onUpdate }: RedditPostProps) {
   };
 
   const canDeletePost = (): boolean => {
-    const postTime = new Date(post.createdAt).getTime();
-    const now = Date.now();
-    const twentyFourHours = 24 * 60 * 60 * 1000;
-    return (now - postTime) <= twentyFourHours;
+    // Users can delete their posts anytime now
+    return true;
   };
 
   const isAuthor = post.author?._id === localStorage.getItem('userId');
@@ -212,17 +258,9 @@ export function RedditPostCard({ post, onUpdate }: RedditPostProps) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={handleSave}>
-                  <Bookmark className={`mr-2 h-4 w-4 ${isSaved ? 'fill-current' : ''}`} />
-                  {isSaved ? 'Unsave' : 'Save'}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleShare}>
-                  <Share className="mr-2 h-4 w-4" />
-                  Share
-                </DropdownMenuItem>
                 {isAuthor ? (
                   <>
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => { setEditContent(post.content); setEditDialogOpen(true); }}>
                       <Edit className="mr-2 h-4 w-4" />
                       Edit
                     </DropdownMenuItem>
@@ -236,13 +274,16 @@ export function RedditPostCard({ post, onUpdate }: RedditPostProps) {
                     </DropdownMenuItem>
                   </>
                 ) : (
-                  <DropdownMenuItem
-                    onClick={handleReport}
-                    className="text-orange-600 focus:text-orange-600 cursor-pointer"
-                  >
-                    <Flag className="mr-2 h-4 w-4" />
-                    Report
-                  </DropdownMenuItem>
+                  <>
+                    <DropdownMenuItem onClick={handleReport}>
+                      <Flag className="mr-2 h-4 w-4" />
+                      Report
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleShare}>
+                      <Share className="mr-2 h-4 w-4" />
+                      Share
+                    </DropdownMenuItem>
+                  </>
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
@@ -311,6 +352,73 @@ export function RedditPostCard({ post, onUpdate }: RedditPostProps) {
           </div>
         </div>
       </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Post</DialogTitle>
+            <DialogDescription>Make changes to your post below.</DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={editContent}
+            onChange={(e) => setEditContent(e.target.value)}
+            placeholder="What's on your mind?"
+            className="min-h-[120px]"
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleEdit} disabled={isEditing}>
+              {isEditing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Report Dialog */}
+      <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Report Post</DialogTitle>
+            <DialogDescription>Help us understand why you're reporting this post.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Reason <span className="text-destructive">*</span></Label>
+              <Select value={reportReason} onValueChange={setReportReason}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a reason" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="spam">Spam</SelectItem>
+                  <SelectItem value="harassment">Harassment</SelectItem>
+                  <SelectItem value="inappropriate">Inappropriate Content</SelectItem>
+                  <SelectItem value="misinformation">Misinformation</SelectItem>
+                  <SelectItem value="abuse">Abuse</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Additional Details (Optional)</Label>
+              <Textarea
+                value={reportDescription}
+                onChange={(e) => setReportDescription(e.target.value)}
+                placeholder="Provide more context about why you're reporting this post..."
+                className="min-h-[80px]"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReportDialogOpen(false)}>Cancel</Button>
+            <Button onClick={submitReport} disabled={isReporting || !reportReason} variant="destructive">
+              {isReporting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Submit Report
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

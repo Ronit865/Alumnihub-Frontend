@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BarChart3, TrendingUp, Users, Activity, Calendar, Mail, DollarSign, Eye, Download } from "lucide-react";
+import { BarChart3, TrendingUp, Users, Activity, Calendar, Mail, IndianRupee, Eye, Download, UserCheck } from "lucide-react";
 
 const analyticsData = [
 	{
@@ -45,7 +45,7 @@ const analyticsData = [
 		value: "18.5%",
 		change: "+1.7%",
 		changeType: "increase" as const,
-		icon: DollarSign,
+		icon: IndianRupee,
 		description: "Participation",
 		trend: "up",
 	},
@@ -54,7 +54,7 @@ const analyticsData = [
 		value: "84.2%",
 		change: "+4.1%",
 		changeType: "increase" as const,
-		icon: Users,
+		icon: UserCheck,
 		description: "Average",
 		trend: "up",
 	},
@@ -184,11 +184,11 @@ export function Analytics() {
 							<p className="stats-card-label">Donation Rate</p>
 							<p className="stats-card-number">18.5%</p>
 							<p className="text-xs text-white/80 flex items-center gap-1 mt-1">
-								<DollarSign className="w-3 h-3" />
+								<IndianRupee className="w-3 h-3" />
 								+1.7% participation
 							</p>
 						</div>
-						<DollarSign className="stats-card-icon" />
+						<IndianRupee className="stats-card-icon" />
 					</div>
 				</div>
 
@@ -198,11 +198,11 @@ export function Analytics() {
 							<p className="stats-card-label">Profile Completion</p>
 							<p className="stats-card-number">84.2%</p>
 							<p className="text-xs text-white/80 flex items-center gap-1 mt-1">
-								<Users className="w-3 h-3" />
+								<UserCheck className="w-3 h-3" />
 								+4.1% average
 							</p>
 						</div>
-						<Users className="stats-card-icon" />
+						<UserCheck className="stats-card-icon" />
 					</div>
 				</div>
 			</div>
