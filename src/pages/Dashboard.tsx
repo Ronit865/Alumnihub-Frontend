@@ -1,4 +1,4 @@
-import { Calendar, Users, Briefcase, TrendingUp, Heart, MessageCircle, Loader2 } from "lucide-react";
+import { Calendar, Users, Briefcase, TrendingUp, Heart, MessageCircle, Loader2, Building2, DollarSign } from "lucide-react";
 import { BentoCard } from "@/components/ui/bento-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -421,6 +421,8 @@ export default function Dashboard() {
           <BentoCard 
             title="Upcoming Events" 
             description="Don't miss these exciting opportunities"
+            icon={<Calendar className="w-5 h-5 text-blue-500" />}
+            iconBg="bg-gradient-to-br from-blue-500/20 to-blue-600/20"
             size="lg" 
             gradient
             className="h-full"
@@ -444,8 +446,9 @@ export default function Dashboard() {
                 <p className="text-muted-foreground text-center py-8">No upcoming events</p>
               )}
               <Button 
-                className="w-full mt-4" 
+                className="w-full mt-4 rounded-full bg-blue-500/10 text-blue-600 hover:bg-blue-500/25 hover:text-blue-700 border border-blue-500/20 hover:border-blue-500/40 font-semibold focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-blue-500/15 dark:text-blue-400 dark:hover:bg-blue-500/30 dark:hover:text-blue-300" 
                 onClick={() => navigate('/events')}
+                variant="ghost"
               >
                 View All Events
               </Button>
@@ -458,6 +461,8 @@ export default function Dashboard() {
           <BentoCard 
             title="Alumni Spotlight" 
             description="Celebrating our community achievements"
+            icon={<Users className="w-5 h-5 text-purple-500" />}
+            iconBg="bg-gradient-to-br from-purple-500/20 to-purple-600/20"
             size="md"
             className="h-full"
           >
@@ -494,6 +499,8 @@ export default function Dashboard() {
         <BentoCard 
           title="Job Opportunities" 
           description="Latest career opportunities"
+          icon={<Briefcase className="w-5 h-5 text-green-500" />}
+          iconBg="bg-gradient-to-br from-green-500/20 to-green-600/20"
           size="md"
           className="h-full"
         >
@@ -510,7 +517,7 @@ export default function Dashboard() {
             ) : (
               <p className="text-muted-foreground text-center py-8">No jobs available</p>
             )}
-            <Button onClick={() => navigate('/jobs')} size="sm" className="w-full mt-2">
+            <Button onClick={() => navigate('/jobs')} size="sm" className="w-full mt-2 rounded-full bg-green-500/10 text-green-600 hover:bg-green-500/25 hover:text-green-700 border border-green-500/20 hover:border-green-500/40 font-semibold focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-green-500/15 dark:text-green-400 dark:hover:bg-green-500/30 dark:hover:text-green-300" variant="ghost">
               View All Jobs
             </Button>
           </div>
@@ -519,6 +526,8 @@ export default function Dashboard() {
         <BentoCard 
           title="Top Companies" 
           description="Where our alumni thrive"
+          icon={<Building2 className="w-5 h-5 text-orange-500" />}
+          iconBg="bg-gradient-to-br from-orange-500/20 to-orange-600/20"
           size="md"
           className="h-full"
         >
@@ -630,6 +639,8 @@ export default function Dashboard() {
         <BentoCard 
           title="Community Chat" 
           description="Recent conversations"
+          icon={<MessageCircle className="w-5 h-5 text-cyan-500" />}
+          iconBg="bg-gradient-to-br from-cyan-500/20 to-cyan-600/20"
           size="md"
           className="h-full"
         >
@@ -637,8 +648,8 @@ export default function Dashboard() {
             {recentPosts.length > 0 ? (
               recentPosts.map((post) => (
                 <div key={post._id} className="flex items-start space-x-3 p-2 rounded-lg">
-                  <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
-                    <MessageCircle className="w-4 h-4 text-primary" />
+                  <div className="w-8 h-8 bg-gradient-to-br from-cyan-500/20 to-cyan-600/20 rounded-full flex items-center justify-center flex-shrink-0">
+                    <MessageCircle className="w-4 h-4 text-cyan-500" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs text-muted-foreground">{post.author?.name || 'Alumni'}</p>
@@ -649,7 +660,7 @@ export default function Dashboard() {
             ) : (
               <p className="text-muted-foreground text-center py-8">No recent posts</p>
             )}
-            <Button onClick={() => navigate('/communications')} size="sm" className="w-full">
+            <Button onClick={() => navigate('/communications')} size="sm" className="w-full rounded-full bg-cyan-500/10 text-cyan-600 hover:bg-cyan-500/25 hover:text-cyan-700 border border-cyan-500/20 hover:border-cyan-500/40 font-semibold focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-cyan-500/15 dark:text-cyan-400 dark:hover:bg-cyan-500/30 dark:hover:text-cyan-300" variant="ghost">
               Join Conversation
             </Button>
           </div>
@@ -658,12 +669,14 @@ export default function Dashboard() {
         <BentoCard 
           title="Donation Impact" 
           description="Making a difference together"
+          icon={<Heart className="w-5 h-5 text-rose-500" />}
+          iconBg="bg-gradient-to-br from-rose-500/20 to-pink-600/20"
           size="md"
           className="h-full"
         >
           <div className="space-y-4">
             <div className="text-center">
-              <p className="text-3xl font-bold text-primary">{stats.totalDonations}</p>
+              <p className="text-3xl font-bold bg-gradient-to-r from-rose-500 to-pink-600 bg-clip-text text-transparent">{stats.totalDonations}</p>
               <p className="text-sm text-muted-foreground">Raised this year</p>
             </div>
             {donationStats ? (
@@ -674,22 +687,22 @@ export default function Dashboard() {
                     <span>{donationStats.campaignGoalPercentage.toFixed(0)}%</span>
                   </div>
                   <div className="w-full bg-muted rounded-full h-2">
-                    <div className="bg-primary h-2 rounded-full transition-all duration-500" style={{ width: `${Math.min(donationStats.campaignGoalPercentage, 100)}%` }}></div>
+                    <div className="bg-gradient-to-r from-rose-500 to-pink-600 h-2 rounded-full transition-all duration-500" style={{ width: `${Math.min(donationStats.campaignGoalPercentage, 100)}%` }}></div>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2 pt-2">
                   <div className="text-center p-2 bg-muted/50 rounded-lg">
-                    <p className="text-xl font-bold text-primary">{donationStats.activeDonors}</p>
+                    <p className="text-xl font-bold text-rose-500">{donationStats.activeDonors}</p>
                     <p className="text-xs text-muted-foreground">Active Donors</p>
                   </div>
                   <div className="text-center p-2 bg-muted/50 rounded-lg">
-                    <p className="text-xl font-bold text-primary">{donationStats.totalCampaigns}</p>
+                    <p className="text-xl font-bold text-rose-500">{donationStats.totalCampaigns}</p>
                     <p className="text-xs text-muted-foreground">Campaigns</p>
                   </div>
                 </div>
                 <div className="text-center p-2 bg-muted/50 rounded-lg">
                   <p className="text-sm text-muted-foreground">Average Donation</p>
-                  <p className="text-lg font-bold text-primary">₹{donationStats.avgDonation.toFixed(0)}</p>
+                  <p className="text-lg font-bold text-rose-500">₹{donationStats.avgDonation.toFixed(0)}</p>
                 </div>
               </div>
             ) : (
@@ -705,7 +718,7 @@ export default function Dashboard() {
                 </div>
               </div>
             )}
-            <Button onClick={() => navigate('/donations')} className="w-full">Support a Cause</Button>
+            <Button onClick={() => navigate('/donations')} className="w-full rounded-full bg-rose-500/10 text-rose-600 hover:bg-rose-500/25 hover:text-rose-700 border border-rose-500/20 hover:border-rose-500/40 font-semibold focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-rose-500/15 dark:text-rose-400 dark:hover:bg-rose-500/30 dark:hover:text-rose-300" variant="ghost">Support a Cause</Button>
           </div>
         </BentoCard>
       </div>

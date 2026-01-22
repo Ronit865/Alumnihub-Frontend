@@ -192,7 +192,7 @@ export default function Connections() {
                   <p className="text-muted-foreground">No pending connection requests</p>
                   <Button
                     variant="outline"
-                    className="mt-4"
+                    className="mt-4 border-purple-500/50 text-purple-600 hover:bg-purple-500 hover:text-white"
                     onClick={() => navigate('/alumni')}
                   >
                     Browse Alumni
@@ -233,14 +233,14 @@ export default function Connections() {
                           inactiveLabel="Accept"
                           inactiveIcon={<UserCheck className="h-4 w-4" />}
                           variant="joined"
-                          className="font-medium"
+                          className="font-medium bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
                         />
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => handleReject(request._id)}
                           disabled={actionLoading[request._id]}
-                          className="gap-2"
+                          className="gap-2 border-red-500/50 text-red-600 hover:bg-red-500 hover:text-white"
                         >
                           <UserX className="w-4 h-4" />
                           Decline
@@ -276,7 +276,7 @@ export default function Connections() {
                   <p className="text-muted-foreground">No connections yet</p>
                   <Button
                     variant="outline"
-                    className="mt-4"
+                    className="mt-4 border-purple-500/50 text-purple-600 hover:bg-purple-500 hover:text-white"
                     onClick={() => navigate('/alumni')}
                   >
                     Browse Alumni
@@ -312,7 +312,7 @@ export default function Connections() {
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-7 px-2 mt-2 gap-2"
+                          className="h-7 px-2 mt-2 gap-2 text-cyan-600 hover:bg-gradient-to-r hover:from-cyan-500 hover:to-cyan-600 hover:text-white"
                           onClick={() => handleMessage(connection.user._id)}
                         >
                           <Mail className="w-3 h-3" />

@@ -8,6 +8,8 @@ interface BentoCardProps {
   className?: string;
   size?: "sm" | "md" | "lg" | "xl";
   gradient?: boolean;
+  icon?: React.ReactNode;
+  iconBg?: string;
 }
 
 const sizeClasses = {
@@ -23,7 +25,9 @@ export function BentoCard({
   children, 
   className, 
   size = "md",
-  gradient = false 
+  gradient = false,
+  icon,
+  iconBg = "bg-primary/10"
 }: BentoCardProps) {
   return (
     <Card className={cn(
@@ -36,7 +40,14 @@ export function BentoCard({
       className
     )}>
       <CardHeader className="pb-2">
-        <CardTitle className="text-base font-semibold tracking-tight">{title}</CardTitle>
+        <div className="flex items-center gap-2">
+          {icon && (
+            <div className={cn("flex items-center justify-center w-8 h-8 rounded-lg", iconBg)}>
+              {icon}
+            </div>
+          )}
+          <CardTitle className="text-base font-semibold tracking-tight">{title}</CardTitle>
+        </div>
         {description && (
           <CardDescription className="text-xs text-muted-foreground/70">
             {description}
