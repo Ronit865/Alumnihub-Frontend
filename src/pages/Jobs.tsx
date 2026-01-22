@@ -23,6 +23,7 @@ import {
   Clock,
   Plus
 } from "lucide-react";
+import { StatusButton } from "@/components/ui/status-button";
 import {
   Dialog,
   DialogContent,
@@ -445,31 +446,17 @@ export default function Jobs() {
                   <Eye className="h-4 w-4 mr-2" />
                   Details
                 </Button>
-                {hasApplied(job) ? (
-                  <Button
-                    onClick={() => handleUnapply(job._id)}
-                    size="sm"
-                    className="flex-1 bg-emerald-100 text-emerald-700 hover:bg-rose-100 hover:text-rose-700 border-0 group transition-colors duration-200"
-                  >
-                    <span className="flex items-center group-hover:hidden">
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                      Applied
-                    </span>
-                    <span className="hidden items-center group-hover:flex">
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Withdraw
-                    </span>
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={() => handleApply(job._id)}
-                    size="sm"
-                    className="flex-1"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Apply
-                  </Button>
-                )}
+                <StatusButton
+                  isActive={hasApplied(job)}
+                  onClick={() => hasApplied(job) ? handleUnapply(job._id) : handleApply(job._id)}
+                  isLoading={applyMutation.isPending || unapplyMutation.isPending}
+                  activeLabel="Applied"
+                  inactiveLabel="Apply"
+                  hoverLabel="Withdraw"
+                  inactiveIcon={<Plus className="h-4 w-4" />}
+                  variant="applied"
+                  className="flex-1"
+                />
               </div>
             </CardContent>
           </Card>

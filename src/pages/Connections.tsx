@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { UserPlus, UserCheck, UserX, Loader2, Mail } from "lucide-react";
+import { UserPlus, UserCheck, UserX, Mail } from "lucide-react";
+import { StatusButton } from "@/components/ui/status-button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -224,19 +225,16 @@ export default function Connections() {
                       </div>
 
                       <div className="flex gap-2">
-                        <Button
-                          size="sm"
+                        <StatusButton
+                          isActive={false}
                           onClick={() => handleAccept(request._id)}
-                          disabled={actionLoading[request._id]}
-                          className="gap-2"
-                        >
-                          {actionLoading[request._id] ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <UserCheck className="w-4 h-4" />
-                          )}
-                          Accept
-                        </Button>
+                          isLoading={actionLoading[request._id]}
+                          loadingLabel="..."
+                          inactiveLabel="Accept"
+                          inactiveIcon={<UserCheck className="h-4 w-4" />}
+                          variant="joined"
+                          className="font-medium"
+                        />
                         <Button
                           size="sm"
                           variant="outline"
