@@ -388,7 +388,7 @@ export default function Jobs() {
           <Card key={job._id} className="overflow-hidden border-border/30 bg-card flex flex-col h-full group hover:shadow-lg transition-all duration-300">
             <CardHeader className="pb-2 pt-5 px-5">
               <div className="flex justify-between items-start gap-3">
-                <CardTitle className="text-lg font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2 flex-1">
+                <CardTitle className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2 flex-1 font-sans">
                   {job.title}
                 </CardTitle>
                 {job.isVerified && (
@@ -487,7 +487,7 @@ export default function Jobs() {
       {/* Header - Always visible */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">Job Opportunities</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold gradient-text mb-1 sm:mb-2">Job Opportunities</h1>
           <p className="text-sm sm:text-base text-muted-foreground">
             Browse and apply for jobs or manage your postings
           </p>

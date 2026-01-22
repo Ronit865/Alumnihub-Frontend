@@ -126,7 +126,7 @@ export default function Donations() {
     return (
       <Card className="bento-card hover:shadow-md border-card-border/50 hover-lift flex flex-col h-full">
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-lg">
+          <CardTitle className="flex items-center gap-2 text-lg font-semibold font-sans">
             <Heart className="h-5 w-5 text-red-500 flex-shrink-0" />
             <span className="line-clamp-2">{campaign.name}</span>
           </CardTitle>

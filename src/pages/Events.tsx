@@ -264,15 +264,15 @@ export default function Events() {
             className="overflow-hidden border-border/30 bg-card animate-fade-in group flex flex-col h-full"
             style={{ animationDelay: `${index * 100}ms` }}
         >
-            <CardHeader className="pb-2 pt-5 px-5">
-                <CardTitle className="text-lg font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2">
+            <CardHeader className="pb-1 pt-4 px-4">
+                <CardTitle className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2 font-sans">
                     {event.title}
                 </CardTitle>
             </CardHeader>
 
-            <CardContent className="flex-1 flex flex-col px-5 pb-5">
+            <CardContent className="flex-1 flex flex-col px-4 pb-4">
                 {/* Category Badge */}
-                <div className="flex items-center gap-2 flex-wrap mb-3">
+                <div className="flex items-center gap-2 flex-wrap mb-2">
                     {event.category && (
                         <Badge variant="secondary" className="text-xs font-medium">
                             {event.category}
@@ -281,7 +281,7 @@ export default function Events() {
                 </div>
 
                 {/* Description */}
-                <p className="text-foreground/80 text-sm leading-relaxed line-clamp-2 mb-4">
+                <p className="text-foreground/80 text-sm leading-relaxed line-clamp-2 mb-3">
                     {event.description}
                 </p>
 

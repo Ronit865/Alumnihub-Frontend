@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Filter, MapPin, Briefcase, Calendar, Loader2, MessageCircle, UserPlus, UserCheck, Users } from "lucide-react";
+import { Search, Filter, MapPin, Briefcase, Calendar, Loader2, MessageCircle, UserPlus, UserCheck, Users, GraduationCap, Mail, Building2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -387,7 +387,7 @@ export default function Alumni() {
                       </Avatar>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-sm text-foreground group-hover:text-primary transition-colors line-clamp-1">
+                      <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-1 font-sans">
                         {person.name || 'Unknown'}
                       </h3>
                       <p className="text-xs text-muted-foreground">Graduated {person.graduationYear || 'N/A'}</p>
@@ -397,23 +397,32 @@ export default function Alumni() {
 
                 <CardContent className="flex-1 flex flex-col px-4 pb-4 space-y-2">
                   {/* Course */}
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-0.5">Course</p>
-                    <p className="text-sm font-semibold text-foreground line-clamp-1">{person.course || "-"}</p>
+                  <div className="flex items-start gap-2">
+                    <GraduationCap className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-muted-foreground mb-0.5">Course</p>
+                      <p className="text-sm font-semibold text-foreground line-clamp-1">{person.course || "-"}</p>
+                    </div>
                   </div>
 
                   {/* Email */}
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-0.5">Email</p>
-                    <p className="text-xs font-medium text-foreground truncate hover:text-primary transition-colors cursor-pointer" title={person.email || "-"}>
-                      {person.email || "-"}
-                    </p>
+                  <div className="flex items-start gap-2">
+                    <Mail className="w-4 h-4 text-purple-500 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-muted-foreground mb-0.5">Email</p>
+                      <p className="text-xs font-medium text-foreground truncate hover:text-primary transition-colors cursor-pointer" title={person.email || "-"}>
+                        {person.email || "-"}
+                      </p>
+                    </div>
                   </div>
 
                   {/* Company */}
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-0.5">Company</p>
-                    <p className="text-sm font-medium text-foreground line-clamp-1">{(person as any).company || "-"}</p>
+                  <div className="flex items-start gap-2">
+                    <Building2 className="w-4 h-4 text-teal-500 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-muted-foreground mb-0.5">Company</p>
+                      <p className="text-sm font-medium text-foreground line-clamp-1">{(person as any).company || "-"}</p>
+                    </div>
                   </div>
 
                 {/* Action Button */}
@@ -421,8 +430,9 @@ export default function Alumni() {
                   {connectionStatuses[person._id] && connectionStatuses[person._id].status === 'accepted' ? (
                     <Button 
                       size="sm" 
-                      className="w-full font-semibold gap-2"
+                      className="w-full h-10 font-semibold gap-2 rounded-full bg-blue-500/10 text-blue-600 hover:bg-blue-500/25 hover:text-blue-700 border border-blue-500/20 hover:border-blue-500/40 dark:bg-blue-500/15 dark:text-blue-400 dark:hover:bg-blue-500/30 dark:hover:text-blue-300 transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
                       onClick={() => handleMessage(person._id)}
+                      variant="ghost"
                     >
                       <MessageCircle className="w-4 h-4" />
                       Message
@@ -430,9 +440,9 @@ export default function Alumni() {
                   ) : connectionStatuses[person._id] && connectionStatuses[person._id].status === 'pending' ? (
                     <Button 
                       size="sm" 
-                      variant="outline" 
-                      className="w-full font-semibold gap-2"
+                      className="w-full h-10 font-semibold gap-2 rounded-full bg-orange-500/10 text-orange-600 hover:bg-orange-500/25 hover:text-orange-700 border border-orange-500/20 hover:border-orange-500/40 dark:bg-orange-500/15 dark:text-orange-400 dark:hover:bg-orange-500/30 dark:hover:text-orange-300 transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
                       disabled
+                      variant="ghost"
                     >
                       <UserCheck className="w-4 h-4" />
                       Request Sent
@@ -440,16 +450,22 @@ export default function Alumni() {
                   ) : (
                     <Button 
                       size="sm" 
-                      className="w-full font-semibold gap-2"
+                      className="w-full h-10 font-semibold gap-2 rounded-full bg-green-500/10 text-green-600 hover:bg-green-500/25 hover:text-green-700 border border-green-500/20 hover:border-green-500/40 dark:bg-green-500/15 dark:text-green-400 dark:hover:bg-green-500/30 dark:hover:text-green-300 transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
                       onClick={() => handleConnect(person._id)}
                       disabled={loadingConnections[person._id]}
+                      variant="ghost"
                     >
                       {loadingConnections[person._id] ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Connecting...
+                        </>
                       ) : (
-                        <UserPlus className="w-4 h-4" />
+                        <>
+                          <UserPlus className="w-4 h-4" />
+                          Connect
+                        </>
                       )}
-                      Connect
                     </Button>
                   )}
                 </div>
