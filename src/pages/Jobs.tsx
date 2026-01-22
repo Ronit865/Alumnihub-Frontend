@@ -24,6 +24,7 @@ import {
   Clock,
   Plus
 } from "lucide-react";
+import { StatusButton } from "@/components/ui/status-button";
 import {
   Dialog,
   DialogContent,

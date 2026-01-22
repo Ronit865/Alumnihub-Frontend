@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Filter, MapPin, Briefcase, Calendar, Loader2, MessageCircle, UserPlus, UserCheck, Users, GraduationCap, Mail, Building2 } from "lucide-react";
+import { Search, Filter, MapPin, Briefcase, Calendar, Loader2, MessageCircle, UserPlus, UserCheck, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -416,50 +416,48 @@ export default function Alumni() {
                     <p className="text-sm font-medium text-foreground line-clamp-1">{(person as any).company || "-"}</p>
                   </div>
 
-                  {/* Action Button - Colorful Pill Style */}
-                  <div className="mt-auto pt-3">
-                    {connectionStatuses[person._id] && connectionStatuses[person._id].status === 'accepted' ? (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="w-full font-semibold gap-2 rounded-full bg-purple-500/10 text-purple-600 hover:bg-purple-500/25 hover:text-purple-700 border border-purple-500/20 hover:border-purple-500/40 focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-purple-500/15 dark:text-purple-400 dark:hover:bg-purple-500/30 dark:hover:text-purple-300"
-                        onClick={() => handleMessage(person._id)}
-                      >
-                        <MessageCircle className="w-4 h-4" />
-                        Message
-                      </Button>
-                    ) : connectionStatuses[person._id] && connectionStatuses[person._id].status === 'pending' ? (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="w-full font-semibold gap-2 rounded-full bg-yellow-500/10 text-yellow-600 border border-yellow-500/20 focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-yellow-500/15 dark:text-yellow-400"
-                        disabled
-                      >
-                        <UserCheck className="w-4 h-4" />
-                        Request Sent
-                      </Button>
-                    ) : (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="w-full font-semibold gap-2 rounded-full bg-blue-500/10 text-blue-600 hover:bg-blue-500/25 hover:text-blue-700 border border-blue-500/20 hover:border-blue-500/40 focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-blue-500/15 dark:text-blue-400 dark:hover:bg-blue-500/30 dark:hover:text-blue-300"
-                        onClick={() => handleConnect(person._id)}
-                        disabled={loadingConnections[person._id]}
-                      >
-                        {loadingConnections[person._id] ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <UserPlus className="w-4 h-4" />
-                        )}
-                        Connect
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
+                {/* Action Button */}
+                <div className="mt-auto pt-3">
+                  {connectionStatuses[person._id] && connectionStatuses[person._id].status === 'accepted' ? (
+                    <Button 
+                      size="sm" 
+                      className="w-full font-semibold gap-2"
+                      onClick={() => handleMessage(person._id)}
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      Message
+                    </Button>
+                  ) : connectionStatuses[person._id] && connectionStatuses[person._id].status === 'pending' ? (
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="w-full font-semibold gap-2"
+                      disabled
+                    >
+                      <UserCheck className="w-4 h-4" />
+                      Request Sent
+                    </Button>
+                  ) : (
+                    <Button 
+                      size="sm" 
+                      className="w-full font-semibold gap-2"
+                      onClick={() => handleConnect(person._id)}
+                      disabled={loadingConnections[person._id]}
+                    >
+                      {loadingConnections[person._id] ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <UserPlus className="w-4 h-4" />
+                      )}
+                      Connect
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
       )}
 
       {/* Load More */}

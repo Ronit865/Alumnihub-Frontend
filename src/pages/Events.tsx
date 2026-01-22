@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Calendar, MapPin, Users, Clock, Search, Loader2, CalendarDays, Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar, MapPin, Users, Clock, Search, CalendarDays, ChevronLeft, ChevronRight, Plus, Loader2, Check } from "lucide-react";
+import { StatusButton } from "@/components/ui/status-button";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -320,8 +321,9 @@ export default function Events() {
                         : handleJoinEvent(event._id)
                     }
                     disabled={
-                        joiningEvent === event._id ||
-                        (!registeredEvents.has(event._id) && event.maxAttendees && event.participants.length >= event.maxAttendees)
+                        !registeredEvents.has(event._id) && 
+                        event.maxAttendees !== undefined && 
+                        event.participants.length >= event.maxAttendees
                     }
                     variant="ghost"
                 >
