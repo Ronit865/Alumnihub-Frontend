@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Filter, MapPin, Briefcase, Calendar, Loader2, MessageCircle, UserPlus, UserCheck, Users } from "lucide-react";
+import { Search, Filter, MapPin, Briefcase, Calendar, Loader2, MessageCircle, UserPlus, UserCheck, Users, GraduationCap, Mail, Building2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { InfoTag } from "@/components/ui/InfoTag";
 import {
   Select,
   SelectContent,
@@ -56,10 +57,10 @@ export default function Alumni() {
     queryFn: async () => {
       try {
         // Use appropriate service based on user type
-        const response = userType === 'admin' 
+        const response = userType === 'admin'
           ? await adminService.getAllUsers()
           : await userService.getAllUsers();
-        
+
         return response;
       } catch (error: any) {
         const apiError = handleApiError(error);
@@ -87,7 +88,7 @@ export default function Alumni() {
     if (Array.isArray(response)) {
       return response;
     }
-    
+
     if (response?.data) {
       if (Array.isArray(response.data)) {
         return response.data;
@@ -99,16 +100,16 @@ export default function Alumni() {
         return response.data.data;
       }
     }
-    
+
     if (response?.users && Array.isArray(response.users)) {
       return response.users;
     }
-    
+
     return [];
   };
 
   // Get all users first
-  const allUsers: User[] = getAllUsersFromResponse(alumniResponse); 
+  const allUsers: User[] = getAllUsersFromResponse(alumniResponse);
 
   // Get current user ID from localStorage
   const currentUserId = localStorage.getItem('userId');
@@ -118,12 +119,12 @@ export default function Alumni() {
     if (!user || !user.name || !user.email) {
       return false;
     }
-    
+
     // Exclude the current user from the list
     if (currentUserId && user._id === currentUserId) {
       return false;
     }
-    
+
     // Check for alumni role - be flexible with string comparison
     const userRole = user.role?.toLowerCase();
     return userRole === "alumni" || userRole === "alumnus";
@@ -155,12 +156,12 @@ export default function Alumni() {
 
   const filteredAlumni = alumniData.filter(person => {
     const matchesSearch = person.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         person.course?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         person.email?.toLowerCase().includes(searchQuery.toLowerCase());
-    
+      person.course?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      person.email?.toLowerCase().includes(searchQuery.toLowerCase());
+
     const matchesYear = selectedYear === "all" || String(person.graduationYear) === selectedYear;
     const matchesIndustry = selectedIndustry === "all" || person.course === selectedIndustry;
-    
+
     return matchesSearch && matchesYear && matchesIndustry;
   });
 
@@ -192,13 +193,13 @@ export default function Alumni() {
     try {
       setLoadingConnections(prev => ({ ...prev, [userId]: true }));
       const response = await connectionService.sendConnectionRequest(userId);
-      
+
       if (response.success) {
         toast({
           title: "Connection request sent!",
           description: "Your request has been sent successfully.",
         });
-        
+
         // Update connection status
         setConnectionStatuses(prev => ({
           ...prev,
@@ -221,7 +222,7 @@ export default function Alumni() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
-  
+
   const handleMessage = (userId: string) => {
     setSelectedUserId(userId);
     setChatDialogOpen(true);
@@ -236,8 +237,8 @@ export default function Alumni() {
   const AlumniCardsSkeleton = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
       {[0, 1, 2, 3, 4, 5].map((i) => (
-        <div 
-          key={i} 
+        <div
+          key={i}
           className="rounded-2xl bg-card border border-border/50 p-4 space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-300"
           style={{ animationDelay: `${i * 40}ms` }}
         >
@@ -288,9 +289,9 @@ export default function Alumni() {
             Connect with {alumniData.length}+ verified alumni across various fields
           </p>
         </div>
-        <Button 
+        <Button
           onClick={() => navigate('/connections')}
-          className="gap-2 w-full sm:w-auto"
+          className="gap-2 w-full sm:w-auto bg-card border-border hover:bg-muted"
           variant="outline"
         >
           <Users className="w-4 h-4" />
@@ -309,7 +310,7 @@ export default function Alumni() {
             className="pl-10"
           />
         </div>
-        
+
         <div className="flex gap-3">
           <Select value={selectedYear} onValueChange={setSelectedYear}>
             <SelectTrigger className="w-[160px]">
@@ -338,10 +339,6 @@ export default function Alumni() {
               ))}
             </SelectContent>
           </Select>
-
-          <Button variant="outline" size="icon" onClick={() => refetch()}>
-            <Filter className="w-4 h-4" />
-          </Button>
         </div>
       </div>
 
@@ -355,112 +352,114 @@ export default function Alumni() {
         <AlumniCardsSkeleton />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        {filteredAlumni.length === 0 ? (
-          <div className="col-span-full text-center py-12">
-            <p className="text-muted-foreground text-lg">
-              {allUsers.length === 0 
-                ? "No users found in the system" 
-                : "No verified alumni found matching your criteria"
-              }
-            </p>
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                setSearchQuery("");
-                setSelectedYear("all");
-                setSelectedIndustry("all");
-              }}
-              className="mt-4"
-            >
-              Clear Filters
-            </Button>
-          </div>
-        ) : (
-          filteredAlumni.map((person) => (
-            <Card key={person._id} className="overflow-hidden border-border/30 bg-card flex flex-col h-full group hover:shadow-lg transition-all duration-300">
-              <CardHeader className="pb-2 pt-4 px-4">
-                {/* Avatar and Name */}
-                <div className="flex gap-2.5 mb-2">
-                  <div className="relative cursor-pointer flex-shrink-0" onClick={() => handleAvatarClick(person._id)}>
-                    <Avatar className="w-14 h-14 rounded-lg ring-2 ring-primary/20 group-hover:ring-4 transition-all">
-                      <AvatarImage src={person.avatar} alt={person.name} />
-                      <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-white font-bold text-sm rounded-lg">
-                        {person.name?.split(' ').map(n => n[0]).join('') || 'AL'}
-                      </AvatarFallback>
-                    </Avatar>
+          {filteredAlumni.length === 0 ? (
+            <div className="col-span-full text-center py-12">
+              <p className="text-muted-foreground text-lg">
+                {allUsers.length === 0
+                  ? "No users found in the system"
+                  : "No verified alumni found matching your criteria"
+                }
+              </p>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSearchQuery("");
+                  setSelectedYear("all");
+                  setSelectedIndustry("all");
+                }}
+                className="mt-4"
+              >
+                Clear Filters
+              </Button>
+            </div>
+          ) : (
+            filteredAlumni.map((person) => (
+              <Card key={person._id} className="overflow-hidden border-border/30 bg-card flex flex-col h-full group hover:shadow-lg transition-all duration-300">
+                <CardHeader className="pb-2 pt-4 px-4">
+                  {/* Avatar and Name */}
+                  <div className="flex gap-2.5 mb-2">
+                    <div className="relative cursor-pointer flex-shrink-0" onClick={() => handleAvatarClick(person._id)}>
+                      <Avatar className="w-14 h-14 rounded-lg ring-2 ring-primary/20 group-hover:ring-4 transition-all">
+                        <AvatarImage src={person.avatar} alt={person.name} />
+                        <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-white font-bold text-sm rounded-lg">
+                          {person.name?.split(' ').map(n => n[0]).join('') || 'AL'}
+                        </AvatarFallback>
+                      </Avatar>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-sm text-foreground group-hover:text-primary transition-colors line-clamp-1">
+                        {person.name || 'Unknown'}
+                      </h3>
+                      <p className="text-xs text-muted-foreground">Graduated {person.graduationYear || 'N/A'}</p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-sm text-foreground group-hover:text-primary transition-colors line-clamp-1">
-                      {person.name || 'Unknown'}
-                    </h3>
-                    <p className="text-xs text-muted-foreground">Graduated {person.graduationYear || 'N/A'}</p>
+                </CardHeader>
+
+                <CardContent className="flex-1 flex flex-col px-4 pb-4 space-y-2">
+                  {/* Course */}
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-0.5">Course</p>
+                    <p className="text-sm font-semibold text-foreground line-clamp-1">{person.course || "-"}</p>
                   </div>
-                </div>
-              </CardHeader>
 
-              <CardContent className="flex-1 flex flex-col px-4 pb-4 space-y-2">
-                {/* Course */}
-                <div>
-                  <p className="text-xs text-muted-foreground mb-0.5">Course</p>
-                  <p className="text-sm font-semibold text-foreground line-clamp-1">{person.course || "-"}</p>
-                </div>
+                  {/* Email */}
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-0.5">Email</p>
+                    <p className="text-xs font-medium text-foreground truncate hover:text-primary transition-colors cursor-pointer" title={person.email || "-"}>
+                      {person.email || "-"}
+                    </p>
+                  </div>
 
-                {/* Email */}
-                <div>
-                  <p className="text-xs text-muted-foreground mb-0.5">Email</p>
-                  <p className="text-xs font-medium text-foreground truncate hover:text-primary transition-colors cursor-pointer" title={person.email || "-"}>
-                    {person.email || "-"}
-                  </p>
-                </div>
+                  {/* Company */}
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-0.5">Company</p>
+                    <p className="text-sm font-medium text-foreground line-clamp-1">{(person as any).company || "-"}</p>
+                  </div>
 
-                {/* Company */}
-                <div>
-                  <p className="text-xs text-muted-foreground mb-0.5">Company</p>
-                  <p className="text-sm font-medium text-foreground line-clamp-1">{(person as any).company || "-"}</p>
-                </div>
-
-                {/* Action Button */}
-                <div className="mt-auto pt-3">
-                  {connectionStatuses[person._id] && connectionStatuses[person._id].status === 'accepted' ? (
-                    <Button 
-                      size="sm" 
-                      className="w-full font-semibold gap-2"
-                      onClick={() => handleMessage(person._id)}
-                    >
-                      <MessageCircle className="w-4 h-4" />
-                      Message
-                    </Button>
-                  ) : connectionStatuses[person._id] && connectionStatuses[person._id].status === 'pending' ? (
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
-                      className="w-full font-semibold gap-2"
-                      disabled
-                    >
-                      <UserCheck className="w-4 h-4" />
-                      Request Sent
-                    </Button>
-                  ) : (
-                    <Button 
-                      size="sm" 
-                      className="w-full font-semibold gap-2"
-                      onClick={() => handleConnect(person._id)}
-                      disabled={loadingConnections[person._id]}
-                    >
-                      {loadingConnections[person._id] ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <UserPlus className="w-4 h-4" />
-                      )}
-                      Connect
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
+                  {/* Action Button - Colorful Pill Style */}
+                  <div className="mt-auto pt-3">
+                    {connectionStatuses[person._id] && connectionStatuses[person._id].status === 'accepted' ? (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="w-full font-semibold gap-2 rounded-full bg-purple-500/10 text-purple-600 hover:bg-purple-500/25 hover:text-purple-700 border border-purple-500/20 hover:border-purple-500/40 focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-purple-500/15 dark:text-purple-400 dark:hover:bg-purple-500/30 dark:hover:text-purple-300"
+                        onClick={() => handleMessage(person._id)}
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                        Message
+                      </Button>
+                    ) : connectionStatuses[person._id] && connectionStatuses[person._id].status === 'pending' ? (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="w-full font-semibold gap-2 rounded-full bg-yellow-500/10 text-yellow-600 border border-yellow-500/20 focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-yellow-500/15 dark:text-yellow-400"
+                        disabled
+                      >
+                        <UserCheck className="w-4 h-4" />
+                        Request Sent
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="w-full font-semibold gap-2 rounded-full bg-blue-500/10 text-blue-600 hover:bg-blue-500/25 hover:text-blue-700 border border-blue-500/20 hover:border-blue-500/40 focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-blue-500/15 dark:text-blue-400 dark:hover:bg-blue-500/30 dark:hover:text-blue-300"
+                        onClick={() => handleConnect(person._id)}
+                        disabled={loadingConnections[person._id]}
+                      >
+                        {loadingConnections[person._id] ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <UserPlus className="w-4 h-4" />
+                        )}
+                        Connect
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
       )}
 
       {/* Load More */}
@@ -471,17 +470,17 @@ export default function Alumni() {
           </Button>
         </div>
       )}
-      
+
       {/* Chat Dialog */}
-      <ChatDialog 
-        open={chatDialogOpen} 
+      <ChatDialog
+        open={chatDialogOpen}
         onOpenChange={setChatDialogOpen}
         userId={selectedUserId || undefined}
       />
-      
+
       {/* User Profile Dialog */}
-      <UserProfileDialog 
-        open={profileDialogOpen} 
+      <UserProfileDialog
+        open={profileDialogOpen}
         onOpenChange={setProfileDialogOpen}
         userId={selectedProfileId}
         onMessageClick={(userId) => {

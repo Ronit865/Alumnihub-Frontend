@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { InfoTag } from "@/components/ui/InfoTag";
 import { toast } from "sonner";
 import { eventService } from "@/services/ApiServices";
 import { userService } from "@/services/ApiServices";
@@ -286,31 +287,34 @@ export default function Events() {
                 {/* Event Details Grid */}
                 <div className="grid grid-cols-2 gap-3 text-sm flex-1 mb-4">
                     <div className="flex items-center gap-2">
-                        <CalendarDays className="h-4 w-4 text-primary flex-shrink-0" />
+                        <CalendarDays className="h-4 w-4 text-blue-500 flex-shrink-0" />
                         <span className="text-foreground font-medium truncate">{formatDate(event.date)}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-primary flex-shrink-0" />
+                        <Clock className="h-4 w-4 text-purple-500 flex-shrink-0" />
                         <span className="text-foreground font-medium truncate">{event.time || "TBD"}</span>
                     </div>
                     {event.location && (
                         <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-primary flex-shrink-0" />
+                            <MapPin className="h-4 w-4 text-teal-500 flex-shrink-0" />
                             <span className="text-foreground font-medium truncate">{event.location}</span>
                         </div>
                     )}
                     <div className="flex items-center gap-2">
-                        <Users className="h-4 w-4 text-primary flex-shrink-0" />
+                        <Users className="h-4 w-4 text-orange-500 flex-shrink-0" />
                         <span className="text-foreground font-medium truncate">
                             {event.participants.length}{event.maxAttendees && `/${event.maxAttendees}`}
                         </span>
                     </div>
                 </div>
 
-                {/* Action Button */}
+                {/* Action Button - Colorful Pill Style */}
                 <Button
                     size="sm"
-                    className="w-full h-10 font-medium"
+                    className={`w-full h-10 font-semibold rounded-full transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0 ${registeredEvents.has(event._id)
+                        ? 'bg-red-500/10 text-red-600 hover:bg-red-500/25 hover:text-red-700 border border-red-500/20 hover:border-red-500/40 dark:bg-red-500/15 dark:text-red-400 dark:hover:bg-red-500/30 dark:hover:text-red-300'
+                        : 'bg-green-500/10 text-green-600 hover:bg-green-500/25 hover:text-green-700 border border-green-500/20 hover:border-green-500/40 dark:bg-green-500/15 dark:text-green-400 dark:hover:bg-green-500/30 dark:hover:text-green-300'
+                        }`}
                     onClick={() => registeredEvents.has(event._id)
                         ? handleLeaveEvent(event._id)
                         : handleJoinEvent(event._id)
@@ -319,7 +323,7 @@ export default function Events() {
                         joiningEvent === event._id ||
                         (!registeredEvents.has(event._id) && event.maxAttendees && event.participants.length >= event.maxAttendees)
                     }
-                    variant={registeredEvents.has(event._id) ? "outline" : "default"}
+                    variant="ghost"
                 >
                     {joiningEvent === event._id ? (
                         <>
@@ -446,7 +450,7 @@ export default function Events() {
                     placeholder="Search events..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 bg-background border-input text-foreground placeholder:text-muted-foreground"
+                    className="pl-10"
                 />
             </div>
 

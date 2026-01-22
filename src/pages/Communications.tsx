@@ -26,7 +26,7 @@ const messages = [
   },
   {
     id: 2,
-    user: "Arjun Patel '15", 
+    user: "Arjun Patel '15",
     message: "Hosting a fintech startup meetup next month in Mumbai. Alumni in finance welcome to join! We'll be discussing the latest trends in digital banking, crypto, and payment solutions. Great networking opportunity!",
     timestamp: "4 hours ago",
     replies: 23,
@@ -40,7 +40,7 @@ const messages = [
     message: "Just published a research paper on biomedical engineering applications in prosthetics. Happy to discuss with fellow researchers and share insights about the latest developments in the field.",
     timestamp: "1 day ago",
     replies: 12,
-    category: "Research", 
+    category: "Research",
     upvotes: 34,
     downvotes: 1
   },
@@ -144,7 +144,7 @@ export default function Communications() {
         category: selectedCategory === 'all' ? undefined : selectedCategory,
         limit: 20
       });
-      
+
       if (response.success && response.data) {
         setPosts(response.data.posts || []);
       }
@@ -181,7 +181,7 @@ export default function Communications() {
         limit: 20,
         type: 'reply,comment,upvote,mention,post'
       });
-      
+
       if (response.success && response.data) {
         setNotifications(response.data.notifications || []);
         setUnreadCount(response.data.unreadCount || 0);
@@ -273,31 +273,40 @@ export default function Communications() {
               )}
             </TabsTrigger>
           </TabsList>
-          
-          {/* Sort Options */}
+
+          {/* Sort Options - Colorful Pill Style */}
           <div className="flex items-center gap-1">
-            <Button 
-              variant={sortBy === 'hot' ? 'default' : 'ghost'} 
-              size="sm" 
-              className="gap-1.5 h-9"
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`gap-1.5 h-9 rounded-full font-semibold transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0 ${sortBy === 'hot'
+                ? 'bg-orange-500/15 text-orange-600 border border-orange-500/30 dark:bg-orange-500/20 dark:text-orange-400'
+                : 'hover:bg-orange-500/10 hover:text-orange-600 border border-transparent hover:border-orange-500/20 dark:hover:bg-orange-500/15 dark:hover:text-orange-400'
+                }`}
               onClick={() => setSortBy('hot')}
             >
               <Flame className="w-4 h-4" />
               Hot
             </Button>
-            <Button 
-              variant={sortBy === 'new' ? 'default' : 'ghost'} 
-              size="sm" 
-              className="gap-1.5 h-9"
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`gap-1.5 h-9 rounded-full font-semibold transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0 ${sortBy === 'new'
+                ? 'bg-blue-500/15 text-blue-600 border border-blue-500/30 dark:bg-blue-500/20 dark:text-blue-400'
+                : 'hover:bg-blue-500/10 hover:text-blue-600 border border-transparent hover:border-blue-500/20 dark:hover:bg-blue-500/15 dark:hover:text-blue-400'
+                }`}
               onClick={() => setSortBy('new')}
             >
               <Clock className="w-4 h-4" />
               New
             </Button>
-            <Button 
-              variant={sortBy === 'top' ? 'default' : 'ghost'} 
-              size="sm" 
-              className="gap-1.5 h-9"
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`gap-1.5 h-9 rounded-full font-semibold transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0 ${sortBy === 'top'
+                ? 'bg-purple-500/15 text-purple-600 border border-purple-500/30 dark:bg-purple-500/20 dark:text-purple-400'
+                : 'hover:bg-purple-500/10 hover:text-purple-600 border border-transparent hover:border-purple-500/20 dark:hover:bg-purple-500/15 dark:hover:text-purple-400'
+                }`}
               onClick={() => setSortBy('top')}
             >
               <TrendingUp className="w-4 h-4" />
@@ -323,7 +332,7 @@ export default function Communications() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card className="border-l-4 border-l-green-500">
               <CardContent className="p-3">
                 <div className="flex items-center justify-between">
@@ -335,7 +344,7 @@ export default function Communications() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card className="border-l-4 border-l-blue-500">
               <CardContent className="p-3">
                 <div className="flex items-center justify-between">
@@ -347,7 +356,7 @@ export default function Communications() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card className="border-l-4 border-l-purple-500">
               <CardContent className="p-3">
                 <div className="flex items-center justify-between">
@@ -396,10 +405,10 @@ export default function Communications() {
                 </div>
                 {unreadCount > 0 && (
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
                     onClick={handleMarkAllAsRead}
-                    className="gap-2"
+                    className="gap-2 rounded-full bg-green-500/10 text-green-600 hover:bg-green-500/25 hover:text-green-700 border border-green-500/20 hover:border-green-500/40 font-semibold focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-green-500/15 dark:text-green-400 dark:hover:bg-green-500/30 dark:hover:text-green-300"
                   >
                     <Check className="w-4 h-4" />
                     Mark all as read
@@ -424,27 +433,25 @@ export default function Communications() {
                       const date = new Date(timestamp);
                       const now = new Date();
                       const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-                      
+
                       if (diffInSeconds < 60) return 'just now';
                       if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
                       if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
                       if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
-                      
+
                       return date.toLocaleDateString();
                     };
 
                     return (
-                      <div 
-                        key={notification._id} 
-                        className={`flex items-start gap-3 p-3 rounded-lg border transition-colors cursor-pointer hover:bg-accent ${
-                          !notification.read ? 'bg-primary/5 border-primary/20' : 'bg-muted/30'
-                        }`}
+                      <div
+                        key={notification._id}
+                        className={`flex items-start gap-3 p-3 rounded-lg border transition-colors cursor-pointer hover:bg-accent ${!notification.read ? 'bg-primary/5 border-primary/20' : 'bg-muted/30'
+                          }`}
                         onClick={() => handleNotificationClick(notification)}
                       >
-                        <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
-                          !notification.read ? 'bg-primary' : 'bg-transparent'
-                        }`} />
-                        
+                        <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${!notification.read ? 'bg-primary' : 'bg-transparent'
+                          }`} />
+
                         <div className="relative flex-shrink-0">
                           <Avatar className="w-8 h-8">
                             <AvatarImage src={notification.sender?.avatar} />
@@ -454,7 +461,7 @@ export default function Communications() {
                           </Avatar>
                           <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-background rounded-full"></div>
                         </div>
-                        
+
                         <div className="flex-1 min-w-0">
                           <h4 className={`font-medium text-sm mb-1 ${!notification.read ? 'text-foreground' : 'text-muted-foreground'}`}>
                             {notification.title}
@@ -497,7 +504,7 @@ export default function Communications() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Recipient Group</label>
-                  <select className="w-full p-2 border rounded-md">
+                  <select className="w-full p-2 border border-border bg-card rounded-md text-foreground">
                     <option>All Alumni</option>
                     <option>Class of 2020</option>
                     <option>Class of 2019</option>
@@ -506,15 +513,15 @@ export default function Communications() {
                   </select>
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <label className="text-sm font-medium">Message Content</label>
-                <Textarea 
+                <Textarea
                   placeholder="Write your announcement..."
                   className="min-h-[150px]"
                 />
               </div>
-              
+
               <div className="flex justify-between items-center">
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm">Save Draft</Button>

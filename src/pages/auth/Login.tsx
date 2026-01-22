@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { authService, handleApiError, handleApiSuccess } from "@/services/ApiServices";
 import { useAuth } from "@/context/AuthContext";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -23,9 +23,11 @@ type LoginForm = z.infer<typeof loginSchema>;
 export const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
+  const { toast } = useToast();
 
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -37,6 +39,7 @@ export const Login = () => {
 
   const onSubmit = async (data: LoginForm) => {
     setIsLoading(true);
+    setLoginError(null); // Clear previous errors
     try {
       const credentials = {
         email: data.email,
@@ -57,8 +60,10 @@ export const Login = () => {
         login(response.data);
 
         // Success toast
-        toast.success("Login successful!", {
+        toast({
+          title: "Login successful!",
           description: successData.message || "Welcome back to AllyNet!",
+          variant: "success",
         });
 
         // Get intended destination or default route
@@ -76,8 +81,12 @@ export const Login = () => {
       console.error('Login error:', error);
       const apiError = handleApiError(error);
 
-      toast.error("Login failed", {
-        description: apiError.message,
+      setLoginError("Invalid credentials"); // Set inline error
+
+      toast({
+        variant: "destructive",
+        title: "Invalid credentials",
+        description: "Please check your email and password.",
       });
     } finally {
       setIsLoading(false);
@@ -103,6 +112,11 @@ export const Login = () => {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              {loginError && (
+                <div className="p-3 rounded-md bg-destructive/15 text-destructive text-sm font-medium flex items-center justify-center border border-destructive/20">
+                  {loginError}
+                </div>
+              )}
               <FormField
                 control={form.control}
                 name="email"

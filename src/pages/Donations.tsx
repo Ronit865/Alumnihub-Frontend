@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { InfoTag } from '@/components/ui/InfoTag';
 import { donationService } from '@/services/ApiServices';
 import { toast } from 'sonner';
 import { Heart, Target, TrendingUp, Loader2, ChevronLeft, ChevronRight, CheckCircle } from 'lucide-react';
@@ -142,10 +143,11 @@ export default function Donations() {
             <p className="text-xs text-muted-foreground mt-1">{Math.min(progress, 100).toFixed(1)}% funded</p>
           </div>
 
+
           {/* Stats Section */}
           <div className="grid grid-cols-2 gap-4 pt-2 flex-1">
             <div className="flex items-center gap-2">
-              <Target className="h-4 w-4 text-primary flex-shrink-0" />
+              <Target className={`h-4 w-4 flex-shrink-0 ${isCompleted ? 'text-green-500' : 'text-yellow-500'}`} />
               <div>
                 <p className="text-xs text-muted-foreground">{isCompleted ? 'Exceeded' : 'Remaining'}</p>
                 <p className="text-sm font-semibold text-foreground">
@@ -154,23 +156,25 @@ export default function Donations() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-primary flex-shrink-0" />
+              <TrendingUp className="h-4 w-4 text-blue-500 flex-shrink-0" />
               <div>
                 <p className="text-xs text-muted-foreground">Contributors</p>
                 <p className="text-sm font-semibold text-foreground">{campaign.donors?.length || 0}</p>
               </div>
             </div>
           </div>
-
-          {/* Button */}
+          {/* Button - Colorful Pill Style */}
           <div className="pt-2 mt-auto">
             <Button
-              className="w-full"
+              className={`w-full rounded-full font-semibold transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0 ${isCompleted
+                ? 'bg-green-500/10 text-green-600 border border-green-500/20 dark:bg-green-500/15 dark:text-green-400'
+                : 'bg-red-500/10 text-red-600 hover:bg-red-500/25 hover:text-red-700 border border-red-500/20 hover:border-red-500/40 dark:bg-red-500/15 dark:text-red-400 dark:hover:bg-red-500/30 dark:hover:text-red-300'
+                }`}
               onClick={() => handleContribute(campaign)}
               disabled={isCompleted}
-              variant={isCompleted ? "outline" : "default"}
+              variant="ghost"
             >
-              {isCompleted ? 'Goal Reached' : 'Contribute Now'}
+              {isCompleted ? '✓ Goal Reached' : '❤ Contribute Now'}
             </Button>
           </div>
         </CardContent>
