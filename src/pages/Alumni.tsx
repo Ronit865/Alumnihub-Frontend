@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Filter, MapPin, Briefcase, Calendar, Loader2, MessageCircle, UserPlus, UserCheck, Users } from "lucide-react";
+import { Search, Filter, MessageCircle, UserPlus, UserCheck, Users } from "lucide-react";
+import { StatusButton } from "@/components/ui/status-button";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -430,30 +431,21 @@ export default function Alumni() {
                       <MessageCircle className="w-4 h-4" />
                       Message
                     </Button>
-                  ) : connectionStatuses[person._id] && connectionStatuses[person._id].status === 'pending' ? (
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
-                      className="w-full font-semibold gap-2"
-                      disabled
-                    >
-                      <UserCheck className="w-4 h-4" />
-                      Request Sent
-                    </Button>
                   ) : (
-                    <Button 
-                      size="sm" 
-                      className="w-full font-semibold gap-2"
+                    <StatusButton
+                      isActive={connectionStatuses[person._id]?.status === 'pending'}
                       onClick={() => handleConnect(person._id)}
-                      disabled={loadingConnections[person._id]}
-                    >
-                      {loadingConnections[person._id] ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <UserPlus className="w-4 h-4" />
-                      )}
-                      Connect
-                    </Button>
+                      disabled={connectionStatuses[person._id]?.status === 'pending'}
+                      isLoading={loadingConnections[person._id]}
+                      loadingLabel="Sending..."
+                      activeLabel="Request Sent"
+                      inactiveLabel="Connect"
+                      hoverLabel="Cancel"
+                      activeIcon={<UserCheck className="h-4 w-4" />}
+                      inactiveIcon={<UserPlus className="h-4 w-4" />}
+                      variant="registered"
+                      className="w-full font-semibold"
+                    />
                   )}
                 </div>
               </CardContent>

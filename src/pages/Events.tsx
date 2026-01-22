@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Calendar, MapPin, Users, Clock, Search, Loader2, CalendarDays, Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar, MapPin, Users, Clock, Search, CalendarDays, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { StatusButton } from "@/components/ui/status-button";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -308,35 +309,26 @@ export default function Events() {
                 </div>
 
                 {/* Action Button */}
-                <Button
-                    size="sm"
-                    className="w-full h-10 font-medium"
+                <StatusButton
+                    isActive={registeredEvents.has(event._id)}
                     onClick={() => registeredEvents.has(event._id)
                         ? handleLeaveEvent(event._id)
                         : handleJoinEvent(event._id)
                     }
                     disabled={
-                        joiningEvent === event._id ||
-                        (!registeredEvents.has(event._id) && event.maxAttendees && event.participants.length >= event.maxAttendees)
+                        !registeredEvents.has(event._id) && 
+                        event.maxAttendees !== undefined && 
+                        event.participants.length >= event.maxAttendees
                     }
-                    variant={registeredEvents.has(event._id) ? "outline" : "default"}
-                >
-                    {joiningEvent === event._id ? (
-                        <>
-                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                            {registeredEvents.has(event._id) ? "Leaving..." : "Joining..."}
-                        </>
-                    ) : registeredEvents.has(event._id) ? (
-                        <>
-                            <Check className="w-4 h-4 mr-2" />
-                            Leave Event
-                        </>
-                    ) : (event.maxAttendees && event.participants.length >= event.maxAttendees) ? (
-                        "Event Full"
-                    ) : (
-                        "Join Event"
-                    )}
-                </Button>
+                    isLoading={joiningEvent === event._id}
+                    loadingLabel={registeredEvents.has(event._id) ? "Leaving..." : "Joining..."}
+                    activeLabel="Joined"
+                    inactiveLabel={(event.maxAttendees && event.participants.length >= event.maxAttendees) ? "Event Full" : "Join Event"}
+                    hoverLabel="Leave"
+                    inactiveIcon={<Plus className="h-4 w-4" />}
+                    variant="joined"
+                    className="w-full h-10 font-medium"
+                />
             </CardContent>
         </Card>
     );
