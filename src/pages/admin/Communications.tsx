@@ -536,11 +536,11 @@ export function Communications() {
 
               <div className="mt-4 pt-4 border-t border-blue-500/20">
                 <Button
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+                  className="w-full gap-2 rounded-xl font-medium transition-all duration-200 bg-sky-500/20 text-sky-400 border border-sky-500/30 hover:bg-sky-500/30 hover:border-sky-500/50"
                   onClick={() => handleSendCampaignEmail('event')}
                   disabled={recentEvents.length === 0 || sendingCampaign !== null}
                 >
-                  {sendingCampaign === 'event' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
+                  {sendingCampaign === 'event' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   {sendingCampaign === 'event' ? "Sending..." : "Send Campaign"}
                 </Button>
               </div>
@@ -575,11 +575,11 @@ export function Communications() {
 
               <div className="mt-4 pt-4 border-t border-green-500/20">
                 <Button
-                  className="w-full bg-green-600 hover:bg-green-700 text-white shadow-sm"
+                  className="w-full gap-2 rounded-xl font-medium transition-all duration-200 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 hover:border-emerald-500/50"
                   onClick={() => handleSendCampaignEmail('job')}
                   disabled={recentJobs.length === 0 || sendingCampaign !== null}
                 >
-                  {sendingCampaign === 'job' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
+                  {sendingCampaign === 'job' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   {sendingCampaign === 'job' ? "Sending..." : "Send Campaign"}
                 </Button>
               </div>
@@ -614,11 +614,11 @@ export function Communications() {
 
               <div className="mt-4 pt-4 border-t border-purple-500/20">
                 <Button
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white shadow-sm"
+                  className="w-full gap-2 rounded-xl font-medium transition-all duration-200 bg-violet-500/20 text-violet-400 border border-violet-500/30 hover:bg-violet-500/30 hover:border-violet-500/50"
                   onClick={() => handleSendCampaignEmail('donation')}
                   disabled={recentDonations.length === 0 || sendingCampaign !== null}
                 >
-                  {sendingCampaign === 'donation' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
+                  {sendingCampaign === 'donation' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   {sendingCampaign === 'donation' ? "Sending..." : "Send Campaign"}
                 </Button>
               </div>
@@ -688,11 +688,11 @@ export function Communications() {
               )}
             </div>
             <Button
-              className="w-full bg-primary hover:bg-primary/90"
+              className="w-full gap-2 rounded-xl font-medium transition-all duration-200 bg-primary/20 text-primary border border-primary/30 hover:bg-primary/30 hover:border-primary/50"
               onClick={handleSendEmail}
               disabled={isSending}
             >
-              <Send className="h-4 w-4 mr-2" />
+              <Send className="h-4 w-4" />
               {isSending ? "Sending..." : "Send Message"}
             </Button>
           </CardContent>

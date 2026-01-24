@@ -595,20 +595,19 @@ function JobCard({ job, onVerify, onDelete, onViewApplicants, actionLoading }: J
               onClick={() => onVerify(job._id)} 
               disabled={actionLoading === job._id}
               size="sm"
-              className="flex-1"
+              className="flex-1 gap-1.5 rounded-xl font-medium transition-all duration-200 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 hover:border-emerald-500/50"
             >
-              <Check className="h-4 w-4 mr-2" />
+              <Check className="h-4 w-4" />
               Verify
             </Button>
           )}
           <Button 
             onClick={() => onDelete(job._id)} 
             disabled={actionLoading === job._id}
-            variant="destructive"
             size="sm"
-            className="flex-1"
+            className="flex-1 gap-1.5 rounded-xl font-medium transition-all duration-200 bg-rose-500/20 text-rose-400 border border-rose-500/30 hover:bg-rose-500/30 hover:border-rose-500/50"
           >
-            <Trash2 className="h-4 w-4 mr-2" />
+            <Trash2 className="h-4 w-4" />
             Reject
           </Button>
         </div>
