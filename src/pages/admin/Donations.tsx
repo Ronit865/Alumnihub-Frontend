@@ -717,10 +717,10 @@ export function Donations() {
                 <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                     <DialogTrigger asChild>
                         <Button 
-                            className="gradient-primary text-primary-foreground hover:shadow-purple"
+                            className="gap-2 h-9 px-4 rounded-xl font-medium transition-all duration-200 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 hover:border-emerald-500/50"
                             onClick={() => setIsCreateDialogOpen(true)}
                         >
-                            <Plus className="h-4 w-4 mr-2" />
+                            <Plus className="h-4 w-4" />
                             Create Campaign
                         </Button>
                     </DialogTrigger>

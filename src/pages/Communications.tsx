@@ -257,17 +257,19 @@ export default function Communications() {
       </div>
 
       <Tabs defaultValue="community" className="space-y-4">
-        <div className="flex items-center justify-between">
-          <TabsList className="grid max-w-md grid-cols-2">
-            <TabsTrigger value="community" className="gap-2">
-              <MessageSquare className="w-4 h-4" />
-              Community
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <TabsList className="grid w-full sm:w-auto sm:max-w-md grid-cols-2">
+            <TabsTrigger value="community" className="gap-2 text-xs sm:text-sm">
+              <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden xs:inline">Community</span>
+              <span className="xs:hidden">Chat</span>
             </TabsTrigger>
-            <TabsTrigger value="notifications" className="gap-2 relative">
-              <Bell className="w-4 h-4" />
-              Notifications
+            <TabsTrigger value="notifications" className="gap-2 relative text-xs sm:text-sm">
+              <Bell className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden xs:inline">Notifications</span>
+              <span className="xs:hidden">Alerts</span>
               {unreadCount > 0 && (
-                <Badge className="ml-1 px-1.5 min-w-[20px] h-5" variant="destructive">
+                <Badge className="ml-1 px-1.5 min-w-[20px] h-5 text-xs" variant="destructive">
                   {unreadCount > 99 ? '99+' : unreadCount}
                 </Badge>
               )}
@@ -275,41 +277,41 @@ export default function Communications() {
           </TabsList>
 
           {/* Sort Options - Colorful Pill Style */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 w-full sm:w-auto justify-start sm:justify-end overflow-x-auto pb-1 sm:pb-0">
             <Button
               variant="ghost"
               size="sm"
-              className={`gap-1.5 h-9 rounded-full font-semibold transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0 ${sortBy === 'hot'
+              className={`gap-1 sm:gap-1.5 h-8 sm:h-9 px-2.5 sm:px-3 rounded-full font-semibold transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0 text-xs sm:text-sm whitespace-nowrap ${sortBy === 'hot'
                 ? 'bg-orange-500/15 text-orange-600 border border-orange-500/30 dark:bg-orange-500/20 dark:text-orange-400'
                 : 'hover:bg-orange-500/10 hover:text-orange-600 border border-transparent hover:border-orange-500/20 dark:hover:bg-orange-500/15 dark:hover:text-orange-400'
                 }`}
               onClick={() => setSortBy('hot')}
             >
-              <Flame className="w-4 h-4" />
+              <Flame className="w-3 h-3 sm:w-4 sm:h-4" />
               Hot
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className={`gap-1.5 h-9 rounded-full font-semibold transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0 ${sortBy === 'new'
+              className={`gap-1 sm:gap-1.5 h-8 sm:h-9 px-2.5 sm:px-3 rounded-full font-semibold transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0 text-xs sm:text-sm whitespace-nowrap ${sortBy === 'new'
                 ? 'bg-blue-500/15 text-blue-600 border border-blue-500/30 dark:bg-blue-500/20 dark:text-blue-400'
                 : 'hover:bg-blue-500/10 hover:text-blue-600 border border-transparent hover:border-blue-500/20 dark:hover:bg-blue-500/15 dark:hover:text-blue-400'
                 }`}
               onClick={() => setSortBy('new')}
             >
-              <Clock className="w-4 h-4" />
+              <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
               New
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className={`gap-1.5 h-9 rounded-full font-semibold transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0 ${sortBy === 'top'
+              className={`gap-1 sm:gap-1.5 h-8 sm:h-9 px-2.5 sm:px-3 rounded-full font-semibold transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0 text-xs sm:text-sm whitespace-nowrap ${sortBy === 'top'
                 ? 'bg-purple-500/15 text-purple-600 border border-purple-500/30 dark:bg-purple-500/20 dark:text-purple-400'
                 : 'hover:bg-purple-500/10 hover:text-purple-600 border border-transparent hover:border-purple-500/20 dark:hover:bg-purple-500/15 dark:hover:text-purple-400'
                 }`}
               onClick={() => setSortBy('top')}
             >
-              <TrendingUp className="w-4 h-4" />
+              <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4" />
               Top
             </Button>
           </div>
@@ -320,51 +322,51 @@ export default function Communications() {
           <PostComposer onPostCreated={handlePostCreated} />
 
           {/* Community Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
             <Card className="border-l-4 border-l-orange-500">
-              <CardContent className="p-3">
+              <CardContent className="p-2.5 sm:p-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-medium text-muted-foreground">Total Posts</p>
-                    <p className="text-2xl font-bold mt-0.5">{stats.totalPosts.toLocaleString()}</p>
+                    <p className="text-[10px] sm:text-xs font-medium text-muted-foreground">Total Posts</p>
+                    <p className="text-lg sm:text-2xl font-bold mt-0.5">{stats.totalPosts.toLocaleString()}</p>
                   </div>
-                  <MessageSquare className="w-6 h-6 text-orange-500" />
+                  <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" />
                 </div>
               </CardContent>
             </Card>
 
             <Card className="border-l-4 border-l-green-500">
-              <CardContent className="p-3">
+              <CardContent className="p-2.5 sm:p-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-medium text-muted-foreground">Active Users</p>
-                    <p className="text-2xl font-bold mt-0.5">{stats.activeUsers.toLocaleString()}</p>
+                    <p className="text-[10px] sm:text-xs font-medium text-muted-foreground">Active Users</p>
+                    <p className="text-lg sm:text-2xl font-bold mt-0.5">{stats.activeUsers.toLocaleString()}</p>
                   </div>
-                  <Users className="w-6 h-6 text-green-500" />
+                  <Users className="w-5 h-5 sm:w-6 sm:h-6 text-green-500" />
                 </div>
               </CardContent>
             </Card>
 
             <Card className="border-l-4 border-l-blue-500">
-              <CardContent className="p-3">
+              <CardContent className="p-2.5 sm:p-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-medium text-muted-foreground">Comments</p>
-                    <p className="text-2xl font-bold mt-0.5">{stats.comments.toLocaleString()}</p>
+                    <p className="text-[10px] sm:text-xs font-medium text-muted-foreground">Comments</p>
+                    <p className="text-lg sm:text-2xl font-bold mt-0.5">{stats.comments.toLocaleString()}</p>
                   </div>
-                  <MessageSquare className="w-6 h-6 text-blue-500" />
+                  <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500" />
                 </div>
               </CardContent>
             </Card>
 
             <Card className="border-l-4 border-l-purple-500">
-              <CardContent className="p-3">
+              <CardContent className="p-2.5 sm:p-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-medium text-muted-foreground">Upvotes</p>
-                    <p className="text-2xl font-bold mt-0.5">{stats.upvotes.toLocaleString()}</p>
+                    <p className="text-[10px] sm:text-xs font-medium text-muted-foreground">Upvotes</p>
+                    <p className="text-lg sm:text-2xl font-bold mt-0.5">{stats.upvotes.toLocaleString()}</p>
                   </div>
-                  <TrendingUp className="w-6 h-6 text-purple-500" />
+                  <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-purple-500" />
                 </div>
               </CardContent>
             </Card>

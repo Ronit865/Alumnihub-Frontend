@@ -311,23 +311,23 @@ export function ChatDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[90vw] max-w-[80vw] h-[80vh] max-h-[80vh] p-0 flex flex-col backdrop-blur-sm border-border/50 shadow-2xl">
+      <DialogContent className="w-[95vw] sm:w-[90vw] max-w-[95vw] sm:max-w-[80vw] md:max-w-[600px] h-[85vh] sm:h-[80vh] max-h-[85vh] sm:max-h-[80vh] p-0 flex flex-col backdrop-blur-sm border-border/50 shadow-2xl">
         {showConversationList ? (
           <>
             {/* Conversations List Header */}
-            <DialogHeader className="px-6 py-4 border-b">
-              <DialogTitle className="text-lg font-semibold">Personal Messages</DialogTitle>
+            <DialogHeader className="px-4 sm:px-6 py-3 sm:py-4 border-b flex-shrink-0">
+              <DialogTitle className="text-base sm:text-lg font-semibold">Personal Messages</DialogTitle>
             </DialogHeader>
 
             {/* Search */}
-            <div className="px-6 py-3 border-b">
+            <div className="px-4 sm:px-6 py-2 sm:py-3 border-b flex-shrink-0">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   placeholder="Search conversations..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 h-9 sm:h-10 text-sm"
                 />
               </div>
             </div>
@@ -349,24 +349,24 @@ export function ChatDialog({
                     <div
                       key={conv._id}
                       onClick={() => handleSelectConversation(conv)}
-                      className="flex items-center gap-4 p-4 hover:bg-accent cursor-pointer transition-colors"
+                      className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 hover:bg-accent cursor-pointer transition-colors active:bg-accent/80"
                     >
-                      <Avatar className="w-12 h-12">
+                      <Avatar className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
                         <AvatarImage src={conv.participant?.avatar} />
-                        <AvatarFallback className="bg-primary/20 text-primary font-medium">
+                        <AvatarFallback className="bg-primary/20 text-primary font-medium text-sm sm:text-base">
                           {conv.participant?.name?.split(' ').map(n => n[0]).join('') || 'U'}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <p className="font-medium truncate">{conv.participant?.name}</p>
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="font-medium truncate text-sm sm:text-base">{conv.participant?.name}</p>
                           {conv.lastMessage?.createdAt && (
-                            <span className="text-xs text-muted-foreground">
+                            <span className="text-[10px] sm:text-xs text-muted-foreground flex-shrink-0">
                               {getTimeAgo(conv.lastMessage.createdAt)}
                             </span>
                           )}
                         </div>
-                        <p className="text-sm text-muted-foreground truncate">
+                        <p className="text-xs sm:text-sm text-muted-foreground truncate">
                           {conv.lastMessage?.content || 'No messages yet'}
                         </p>
                       </div>
@@ -379,38 +379,38 @@ export function ChatDialog({
         ) : (
           <>
             {/* Chat Header */}
-            <DialogHeader className="px-6 py-4 border-b">
-              <div className="flex items-center gap-3">
+            <DialogHeader className="px-3 sm:px-6 py-3 sm:py-4 border-b flex-shrink-0">
+              <div className="flex items-center gap-2 sm:gap-3">
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={handleBackToList}
-                  className="h-8 w-8"
+                  className="h-8 w-8 flex-shrink-0"
                 >
                   <ArrowLeft className="w-4 h-4" />
                 </Button>
-                <Avatar className="w-10 h-10">
+                <Avatar className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0">
                   <AvatarImage src={participant.avatar} />
-                  <AvatarFallback className="bg-primary/20 text-primary font-medium">
+                  <AvatarFallback className="bg-primary/20 text-primary font-medium text-sm">
                     {participant.name?.split(' ').map(n => n[0]).join('') || 'U'}
                   </AvatarFallback>
                 </Avatar>
-                <DialogTitle className="text-lg font-semibold">{participant.name || 'Chat'}</DialogTitle>
+                <DialogTitle className="text-base sm:text-lg font-semibold truncate">{participant.name || 'Chat'}</DialogTitle>
               </div>
             </DialogHeader>
 
             {/* Messages */}
-            <ScrollArea className="flex-1 px-6 py-4">
+            <ScrollArea className="flex-1 px-3 sm:px-6 py-3 sm:py-4">
               {loading ? (
                 <div className="flex items-center justify-center h-full">
                   <Loader2 className="w-6 h-6 animate-spin text-primary" />
                 </div>
               ) : messages.length === 0 ? (
                 <div className="flex items-center justify-center h-full">
-                  <p className="text-muted-foreground text-sm">No messages yet. Start the conversation!</p>
+                  <p className="text-muted-foreground text-sm text-center px-4">No messages yet. Start the conversation!</p>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {messages.map((message) => {
                     const isMe = message.sender._id === currentUser?._id;
                     const canDelete = isMe && canDeleteMessage(message.createdAt);
@@ -418,17 +418,17 @@ export function ChatDialog({
                     return (
                       <div
                         key={message._id}
-                        className={`flex ${isMe ? "justify-end" : "justify-start"}`}
+                        className={`flex ${isMe ? "justify-end" : "justify-start"} will-change-transform`}
                       >
-                        <div className={`flex items-end gap-1 max-w-[70%] group ${isMe ? "flex-row" : "flex-row-reverse"}`}>
+                        <div className={`flex items-end gap-1 max-w-[85%] sm:max-w-[70%] group ${isMe ? "flex-row" : "flex-row-reverse"}`}>
                           <div className="relative">
-                            <div className={`rounded-2xl px-4 py-2 ${
+                            <div className={`rounded-2xl px-3 sm:px-4 py-2 ${
                               isMe 
                                 ? "bg-primary text-primary-foreground" 
                                 : "bg-muted"
                             }`}>
                               <p className="text-sm break-words">{message.content}</p>
-                              <p className={`text-xs mt-1 ${
+                              <p className={`text-[10px] sm:text-xs mt-1 ${
                                 isMe 
                                   ? "text-primary-foreground/70" 
                                   : "text-muted-foreground"
@@ -443,7 +443,7 @@ export function ChatDialog({
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 mb-1"
+                                  className="opacity-0 group-hover:opacity-100 sm:transition-opacity h-6 w-6 mb-1 touch-manipulation"
                                 >
                                   <MoreVertical className="w-4 h-4 text-muted-foreground" />
                                 </Button>
@@ -461,9 +461,9 @@ export function ChatDialog({
                             </DropdownMenu>
                           )}
                           {!isMe && (
-                            <Avatar className="w-8 h-8">
+                            <Avatar className="w-6 h-6 sm:w-8 sm:h-8 flex-shrink-0">
                               <AvatarImage src={message.sender.avatar} />
-                              <AvatarFallback className="bg-primary/20 text-primary text-xs">
+                              <AvatarFallback className="bg-primary/20 text-primary text-[10px] sm:text-xs">
                                 {message.sender.name.split(' ').map(n => n[0]).join('')}
                               </AvatarFallback>
                             </Avatar>
@@ -478,7 +478,7 @@ export function ChatDialog({
             </ScrollArea>
 
             {/* Input */}
-            <div className="px-6 py-4 border-t">
+            <div className="px-3 sm:px-6 py-3 sm:py-4 border-t flex-shrink-0">
               <div className="flex items-center gap-2">
                 <Input
                   placeholder="Type a message..."
@@ -486,12 +486,13 @@ export function ChatDialog({
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
                   disabled={!conversationId}
-                  className="flex-1"
+                  className="flex-1 h-9 sm:h-10 text-sm"
                 />
                 <Button 
                   onClick={handleSendMessage}
                   disabled={!newMessage.trim() || !conversationId}
                   size="icon"
+                  className="h-9 w-9 sm:h-10 sm:w-10 flex-shrink-0"
                 >
                   <Send className="w-4 h-4" />
                 </Button>
