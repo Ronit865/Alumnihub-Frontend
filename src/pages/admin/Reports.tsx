@@ -289,89 +289,159 @@ export function Reports() {
                             <CardTitle>Reported Users</CardTitle>
                             <CardDescription>Users with 3+ reports are highlighted in red</CardDescription>
                         </CardHeader>
-                        <CardContent>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>User</TableHead>
-                                        <TableHead>Reports</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead>Top Reasons</TableHead>
-                                        <TableHead className="text-right">Actions</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {reportedUsers.length === 0 ? (
+                        <CardContent className="p-0 sm:p-6 sm:pt-0">
+                            {/* Desktop Table View */}
+                            <div className="hidden md:block overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
                                         <TableRow>
-                                            <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                                                No reported users found
-                                            </TableCell>
+                                            <TableHead>User</TableHead>
+                                            <TableHead>Reports</TableHead>
+                                            <TableHead>Status</TableHead>
+                                            <TableHead>Top Reasons</TableHead>
+                                            <TableHead className="text-right">Actions</TableHead>
                                         </TableRow>
-                                    ) : (
-                                        reportedUsers.map((item) => (
-                                            <TableRow
-                                                key={item._id}
-                                                className={item.reportCount >= 3 ? "bg-red-500/10 hover:bg-red-500/20" : ""}
-                                            >
-                                                <TableCell>
-                                                    <div className="flex items-center gap-3">
-                                                        <Avatar className="h-8 w-8">
-                                                            <AvatarImage src={item.user.avatar} />
-                                                            <AvatarFallback>{item.user.name?.charAt(0) || "U"}</AvatarFallback>
-                                                        </Avatar>
-                                                        <div>
-                                                            <p className={`font-medium ${item.reportCount >= 3 ? "text-red-500" : ""}`}>
-                                                                {item.user.name}
-                                                            </p>
-                                                            <p className="text-xs text-muted-foreground">{item.user.email}</p>
-                                                        </div>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Badge
-                                                        className={item.reportCount >= 3
-                                                            ? "bg-red-500/20 text-red-500 border-red-500/30"
-                                                            : "bg-orange-500/20 text-orange-500 border-orange-500/30"
-                                                        }
-                                                    >
-                                                        {item.reportCount} reports
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell>{getBanStatusBadge(item.user.banStatus)}</TableCell>
-                                                <TableCell>
-                                                    <div className="flex gap-1 flex-wrap">
-                                                        {[...new Set(item.reports.map(r => r.reason))].slice(0, 2).map((reason, i) => (
-                                                            <span key={i}>{getReasonBadge(reason)}</span>
-                                                        ))}
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="text-right">
-                                                    {item.user.banStatus === "active" ? (
-                                                        <Button
-                                                            size="sm"
-                                                            variant="destructive"
-                                                            onClick={() => handleBanUser(item)}
-                                                        >
-                                                            <Ban className="h-4 w-4 mr-1" />
-                                                            Ban
-                                                        </Button>
-                                                    ) : (
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            onClick={() => unbanMutation.mutate(item._id)}
-                                                            disabled={unbanMutation.isPending}
-                                                        >
-                                                            <ShieldOff className="h-4 w-4 mr-1" />
-                                                            Unban
-                                                        </Button>
-                                                    )}
+                                    </TableHeader>
+                                    <TableBody>
+                                        {reportedUsers.length === 0 ? (
+                                            <TableRow>
+                                                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                                                    No reported users found
                                                 </TableCell>
                                             </TableRow>
-                                        ))
-                                    )}
-                                </TableBody>
-                            </Table>
+                                        ) : (
+                                            reportedUsers.map((item) => (
+                                                <TableRow
+                                                    key={item._id}
+                                                    className={item.reportCount >= 3 ? "bg-red-500/10 hover:bg-red-500/20" : ""}
+                                                >
+                                                    <TableCell>
+                                                        <div className="flex items-center gap-3">
+                                                            <Avatar className="h-8 w-8">
+                                                                <AvatarImage src={item.user.avatar} />
+                                                                <AvatarFallback>{item.user.name?.charAt(0) || "U"}</AvatarFallback>
+                                                            </Avatar>
+                                                            <div>
+                                                                <p className={`font-medium ${item.reportCount >= 3 ? "text-red-500" : ""}`}>
+                                                                    {item.user.name}
+                                                                </p>
+                                                                <p className="text-xs text-muted-foreground">{item.user.email}</p>
+                                                            </div>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Badge
+                                                            className={item.reportCount >= 3
+                                                                ? "bg-red-500/20 text-red-500 border-red-500/30"
+                                                                : "bg-orange-500/20 text-orange-500 border-orange-500/30"
+                                                            }
+                                                        >
+                                                            {item.reportCount} reports
+                                                        </Badge>
+                                                    </TableCell>
+                                                    <TableCell>{getBanStatusBadge(item.user.banStatus)}</TableCell>
+                                                    <TableCell>
+                                                        <div className="flex gap-1 flex-wrap">
+                                                            {[...new Set(item.reports.map(r => r.reason))].slice(0, 2).map((reason, i) => (
+                                                                <span key={i}>{getReasonBadge(reason)}</span>
+                                                            ))}
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        {item.user.banStatus === "active" ? (
+                                                            <Button
+                                                                size="sm"
+                                                                className="gap-1 h-8 px-3 rounded-lg font-medium bg-rose-500/20 text-rose-400 border border-rose-500/30 hover:bg-rose-500/30 hover:border-rose-500/50"
+                                                                onClick={() => handleBanUser(item)}
+                                                            >
+                                                                <Ban className="h-3.5 w-3.5" />
+                                                                Ban
+                                                            </Button>
+                                                        ) : (
+                                                            <Button
+                                                                size="sm"
+                                                                className="gap-1 h-8 px-3 rounded-lg font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 hover:border-emerald-500/50"
+                                                                onClick={() => unbanMutation.mutate(item._id)}
+                                                                disabled={unbanMutation.isPending}
+                                                            >
+                                                                <ShieldOff className="h-3.5 w-3.5" />
+                                                                Unban
+                                                            </Button>
+                                                        )}
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                            
+                            {/* Mobile Card View */}
+                            <div className="md:hidden space-y-3 p-3">
+                                {reportedUsers.length === 0 ? (
+                                    <div className="text-center py-8 text-muted-foreground text-sm">
+                                        No reported users found
+                                    </div>
+                                ) : (
+                                    reportedUsers.map((item) => (
+                                        <div
+                                            key={item._id}
+                                            className={`p-4 rounded-xl border ${item.reportCount >= 3 ? "bg-red-500/10 border-red-500/30" : "bg-accent/30 border-card-border/30"}`}
+                                        >
+                                            <div className="flex items-start justify-between gap-3 mb-3">
+                                                <div className="flex items-center gap-3">
+                                                    <Avatar className="h-10 w-10">
+                                                        <AvatarImage src={item.user.avatar} />
+                                                        <AvatarFallback>{item.user.name?.charAt(0) || "U"}</AvatarFallback>
+                                                    </Avatar>
+                                                    <div>
+                                                        <p className={`font-medium text-sm ${item.reportCount >= 3 ? "text-red-500" : ""}`}>
+                                                            {item.user.name}
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground">{item.user.email}</p>
+                                                    </div>
+                                                </div>
+                                                {getBanStatusBadge(item.user.banStatus)}
+                                            </div>
+                                            <div className="flex flex-wrap gap-1.5 mb-3">
+                                                <Badge
+                                                    className={item.reportCount >= 3
+                                                        ? "bg-red-500/20 text-red-500 border-red-500/30"
+                                                        : "bg-orange-500/20 text-orange-500 border-orange-500/30"
+                                                    }
+                                                >
+                                                    {item.reportCount} reports
+                                                </Badge>
+                                                {[...new Set(item.reports.map(r => r.reason))].slice(0, 2).map((reason, i) => (
+                                                    <span key={i}>{getReasonBadge(reason)}</span>
+                                                ))}
+                                            </div>
+                                            <div className="flex justify-end">
+                                                {item.user.banStatus === "active" ? (
+                                                    <Button
+                                                        size="sm"
+                                                        className="gap-1 h-8 px-3 rounded-lg font-medium bg-rose-500/20 text-rose-400 border border-rose-500/30 hover:bg-rose-500/30"
+                                                        onClick={() => handleBanUser(item)}
+                                                    >
+                                                        <Ban className="h-3.5 w-3.5" />
+                                                        Ban User
+                                                    </Button>
+                                                ) : (
+                                                    <Button
+                                                        size="sm"
+                                                        className="gap-1 h-8 px-3 rounded-lg font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30"
+                                                        onClick={() => unbanMutation.mutate(item._id)}
+                                                        disabled={unbanMutation.isPending}
+                                                    >
+                                                        <ShieldOff className="h-3.5 w-3.5" />
+                                                        Unban
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -410,67 +480,117 @@ export function Reports() {
                                 </div>
                             </div>
                         </CardHeader>
-                        <CardContent>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Post Author</TableHead>
-                                        <TableHead>Content</TableHead>
-                                        <TableHead>Reported By</TableHead>
-                                        <TableHead>Reason</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead className="text-right">Actions</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {filteredReports.length === 0 ? (
+                        <CardContent className="p-0 sm:p-6 sm:pt-0">
+                            {/* Desktop Table View */}
+                            <div className="hidden lg:block overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
                                         <TableRow>
-                                            <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                                                No reports found
-                                            </TableCell>
+                                            <TableHead>Post Author</TableHead>
+                                            <TableHead>Content</TableHead>
+                                            <TableHead>Reported By</TableHead>
+                                            <TableHead>Reason</TableHead>
+                                            <TableHead>Status</TableHead>
+                                            <TableHead className="text-right">Actions</TableHead>
                                         </TableRow>
-                                    ) : (
-                                        filteredReports.map((report) => (
-                                            <TableRow key={report._id}>
-                                                <TableCell>
-                                                    <div className="flex items-center gap-2">
-                                                        <Avatar className="h-6 w-6">
-                                                            <AvatarImage src={report.post?.author?.avatar} />
-                                                            <AvatarFallback>{report.post?.author?.name?.charAt(0) || "U"}</AvatarFallback>
-                                                        </Avatar>
-                                                        <span className="text-sm">{report.post?.author?.name || "Unknown"}</span>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <p className="text-sm line-clamp-2 max-w-xs">{report.post?.content || "Content unavailable"}</p>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <span className="text-sm">{report.reporter?.name || "Unknown"}</span>
-                                                </TableCell>
-                                                <TableCell>{getReasonBadge(report.reason)}</TableCell>
-                                                <TableCell>
-                                                    <Badge variant={report.status === "pending" ? "outline" : "secondary"}>
-                                                        {report.status}
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell className="text-right">
-                                                    {report.status === "pending" && (
-                                                        <Button
-                                                            size="sm"
-                                                            variant="ghost"
-                                                            onClick={() => dismissMutation.mutate(report._id)}
-                                                            disabled={dismissMutation.isPending}
-                                                        >
-                                                            <XCircle className="h-4 w-4 mr-1" />
-                                                            Dismiss
-                                                        </Button>
-                                                    )}
+                                    </TableHeader>
+                                    <TableBody>
+                                        {filteredReports.length === 0 ? (
+                                            <TableRow>
+                                                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                                                    No reports found
                                                 </TableCell>
                                             </TableRow>
-                                        ))
-                                    )}
-                                </TableBody>
-                            </Table>
+                                        ) : (
+                                            filteredReports.map((report) => (
+                                                <TableRow key={report._id}>
+                                                    <TableCell>
+                                                        <div className="flex items-center gap-2">
+                                                            <Avatar className="h-6 w-6">
+                                                                <AvatarImage src={report.post?.author?.avatar} />
+                                                                <AvatarFallback>{report.post?.author?.name?.charAt(0) || "U"}</AvatarFallback>
+                                                            </Avatar>
+                                                            <span className="text-sm">{report.post?.author?.name || "Unknown"}</span>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <p className="text-sm line-clamp-2 max-w-xs">{report.post?.content || "Content unavailable"}</p>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <span className="text-sm">{report.reporter?.name || "Unknown"}</span>
+                                                    </TableCell>
+                                                    <TableCell>{getReasonBadge(report.reason)}</TableCell>
+                                                    <TableCell>
+                                                        <Badge variant={report.status === "pending" ? "outline" : "secondary"}>
+                                                            {report.status}
+                                                        </Badge>
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        {report.status === "pending" && (
+                                                            <Button
+                                                                size="sm"
+                                                                className="gap-1 h-8 px-3 rounded-lg font-medium bg-zinc-500/20 text-zinc-400 border border-zinc-500/30 hover:bg-zinc-500/30"
+                                                                onClick={() => dismissMutation.mutate(report._id)}
+                                                                disabled={dismissMutation.isPending}
+                                                            >
+                                                                <XCircle className="h-3.5 w-3.5" />
+                                                                Dismiss
+                                                            </Button>
+                                                        )}
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                            
+                            {/* Mobile/Tablet Card View */}
+                            <div className="lg:hidden space-y-3 p-3">
+                                {filteredReports.length === 0 ? (
+                                    <div className="text-center py-8 text-muted-foreground text-sm">
+                                        No reports found
+                                    </div>
+                                ) : (
+                                    filteredReports.map((report) => (
+                                        <div
+                                            key={report._id}
+                                            className="p-4 rounded-xl bg-accent/30 border border-card-border/30"
+                                        >
+                                            <div className="flex items-start justify-between gap-3 mb-3">
+                                                <div className="flex items-center gap-2">
+                                                    <Avatar className="h-8 w-8">
+                                                        <AvatarImage src={report.post?.author?.avatar} />
+                                                        <AvatarFallback>{report.post?.author?.name?.charAt(0) || "U"}</AvatarFallback>
+                                                    </Avatar>
+                                                    <div>
+                                                        <p className="font-medium text-sm">{report.post?.author?.name || "Unknown"}</p>
+                                                        <p className="text-xs text-muted-foreground">Reported by {report.reporter?.name || "Unknown"}</p>
+                                                    </div>
+                                                </div>
+                                                <Badge variant={report.status === "pending" ? "outline" : "secondary"} className="text-xs">
+                                                    {report.status}
+                                                </Badge>
+                                            </div>
+                                            <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{report.post?.content || "Content unavailable"}</p>
+                                            <div className="flex items-center justify-between">
+                                                {getReasonBadge(report.reason)}
+                                                {report.status === "pending" && (
+                                                    <Button
+                                                        size="sm"
+                                                        className="gap-1 h-8 px-3 rounded-lg font-medium bg-zinc-500/20 text-zinc-400 border border-zinc-500/30 hover:bg-zinc-500/30"
+                                                        onClick={() => dismissMutation.mutate(report._id)}
+                                                        disabled={dismissMutation.isPending}
+                                                    >
+                                                        <XCircle className="h-3.5 w-3.5" />
+                                                        Dismiss
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
                         </CardContent>
                     </Card>
                 </TabsContent>

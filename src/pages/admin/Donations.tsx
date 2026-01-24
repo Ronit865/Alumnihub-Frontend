@@ -1089,74 +1089,118 @@ export function Donations() {
                             </div>
                         </div>
                     ) : (
-                        <div className="overflow-x-auto table-scrollbar">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Donor</TableHead>
-                                        <TableHead>Campaign</TableHead>
-                                        <TableHead>Amount</TableHead>
-                                        <TableHead>Date</TableHead>
-                                        <TableHead>Status</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {recentDonors.map((donation, index) => (
-                                        <TableRow 
-                                            key={`recent-donation-${donation._id}-${index}`}
-                                            className="animate-fade-in hover:bg-accent/30"
-                                            style={{ animationDelay: `${index * 100}ms` }}
-                                        >
-                                            <TableCell>
-                                                <div className="flex items-center gap-3">
-                                                    <Avatar className="w-8 h-8">
-                                                        <AvatarImage 
-                                                            src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(donation.name || 'Anonymous')}`} 
-                                                            alt={donation.name} 
-                                                        />
-                                                        <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                                                            {donation.name.split(' ').map((n: string) => n[0]).join('')}
-                                                        </AvatarFallback>
-                                                    </Avatar>
-                                                    <div>
-                                                        <p className="font-medium">{donation.name}</p>
-                                                        <p className="text-sm text-muted-foreground">{donation.email}</p>
-                                                    </div>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div>
-                                                    <p className="font-medium">{donation.campaign}</p>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        {donation.graduationYear ? `Class of ${donation.graduationYear}` : 'Alumni'}
-                                                    </p>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <p className="font-semibold text-primary">
-                                                    {formatCurrency(donation.amount)}
-                                                </p>
-                                            </TableCell>
-                                            <TableCell>
-                                                <p className="text-sm">{formatDate(donation.donatedAt)}</p>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge 
-                                                    variant={donation.status === 'completed' ? 'default' : 'secondary'}
-                                                    className={
-                                                        donation.status === 'completed' 
-                                                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-                                                            : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                                                    }
-                                                >
-                                                    {donation.status}
-                                                </Badge>
-                                            </TableCell>
+                        <>
+                            {/* Desktop Table View */}
+                            <div className="hidden md:block overflow-x-auto table-scrollbar">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Donor</TableHead>
+                                            <TableHead>Campaign</TableHead>
+                                            <TableHead>Amount</TableHead>
+                                            <TableHead>Date</TableHead>
+                                            <TableHead>Status</TableHead>
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </div>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {recentDonors.map((donation, index) => (
+                                            <TableRow 
+                                                key={`recent-donation-${donation._id}-${index}`}
+                                                className="animate-fade-in hover:bg-accent/30"
+                                                style={{ animationDelay: `${index * 100}ms` }}
+                                            >
+                                                <TableCell>
+                                                    <div className="flex items-center gap-3">
+                                                        <Avatar className="w-8 h-8">
+                                                            <AvatarImage 
+                                                                src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(donation.name || 'Anonymous')}`} 
+                                                                alt={donation.name} 
+                                                            />
+                                                            <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                                                                {donation.name.split(' ').map((n: string) => n[0]).join('')}
+                                                            </AvatarFallback>
+                                                        </Avatar>
+                                                        <div>
+                                                            <p className="font-medium">{donation.name}</p>
+                                                            <p className="text-sm text-muted-foreground">{donation.email}</p>
+                                                        </div>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div>
+                                                        <p className="font-medium">{donation.campaign}</p>
+                                                        <p className="text-sm text-muted-foreground">
+                                                            {donation.graduationYear ? `Class of ${donation.graduationYear}` : 'Alumni'}
+                                                        </p>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <p className="font-semibold text-primary">
+                                                        {formatCurrency(donation.amount)}
+                                                    </p>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <p className="text-sm">{formatDate(donation.donatedAt)}</p>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Badge 
+                                                        className={
+                                                            donation.status === 'completed' 
+                                                                ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' 
+                                                                : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+                                                        }
+                                                    >
+                                                        {donation.status}
+                                                    </Badge>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                            
+                            {/* Mobile Card View */}
+                            <div className="md:hidden space-y-3 p-3">
+                                {recentDonors.map((donation, index) => (
+                                    <div 
+                                        key={`recent-donation-mobile-${donation._id}-${index}`}
+                                        className="p-4 rounded-xl bg-accent/30 border border-card-border/30 animate-fade-in"
+                                        style={{ animationDelay: `${index * 100}ms` }}
+                                    >
+                                        <div className="flex items-start justify-between gap-3 mb-3">
+                                            <div className="flex items-center gap-3">
+                                                <Avatar className="w-10 h-10">
+                                                    <AvatarImage 
+                                                        src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(donation.name || 'Anonymous')}`} 
+                                                        alt={donation.name} 
+                                                    />
+                                                    <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                                                        {donation.name.split(' ').map((n: string) => n[0]).join('')}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <div>
+                                                    <p className="font-medium text-sm">{donation.name}</p>
+                                                    <p className="text-xs text-muted-foreground">{donation.campaign}</p>
+                                                </div>
+                                            </div>
+                                            <Badge 
+                                                className={
+                                                    donation.status === 'completed' 
+                                                        ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' 
+                                                        : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+                                                }
+                                            >
+                                                {donation.status}
+                                            </Badge>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <p className="font-semibold text-primary">{formatCurrency(donation.amount)}</p>
+                                            <p className="text-xs text-muted-foreground">{formatDate(donation.donatedAt)}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </>
                     )}
                 </CardContent>
             </Card>
