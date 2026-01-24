@@ -299,21 +299,23 @@ export function Jobs() {
 
       {/* Tabs */}
       <Tabs defaultValue="pending" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="pending" className="relative">
-            <Clock className="h-4 w-4 mr-2" />
-            Pending Verification
+        <TabsList className="grid w-full grid-cols-2 h-auto p-1.5 bg-muted/50 rounded-lg">
+          <TabsTrigger value="pending" className="flex items-center gap-2 justify-center h-10 py-2.5 rounded-md text-muted-foreground data-[state=active]:bg-sky-200 data-[state=active]:text-sky-900 data-[state=active]:shadow-sm dark:data-[state=active]:bg-sky-500/20 dark:data-[state=active]:text-sky-400 transition-all duration-200">
+            <Clock className="h-4 w-4" />
+            <span className="hidden sm:inline">Pending Verification</span>
+            <span className="sm:inline hidden sm:hidden">Pending</span>
             {pendingJobs.length > 0 && (
-              <Badge variant="secondary" className="ml-2 bg-primary text-primary-foreground hover:bg-primary/90">
+              <Badge variant="secondary" className="bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border-0 h-5 px-1.5 min-w-5 justify-center">
                 {pendingJobs.length}
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="verified">
-            <CheckCircle className="h-4 w-4 mr-2" />
-            Verified Jobs
+          <TabsTrigger value="verified" className="flex items-center gap-2 justify-center h-10 py-2.5 rounded-md text-muted-foreground data-[state=active]:bg-sky-200 data-[state=active]:text-sky-900 data-[state=active]:shadow-sm dark:data-[state=active]:bg-sky-500/20 dark:data-[state=active]:text-sky-400 transition-all duration-200">
+            <CheckCircle className="h-4 w-4" />
+            <span className="hidden sm:inline">Verified Jobs</span>
+            <span className="sm:inline hidden sm:hidden">Verified</span>
             {verifiedJobs.length > 0 && (
-              <Badge variant="secondary" className="ml-2 bg-success/10 text-success hover:bg-success/20">
+              <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border-0 h-5 px-1.5 min-w-5 justify-center">
                 {verifiedJobs.length}
               </Badge>
             )}
@@ -522,9 +524,9 @@ function JobCard({ job, onVerify, onDelete, onViewApplicants, actionLoading }: J
             {job.title}
           </CardTitle>
           {job.isVerified ? (
-            <Badge className="bg-green-500/15 text-green-600 border-green-200/50 text-xs shrink-0">✓ Verified</Badge>
+            <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-400 border-0 text-xs shrink-0 font-medium">Verified</Badge>
           ) : (
-            <Badge className="bg-amber-500/15 text-amber-600 border-amber-200/50 text-xs shrink-0">⚠ Pending</Badge>
+            <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-400 border-0 text-xs shrink-0 font-medium">Pending</Badge>
           )}
         </div>
       </CardHeader>
