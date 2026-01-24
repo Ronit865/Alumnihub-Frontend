@@ -2,9 +2,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { 
-  Users, Calendar, IndianRupee, TrendingUp, UserCheck, Mail, Award, 
-  ArrowUpRight, Loader2, GraduationCap, Briefcase, ArrowRight, 
+import {
+  Users, Calendar, IndianRupee, TrendingUp, UserCheck, Mail, Award,
+  ArrowUpRight, Loader2, GraduationCap, Briefcase, ArrowRight,
   Activity, Clock, ChevronRight, Sparkles
 } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -95,7 +95,7 @@ export function Dashboard() {
           const eventsResponse = await eventService.getEvents();
           events = Array.isArray(eventsResponse?.data) ? eventsResponse.data : [];
           setTotalEvents(events.length);
-          
+
           // Filter upcoming events (events with date >= today)
           const now = new Date();
           const upcoming = events
@@ -122,13 +122,13 @@ export function Dashboard() {
           const jobsResponse = await jobService.getAllJobs();
           const jobs = jobsResponse?.data || [];
           setTotalJobs(Array.isArray(jobs) ? jobs.length : 0);
-          const verified = Array.isArray(jobs) 
-            ? jobs.filter((job: any) => job.isVerified === true).length 
+          const verified = Array.isArray(jobs)
+            ? jobs.filter((job: any) => job.isVerified === true).length
             : 0;
           setVerifiedJobs(verified);
-          
+
           // Get pending jobs (not verified)
-          const pending = Array.isArray(jobs) 
+          const pending = Array.isArray(jobs)
             ? jobs.filter((job: any) => job.isVerified !== true).slice(0, 5)
             : [];
           setPendingJobs(pending);
@@ -155,7 +155,7 @@ export function Dashboard() {
             .filter((user: any) => user.createdAt)
             .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
             .slice(0, 2);
-          
+
           sortedAlumni.forEach((user: any) => {
             activities.push({
               id: `alumni-${user._id}`,
@@ -175,7 +175,7 @@ export function Dashboard() {
             .filter((event: any) => event.createdAt)
             .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
             .slice(0, 2);
-          
+
           sortedEvents.forEach((event: any) => {
             activities.push({
               id: `event-${event._id}`,
@@ -192,11 +192,11 @@ export function Dashboard() {
 
         if (donors.length > 0) {
           const uniqueDonors = donors
-            .filter((donor: any, index: number, self: any[]) => 
+            .filter((donor: any, index: number, self: any[]) =>
               index === self.findIndex((d: any) => d.name === donor.name && d.campaign === donor.campaign)
             )
             .slice(0, 3);
-          
+
           uniqueDonors.forEach((donor: any) => {
             activities.push({
               id: `donation-${donor._id}`,
@@ -269,8 +269,8 @@ export function Dashboard() {
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[0, 1, 2, 3].map((i) => (
-            <div 
-              key={i} 
+            <div
+              key={i}
               className="rounded-2xl p-4 sm:p-5 bg-card/50 border border-border/50 animate-in fade-in slide-in-from-bottom-2 duration-500"
               style={{ animationDelay: `${i * 75}ms` }}
             >
@@ -287,8 +287,8 @@ export function Dashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div 
-          className="rounded-2xl bg-card/50 border border-border/50 p-6 animate-in fade-in slide-in-from-bottom-2 duration-500" 
+        <div
+          className="rounded-2xl bg-card/50 border border-border/50 p-6 animate-in fade-in slide-in-from-bottom-2 duration-500"
           style={{ animationDelay: '300ms' }}
         >
           <Skeleton className="h-5 w-32 mb-4 bg-muted/60" />
@@ -304,8 +304,8 @@ export function Dashboard() {
 
         {/* Main Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div 
-            className="lg:col-span-2 rounded-2xl bg-card/50 border border-border/50 p-6 animate-in fade-in slide-in-from-bottom-2 duration-500" 
+          <div
+            className="lg:col-span-2 rounded-2xl bg-card/50 border border-border/50 p-6 animate-in fade-in slide-in-from-bottom-2 duration-500"
             style={{ animationDelay: '400ms' }}
           >
             <Skeleton className="h-5 w-40 mb-4 bg-muted/60" />
@@ -322,8 +322,8 @@ export function Dashboard() {
               ))}
             </div>
           </div>
-          <div 
-            className="rounded-2xl bg-card/50 border border-border/50 p-6 animate-in fade-in slide-in-from-bottom-2 duration-500" 
+          <div
+            className="rounded-2xl bg-card/50 border border-border/50 p-6 animate-in fade-in slide-in-from-bottom-2 duration-500"
             style={{ animationDelay: '500ms' }}
           >
             <Skeleton className="h-5 w-36 mb-4 bg-muted/60" />
@@ -373,7 +373,7 @@ export function Dashboard() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="stats-card-orange group cursor-pointer" onClick={() => navigate('/admin/alumni')}>
+        <div className="stats-card-orange group cursor-pointer shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1" onClick={() => navigate('/admin/alumni')}>
           <div className="flex items-start justify-between">
             <div className="space-y-1">
               <p className="stats-card-label">Total Alumni</p>
@@ -389,7 +389,7 @@ export function Dashboard() {
           </div>
         </div>
 
-        <div className="stats-card-blue group cursor-pointer" onClick={() => navigate('/admin/events')}>
+        <div className="stats-card-blue group cursor-pointer shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1" onClick={() => navigate('/admin/events')}>
           <div className="flex items-start justify-between">
             <div className="space-y-1">
               <p className="stats-card-label">Total Events</p>
@@ -405,7 +405,7 @@ export function Dashboard() {
           </div>
         </div>
 
-        <div className="stats-card-pink group cursor-pointer" onClick={() => navigate('/admin/donations')}>
+        <div className="stats-card-pink group cursor-pointer shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1" onClick={() => navigate('/admin/donations')}>
           <div className="flex items-start justify-between">
             <div className="space-y-1">
               <p className="stats-card-label">Donations</p>
@@ -421,7 +421,7 @@ export function Dashboard() {
           </div>
         </div>
 
-        <div className="stats-card-teal group cursor-pointer" onClick={() => navigate('/admin/jobs')}>
+        <div className="stats-card-teal group cursor-pointer shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1" onClick={() => navigate('/admin/jobs')}>
           <div className="flex items-start justify-between">
             <div className="space-y-1">
               <p className="stats-card-label">Verified Jobs</p>
@@ -439,10 +439,10 @@ export function Dashboard() {
       </div>
 
       {/* Quick Actions */}
-      <Card className="border-0 shadow-sm bg-card/50 backdrop-blur-sm">
+      <Card className="h-full font-sans border-0 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-card/50 backdrop-blur-sm">
         <CardHeader className="pb-4">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-primary" />
+          <CardTitle className="text-lg font-bold flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-amber-500" />
             Quick Actions
           </CardTitle>
         </CardHeader>
@@ -467,12 +467,12 @@ export function Dashboard() {
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Upcoming Events */}
-        <Card className="lg:col-span-2 border-0 shadow-sm bg-card/50 backdrop-blur-sm">
+        <Card className="h-full font-sans lg:col-span-2 border-0 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-card/50 backdrop-blur-sm">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-primary" />
+                <CardTitle className="text-lg font-bold flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-blue-500" />
                   Upcoming Events
                 </CardTitle>
                 <CardDescription>Next scheduled events</CardDescription>
@@ -486,8 +486,8 @@ export function Dashboard() {
             {upcomingEvents.length > 0 ? (
               <div className="space-y-3">
                 {upcomingEvents.map((event: any, index: number) => (
-                  <div 
-                    key={event._id || index} 
+                  <div
+                    key={event._id || index}
                     className="flex items-center gap-4 p-3 rounded-xl bg-secondary/30 hover:bg-secondary/50 transition-colors cursor-pointer"
                     onClick={() => navigate('/admin/events')}
                   >
@@ -507,7 +507,7 @@ export function Dashboard() {
                         {event.location || 'Location TBD'}
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {new Date(event.date).toLocaleDateString('en-US', { 
+                        {new Date(event.date).toLocaleDateString('en-US', {
                           weekday: 'short',
                           hour: '2-digit',
                           minute: '2-digit'
@@ -530,10 +530,10 @@ export function Dashboard() {
         </Card>
 
         {/* Recent Activity */}
-        <Card className="border-0 shadow-sm bg-card/50 backdrop-blur-sm">
+        <Card className="h-full font-sans border-0 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-card/50 backdrop-blur-sm">
           <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Activity className="w-5 h-5 text-primary" />
+            <CardTitle className="text-lg font-bold flex items-center gap-2">
+              <Activity className="w-5 h-5 text-purple-500" />
               Recent Activity
             </CardTitle>
             <CardDescription>Latest updates</CardDescription>
@@ -583,12 +583,12 @@ export function Dashboard() {
       {/* Bottom Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Pending Jobs Approval */}
-        <Card className="lg:col-span-2 border-0 shadow-sm bg-card/50 backdrop-blur-sm">
+        <Card className="h-full font-sans lg:col-span-2 border-0 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-card/50 backdrop-blur-sm">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Briefcase className="w-5 h-5 text-primary" />
+                <CardTitle className="text-lg font-bold flex items-center gap-2">
+                  <Briefcase className="w-5 h-5 text-orange-500" />
                   Pending Approval
                 </CardTitle>
                 <CardDescription>Jobs awaiting verification</CardDescription>
@@ -602,8 +602,8 @@ export function Dashboard() {
             {pendingJobs.length > 0 ? (
               <div className="space-y-3">
                 {pendingJobs.map((job: any, index: number) => (
-                  <div 
-                    key={job._id || index} 
+                  <div
+                    key={job._id || index}
                     className="flex items-center justify-between p-3 rounded-xl bg-secondary/30 hover:bg-secondary/50 transition-colors cursor-pointer"
                     onClick={() => navigate('/admin/jobs')}
                   >
@@ -628,13 +628,11 @@ export function Dashboard() {
                     <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0 ml-3" />
                   </div>
                 ))}
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="w-full mt-2"
+                <Button
+                  className="w-full mt-2 gap-2 h-9 px-4 rounded-full font-medium transition-all duration-200 bg-orange-500/10 text-orange-600 hover:bg-orange-500/25 hover:text-orange-700 border border-orange-500/20 hover:border-orange-500/40 focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-orange-500/15 dark:text-orange-400 dark:hover:bg-orange-500/30 dark:hover:text-orange-300"
                   onClick={() => navigate('/admin/jobs')}
                 >
-                  Review All Jobs <ArrowRight className="w-4 h-4 ml-1" />
+                  Review All Jobs <ArrowRight className="w-4 h-4 ml-1 text-orange-500" />
                 </Button>
               </div>
             ) : (
@@ -649,12 +647,12 @@ export function Dashboard() {
         </Card>
 
         {/* Recent Donations */}
-        <Card className="border-0 shadow-sm bg-card/50 backdrop-blur-sm">
+        <Card className="h-full font-sans border-0 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-card/50 backdrop-blur-sm">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <IndianRupee className="w-5 h-5 text-primary" />
+                <CardTitle className="text-lg font-bold flex items-center gap-2">
+                  <IndianRupee className="w-5 h-5 text-emerald-500" />
                   Recent Donations
                 </CardTitle>
                 <CardDescription>Latest contributions</CardDescription>
@@ -668,8 +666,8 @@ export function Dashboard() {
             {recentDonors.length > 0 ? (
               <div className="space-y-3">
                 {recentDonors.slice(0, 5).map((donor: any, index: number) => (
-                  <div 
-                    key={donor._id || index} 
+                  <div
+                    key={donor._id || index}
                     className="flex items-center justify-between p-3 rounded-xl bg-secondary/30 hover:bg-secondary/50 transition-colors"
                   >
                     <div className="flex items-center gap-3 min-w-0">

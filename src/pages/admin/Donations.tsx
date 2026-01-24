@@ -81,7 +81,7 @@ export function Donations() {
     const [activePage, setActivePage] = useState(0);
     const [completedPage, setCompletedPage] = useState(0);
     const { toast: toastHook } = useToast();
-    
+
     // Edit Campaign State
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
@@ -119,7 +119,7 @@ export function Donations() {
                     const processedCampaigns = (response.data || []).map((campaign: any) => {
                         // Handle raised amount - prioritize 'raised' over 'raisedAmount'
                         const raisedAmount = campaign.raised || campaign.raisedAmount || 0;
-                        
+
                         // Handle donors count with multiple fallbacks - same logic as user side
                         let donorCount = 0;
                         if (Array.isArray(campaign.donors)) {
@@ -142,7 +142,7 @@ export function Donations() {
                             donors: donorCount
                         };
                     });
-                    
+
                     setCampaigns(processedCampaigns);
                     setError(null);
                 } else {
@@ -175,7 +175,7 @@ export function Donations() {
         const fetchStatsAndDonors = async () => {
             try {
                 setLoadingStats(true);
-                
+
                 // Fetch donation stats
                 const statsResponse = await donationService.getDonationStats();
                 if (statsResponse.success) {
@@ -183,7 +183,7 @@ export function Donations() {
                 } else {
                     console.error("Failed to fetch donation stats:", statsResponse.message);
                 }
-                
+
                 // Fetch recent donors
                 const donorsResponse = await donationService.getRecentDonors();
                 if (donorsResponse.success) {
@@ -203,8 +203,8 @@ export function Donations() {
     }, []);
 
     const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat("en-IN", { 
-            style: "currency", 
+        return new Intl.NumberFormat("en-IN", {
+            style: "currency",
             currency: "INR",
             minimumFractionDigits: 0,
             maximumFractionDigits: 0
@@ -275,15 +275,15 @@ export function Donations() {
 
     const validateForm = (): boolean => {
         const errors: Partial<CreateCampaignForm> = {};
-        
+
         if (!formData.name.trim()) {
             errors.name = "Campaign name is required";
         }
-        
+
         if (!formData.description.trim()) {
             errors.description = "Description is required";
         }
-        
+
         if (!formData.goal || parseFloat(formData.goal) <= 0) {
             errors.goal = "Please enter a valid goal amount";
         }
@@ -294,26 +294,26 @@ export function Donations() {
             const selectedDate = new Date(formData.endDate);
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-            
+
             if (selectedDate <= today) {
                 errors.endDate = "End date must be in the future";
             }
         }
-        
+
         setFormErrors(errors);
         return Object.keys(errors).length === 0;
     };
 
     const handleCreateCampaign = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (!validateForm()) {
             return;
         }
 
         try {
             setIsCreating(true);
-            
+
             const campaignData = {
                 name: formData.name.trim(),
                 description: formData.description.trim(),
@@ -323,14 +323,14 @@ export function Donations() {
             };
 
             const response = await donationService.createCampaign(campaignData);
-            
+
             if (response.success) {
                 toastHook({
                     title: "Campaign created",
                     description: "Campaign has been successfully created",
                     variant: "success",
                 });
-                
+
                 // Reset form and close dialog
                 setFormData({
                     name: "",
@@ -341,7 +341,7 @@ export function Donations() {
                 });
                 setFormErrors({});
                 setIsCreateDialogOpen(false);
-                
+
                 // Refresh campaigns list
                 window.location.reload();
             } else {
@@ -370,13 +370,13 @@ export function Donations() {
             setLoadingDonors(true);
             setSelectedCampaignName(campaignName);
             setIsDonorsDialogOpen(true);
-            
+
             const response = await donationService.getCampaignDonors(campaignId);
-            
+
             // Handle the response - check multiple possible formats
             const responseData = response?.data || response;
             const isSuccess = response?.success ?? (responseData && Array.isArray(responseData));
-            
+
             if (isSuccess && Array.isArray(responseData)) {
                 if (responseData.length > 0) {
                     // Transform the donor data - data is now flattened
@@ -388,7 +388,7 @@ export function Donations() {
                         date: donor.donatedAt || new Date().toISOString(),
                         avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(donor.name || 'Anonymous')}`
                     }));
-                    
+
                     setSelectedCampaignDonors(transformedDonors);
                 } else {
                     setSelectedCampaignDonors([]);
@@ -477,7 +477,7 @@ export function Donations() {
                 description: "Campaign has been successfully updated",
                 variant: "success",
             });
-            
+
             setIsEditDialogOpen(false);
             setEditingCampaign(null);
             window.location.reload();
@@ -527,8 +527,8 @@ export function Donations() {
                 {/* Stats Cards */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-bottom-2 duration-500" style={{ animationDelay: '100ms' }}>
                     {[0, 1, 2, 3].map((i) => (
-                        <div 
-                            key={i} 
+                        <div
+                            key={i}
                             className="rounded-2xl p-4 sm:p-5 bg-card/50 border border-border/50"
                         >
                             <div className="flex items-center justify-between">
@@ -548,8 +548,8 @@ export function Donations() {
                     <Skeleton className="h-6 w-48 mb-4 bg-muted/60" />
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {[0, 1, 2].map((i) => (
-                            <div 
-                                key={i} 
+                            <div
+                                key={i}
                                 className="rounded-2xl p-5 bg-card/50 border border-border/50 space-y-4"
                                 style={{ animationDelay: `${250 + i * 50}ms` }}
                             >
@@ -576,8 +576,8 @@ export function Donations() {
                     <Skeleton className="h-6 w-40 mb-4 bg-muted/60" />
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                         {[0, 1, 2, 3, 4, 5].map((i) => (
-                            <div 
-                                key={i} 
+                            <div
+                                key={i}
                                 className="rounded-2xl p-5 bg-card/50 border border-border/50 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500"
                                 style={{ animationDelay: `${400 + i * 50}ms` }}
                             >
@@ -712,12 +712,12 @@ export function Donations() {
                         Track fundraising campaigns, donations, and donor engagement.
                     </p>
                 </div>
-                
+
                 {/* Create Campaign Dialog */}
                 <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                     <DialogTrigger asChild>
-                        <Button 
-                            className="gap-2 h-9 px-4 rounded-xl font-medium transition-all duration-200 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 hover:border-emerald-500/50"
+                        <Button
+                            className="gap-2 h-9 px-4 rounded-full font-medium transition-all duration-200 bg-green-500/10 text-green-600 hover:bg-green-500/25 hover:text-green-700 border border-green-500/20 hover:border-green-500/40 focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-green-500/15 dark:text-green-400 dark:hover:bg-green-500/30 dark:hover:text-green-300"
                             onClick={() => setIsCreateDialogOpen(true)}
                         >
                             <Plus className="h-4 w-4" />
@@ -731,7 +731,7 @@ export function Donations() {
                                 Start a new fundraising campaign for the alumni community.
                             </DialogDescription>
                         </DialogHeader>
-                        
+
                         <form onSubmit={handleCreateCampaign} className="space-y-6 mt-4">
                             {/* Campaign Name */}
                             <div className="space-y-2">
@@ -743,9 +743,8 @@ export function Donations() {
                                     placeholder="Enter campaign name"
                                     value={formData.name}
                                     onChange={(e) => handleInputChange("name", e.target.value)}
-                                    className={`border-card-border/50 focus:border-primary ${
-                                        formErrors.name ? "border-destructive" : ""
-                                    }`}
+                                    className={`border-card-border/50 focus:border-primary ${formErrors.name ? "border-destructive" : ""
+                                        }`}
                                 />
                                 {formErrors.name && (
                                     <p className="text-sm text-destructive">{formErrors.name}</p>
@@ -762,9 +761,8 @@ export function Donations() {
                                     placeholder="Describe your campaign goals and purpose"
                                     value={formData.description}
                                     onChange={(e) => handleInputChange("description", e.target.value)}
-                                    className={`min-h-[100px] border-card-border/50 focus:border-primary resize-none ${
-                                        formErrors.description ? "border-destructive" : ""
-                                    }`}
+                                    className={`min-h-[100px] border-card-border/50 focus:border-primary resize-none ${formErrors.description ? "border-destructive" : ""
+                                        }`}
                                 />
                                 {formErrors.description && (
                                     <p className="text-sm text-destructive">{formErrors.description}</p>
@@ -783,9 +781,8 @@ export function Donations() {
                                         placeholder="100000"
                                         value={formData.goal}
                                         onChange={(e) => handleInputChange("goal", e.target.value)}
-                                        className={`border-card-border/50 focus:border-primary ${
-                                            formErrors.goal ? "border-destructive" : ""
-                                        }`}
+                                        className={`border-card-border/50 focus:border-primary ${formErrors.goal ? "border-destructive" : ""
+                                            }`}
                                     />
                                     {formErrors.goal && (
                                         <p className="text-sm text-destructive">{formErrors.goal}</p>
@@ -801,9 +798,8 @@ export function Donations() {
                                         type="date"
                                         value={formData.endDate}
                                         onChange={(e) => handleInputChange("endDate", e.target.value)}
-                                        className={`border-card-border/50 focus:border-primary ${
-                                            formErrors.endDate ? "border-destructive" : ""
-                                        }`}
+                                        className={`border-card-border/50 focus:border-primary ${formErrors.endDate ? "border-destructive" : ""
+                                            }`}
                                         min={new Date().toISOString().split('T')[0]}
                                     />
                                     {formErrors.endDate && (
@@ -932,16 +928,16 @@ export function Donations() {
 
             {/* Pagination Controls Component */}
             {(() => {
-                const PaginationControls = ({ 
-                    currentPage, 
-                    totalPages, 
-                    onPrevious, 
-                    onNext 
-                }: { 
-                    currentPage: number; 
-                    totalPages: number; 
-                    onPrevious: () => void; 
-                    onNext: () => void; 
+                const PaginationControls = ({
+                    currentPage,
+                    totalPages,
+                    onPrevious,
+                    onNext
+                }: {
+                    currentPage: number;
+                    totalPages: number;
+                    onPrevious: () => void;
+                    onNext: () => void;
                 }) => (
                     <div className="flex items-center justify-center gap-4 mt-6">
                         <Button variant="outline" size="sm" onClick={onPrevious} disabled={currentPage === 0} className="gap-1">
@@ -964,11 +960,11 @@ export function Donations() {
 
                 const CampaignCard = ({ campaign, index }: { campaign: Campaign; index: number }) => {
                     return (
-                        <Card key={`campaign-${campaign._id}`} className="overflow-hidden border-border/30 bg-card flex flex-col h-full animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
+                        <Card key={`campaign-${campaign._id}`} className="overflow-hidden border-border/30 bg-card font-sans shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col h-full animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
                             <CardHeader className="pb-3 pt-5 px-5">
                                 <div className="flex justify-between items-start gap-2">
                                     <div className="flex-1 min-w-0">
-                                        <CardTitle className="text-lg font-bold text-foreground line-clamp-2">
+                                        <CardTitle className="text-lg font-semibold text-foreground line-clamp-2">
                                             {campaign.name}
                                         </CardTitle>
                                     </div>
@@ -985,7 +981,7 @@ export function Donations() {
                                                 Edit Campaign
                                             </DropdownMenuItem>
                                             <DropdownMenuSeparator />
-                                            <DropdownMenuItem 
+                                            <DropdownMenuItem
                                                 className="text-destructive"
                                                 onClick={() => handleDeleteCampaign(campaign._id)}
                                             >
@@ -1018,7 +1014,7 @@ export function Donations() {
                                         <p className="text-xs text-muted-foreground">Raised</p>
                                         <p className="font-semibold text-foreground">{formatCurrency(campaign.raised || 0)}</p>
                                     </div>
-                                    <div>
+                                    <div className="text-right">
                                         <p className="text-xs text-muted-foreground">Goal</p>
                                         <p className="font-semibold text-foreground">{formatCurrency(campaign.goal)}</p>
                                     </div>
@@ -1026,12 +1022,13 @@ export function Donations() {
 
                                 {/* Donors and Button */}
                                 <div className="mt-auto pt-2 space-y-2">
-                                    <div className="flex items-center gap-2 text-sm">
-                                        <Users className="h-4 w-4 text-primary flex-shrink-0" />
-                                        <span className="font-medium text-foreground">{getDonorCount(campaign)} donors</span>
-                                    </div>
-                                    <Button variant="outline" size="sm" className="w-full border-card-border/50 hover:bg-accent h-8 text-xs" onClick={() => fetchCampaignDonors(campaign._id, campaign.name)}>
-                                        View Donors
+                                    <Button
+                                        size="sm"
+                                        className="w-full h-8 text-xs gap-1.5 rounded-full font-medium transition-all duration-200 bg-blue-500/10 text-blue-600 hover:bg-blue-500/25 hover:text-blue-700 border border-blue-500/20 hover:border-blue-500/40 focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-blue-500/15 dark:text-blue-400 dark:hover:bg-blue-500/30 dark:hover:text-blue-300"
+                                        onClick={() => fetchCampaignDonors(campaign._id, campaign.name)}
+                                    >
+                                        <Users className="h-3.5 w-3.5" />
+                                        View Donors ({getDonorCount(campaign)})
                                     </Button>
                                 </div>
                             </CardContent>
@@ -1043,7 +1040,7 @@ export function Donations() {
                     <>
                         {/* Active Campaigns */}
                         <div>
-                            <div className="flex items-center gap-2 mb-4"><Target className="h-5 w-5 text-primary" /><h2 className="text-xl font-semibold text-foreground">Active Donations ({activeCampaigns.length})</h2></div>
+                            <div className="flex items-center gap-2 mb-4"><Target className="h-5 w-5 text-red-500" /><h2 className="text-xl font-semibold text-foreground">Active Donations ({activeCampaigns.length})</h2></div>
                             {activeCampaigns.length === 0 ? (
                                 <Card className="border-card-border/50"><CardContent className="pt-12 pb-12 text-center"><Target className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><p className="text-muted-foreground">No active campaigns.</p></CardContent></Card>
                             ) : (
@@ -1068,7 +1065,7 @@ export function Donations() {
             <Card className="bento-card gradient-surface border-card-border/50">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                        <Clock className="h-5 w-5 text-primary" />
+                        <Clock className="h-5 w-5 text-amber-500" />
                         Recent Donations
                     </CardTitle>
                     <CardDescription>
@@ -1104,7 +1101,7 @@ export function Donations() {
                                     </TableHeader>
                                     <TableBody>
                                         {recentDonors.map((donation, index) => (
-                                            <TableRow 
+                                            <TableRow
                                                 key={`recent-donation-${donation._id}-${index}`}
                                                 className="animate-fade-in hover:bg-accent/30"
                                                 style={{ animationDelay: `${index * 100}ms` }}
@@ -1112,9 +1109,9 @@ export function Donations() {
                                                 <TableCell>
                                                     <div className="flex items-center gap-3">
                                                         <Avatar className="w-8 h-8">
-                                                            <AvatarImage 
-                                                                src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(donation.name || 'Anonymous')}`} 
-                                                                alt={donation.name} 
+                                                            <AvatarImage
+                                                                src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(donation.name || 'Anonymous')}`}
+                                                                alt={donation.name}
                                                             />
                                                             <AvatarFallback className="bg-primary/10 text-primary text-xs">
                                                                 {donation.name.split(' ').map((n: string) => n[0]).join('')}
@@ -1143,11 +1140,11 @@ export function Donations() {
                                                     <p className="text-sm">{formatDate(donation.donatedAt)}</p>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Badge 
+                                                    <Badge
                                                         className={
-                                                            donation.status === 'completed' 
-                                                                ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' 
-                                                                : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+                                                            donation.status === 'completed'
+                                                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-400 border-0'
+                                                                : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500/20 dark:text-yellow-400 border-0'
                                                         }
                                                     >
                                                         {donation.status}
@@ -1158,11 +1155,11 @@ export function Donations() {
                                     </TableBody>
                                 </Table>
                             </div>
-                            
+
                             {/* Mobile Card View */}
                             <div className="md:hidden space-y-3 p-3">
                                 {recentDonors.map((donation, index) => (
-                                    <div 
+                                    <div
                                         key={`recent-donation-mobile-${donation._id}-${index}`}
                                         className="p-4 rounded-xl bg-accent/30 border border-card-border/30 animate-fade-in"
                                         style={{ animationDelay: `${index * 100}ms` }}
@@ -1170,9 +1167,9 @@ export function Donations() {
                                         <div className="flex items-start justify-between gap-3 mb-3">
                                             <div className="flex items-center gap-3">
                                                 <Avatar className="w-10 h-10">
-                                                    <AvatarImage 
-                                                        src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(donation.name || 'Anonymous')}`} 
-                                                        alt={donation.name} 
+                                                    <AvatarImage
+                                                        src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(donation.name || 'Anonymous')}`}
+                                                        alt={donation.name}
                                                     />
                                                     <AvatarFallback className="bg-primary/10 text-primary text-xs">
                                                         {donation.name.split(' ').map((n: string) => n[0]).join('')}
@@ -1183,11 +1180,11 @@ export function Donations() {
                                                     <p className="text-xs text-muted-foreground">{donation.campaign}</p>
                                                 </div>
                                             </div>
-                                            <Badge 
+                                            <Badge
                                                 className={
-                                                    donation.status === 'completed' 
-                                                        ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' 
-                                                        : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+                                                    donation.status === 'completed'
+                                                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-400 border-0'
+                                                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500/20 dark:text-yellow-400 border-0'
                                                 }
                                             >
                                                 {donation.status}
@@ -1207,15 +1204,15 @@ export function Donations() {
 
             {/* Campaign Donors Dialog - Redesigned */}
             <Dialog open={isDonorsDialogOpen} onOpenChange={setIsDonorsDialogOpen}>
-                <DialogContent 
+                <DialogContent
                     key={selectedCampaignDonors.length}
-                    className="sm:max-w-[700px] max-w-[95vw] bento-card gradient-surface border-card-border/50" 
+                    className="sm:max-w-[700px] max-w-[95vw] bento-card gradient-surface border-card-border/50"
                     style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
                 >
                     <DialogHeader className="pb-4 border-b border-card-border/20">
                         <div className="flex items-center gap-3">
                             <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
-                                <IndianRupee className="h-6 w-6 text-primary" />
+                                <IndianRupee className="h-6 w-6 text-emerald-500" />
                             </div>
                             <div>
                                 <DialogTitle className="text-xl font-semibold text-foreground">
@@ -1227,7 +1224,7 @@ export function Donations() {
                             </div>
                         </div>
                     </DialogHeader>
-                    
+
                     <div className="mt-4">
                         {loadingDonors ? (
                             <div className="flex items-center justify-center py-16">
@@ -1282,7 +1279,7 @@ export function Donations() {
                                         </div>
                                     ))}
                                 </div>
-                                
+
                                 <div className="flex justify-end gap-3 pt-4 mt-4 border-t border-card-border/20">
                                     <Button
                                         variant="outline"
@@ -1304,7 +1301,7 @@ export function Donations() {
                     <DialogHeader className="pb-4 border-b border-card-border/20">
                         <div className="flex items-center gap-3">
                             <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
-                                <Edit className="h-5 w-5 text-primary" />
+                                <Edit className="h-5 w-5 text-blue-500" />
                             </div>
                             <div>
                                 <DialogTitle className="text-xl font-semibold text-foreground">Edit Campaign</DialogTitle>
@@ -1314,7 +1311,7 @@ export function Donations() {
                             </div>
                         </div>
                     </DialogHeader>
-                    
+
                     <form onSubmit={handleUpdateCampaign} className="space-y-5 mt-4">
                         <div className="space-y-2">
                             <Label htmlFor="edit-name" className="text-sm font-medium text-foreground">Campaign Name *</Label>

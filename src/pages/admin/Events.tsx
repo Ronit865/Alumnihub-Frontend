@@ -464,7 +464,7 @@ export function Events() {
   const EventCard = ({ event, index }: { event: Event; index: number }) => (
     <Card
       key={event._id}
-      className="bento-card hover:shadow-md border-card-border/50 animate-fade-in relative group flex flex-col h-full"
+      className="bento-card font-sans shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-card-border/50 animate-fade-in relative group flex flex-col h-full"
       style={{ animationDelay: `${index * 100}ms` }}
     >
       <CardContent className="p-6 flex-1 flex flex-col">
@@ -485,7 +485,7 @@ export function Events() {
             <DropdownMenuContent align="end" className="bg-popover">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuItem onClick={() => handleEditEvent(event)}>
-                <Edit className="h-4 w-4 mr-2" />
+                <Edit className="h-4 w-4 mr-2 text-blue-600" />
                 Edit Event
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleViewParticipants(event._id, event.title)}>
@@ -497,7 +497,7 @@ export function Events() {
                 className="text-destructive"
                 onClick={() => handleDeleteEvent(event._id)}
               >
-                <Trash2 className="h-4 w-4 mr-2" />
+                <Trash2 className="h-4 w-4 mr-2 text-red-600" />
                 Delete Event
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -512,23 +512,23 @@ export function Events() {
         {/* Event Details Grid */}
         <div className="grid grid-cols-2 gap-3 text-sm flex-1">
           <div className="flex items-center gap-2">
-            <CalendarDays className="h-4 w-4 text-primary flex-shrink-0" />
+            <CalendarDays className="h-4 w-4 text-blue-500 flex-shrink-0" />
             <span className="text-foreground font-medium truncate">{new Date(event.date).toLocaleDateString()}</span>
           </div>
           {event.time && (
             <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-primary flex-shrink-0" />
+              <Clock className="h-4 w-4 text-amber-500 flex-shrink-0" />
               <span className="text-foreground font-medium truncate">{event.time}</span>
             </div>
           )}
           {event.location && (
             <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-primary flex-shrink-0" />
+              <MapPin className="h-4 w-4 text-red-500 flex-shrink-0" />
               <span className="text-foreground font-medium truncate">{event.location}</span>
             </div>
           )}
           <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-primary flex-shrink-0" />
+            <Users className="h-4 w-4 text-purple-500 flex-shrink-0" />
             <span className="text-foreground font-medium truncate">
               {event.participants.length} participant{event.participants.length !== 1 ? 's' : ''}
             </span>
@@ -540,7 +540,7 @@ export function Events() {
           <Button
             variant="ghost"
             size="sm"
-            className="w-full h-8 text-xs gap-1.5 rounded-lg font-medium transition-all duration-200 bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/30 hover:border-cyan-500/50 hover:text-cyan-300"
+            className="w-full h-8 text-xs gap-1.5 rounded-full font-medium transition-all duration-200 bg-blue-500/10 text-blue-600 hover:bg-blue-500/25 hover:text-blue-700 border border-blue-500/20 hover:border-blue-500/40 focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-blue-500/15 dark:text-blue-400 dark:hover:bg-blue-500/30 dark:hover:text-blue-300"
             onClick={() => handleViewParticipants(event._id, event.title)}
           >
             <Users className="h-3.5 w-3.5" />
@@ -647,7 +647,7 @@ export function Events() {
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button
-              className="gap-2 h-9 px-4 rounded-xl font-medium transition-all duration-200 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 hover:border-emerald-500/50"
+              className="gap-2 h-9 px-4 rounded-full font-medium transition-all duration-200 bg-green-500/10 text-green-600 hover:bg-green-500/25 hover:text-green-700 border border-green-500/20 hover:border-green-500/40 focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-green-500/15 dark:text-green-400 dark:hover:bg-green-500/30 dark:hover:text-green-300"
               onClick={() => setIsCreateDialogOpen(true)}
             >
               <Plus className="h-4 w-4" />

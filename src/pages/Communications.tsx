@@ -321,51 +321,51 @@ export default function Communications() {
           <PostComposer onPostCreated={handlePostCreated} />
 
           {/* Community Stats - Compact on mobile */}
-          <div className="grid grid-cols-4 gap-1.5 sm:gap-2 md:gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
             <Card className="border-l-2 sm:border-l-4 border-l-orange-500">
-              <CardContent className="p-1.5 sm:p-2.5">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-0">
+              <CardContent className="p-2.5 sm:p-4">
+                <div className="flex flex-row items-center justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="text-[8px] sm:text-[10px] font-medium text-muted-foreground truncate">Posts</p>
-                    <p className="text-sm sm:text-lg md:text-xl font-bold">{stats.totalPosts.toLocaleString()}</p>
+                    <p className="text-[10px] sm:text-xs font-medium text-muted-foreground truncate">Posts</p>
+                    <p className="text-lg sm:text-xl font-bold">{stats.totalPosts.toLocaleString()}</p>
                   </div>
-                  <MessageSquare className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-orange-500 hidden sm:block" />
+                  <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 flex-shrink-0" />
                 </div>
               </CardContent>
             </Card>
 
             <Card className="border-l-2 sm:border-l-4 border-l-green-500">
-              <CardContent className="p-1.5 sm:p-2.5">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-0">
+              <CardContent className="p-2.5 sm:p-4">
+                <div className="flex flex-row items-center justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="text-[8px] sm:text-[10px] font-medium text-muted-foreground truncate">Users</p>
-                    <p className="text-sm sm:text-lg md:text-xl font-bold">{stats.activeUsers.toLocaleString()}</p>
+                    <p className="text-[10px] sm:text-xs font-medium text-muted-foreground truncate">Users</p>
+                    <p className="text-lg sm:text-xl font-bold">{stats.activeUsers.toLocaleString()}</p>
                   </div>
-                  <Users className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-green-500 hidden sm:block" />
+                  <Users className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
                 </div>
               </CardContent>
             </Card>
 
             <Card className="border-l-2 sm:border-l-4 border-l-blue-500">
-              <CardContent className="p-1.5 sm:p-2.5">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-0">
+              <CardContent className="p-2.5 sm:p-4">
+                <div className="flex flex-row items-center justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="text-[8px] sm:text-[10px] font-medium text-muted-foreground truncate">Replies</p>
-                    <p className="text-sm sm:text-lg md:text-xl font-bold">{stats.comments.toLocaleString()}</p>
+                    <p className="text-[10px] sm:text-xs font-medium text-muted-foreground truncate">Replies</p>
+                    <p className="text-lg sm:text-xl font-bold">{stats.comments.toLocaleString()}</p>
                   </div>
-                  <MessageSquare className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-blue-500 hidden sm:block" />
+                  <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 flex-shrink-0" />
                 </div>
               </CardContent>
             </Card>
 
             <Card className="border-l-2 sm:border-l-4 border-l-purple-500">
-              <CardContent className="p-1.5 sm:p-2.5">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-0">
+              <CardContent className="p-2.5 sm:p-4">
+                <div className="flex flex-row items-center justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="text-[8px] sm:text-[10px] font-medium text-muted-foreground truncate">Votes</p>
-                    <p className="text-sm sm:text-lg md:text-xl font-bold">{stats.upvotes.toLocaleString()}</p>
+                    <p className="text-[10px] sm:text-xs font-medium text-muted-foreground truncate">Votes</p>
+                    <p className="text-lg sm:text-xl font-bold">{stats.upvotes.toLocaleString()}</p>
                   </div>
-                  <TrendingUp className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-purple-500 hidden sm:block" />
+                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-purple-500 flex-shrink-0" />
                 </div>
               </CardContent>
             </Card>

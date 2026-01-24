@@ -220,10 +220,7 @@
     transform: translateX(2px);
   }
 
-  .sidebar-nav-item.active {
-    background: hsl(var(--primary));
-    color: hsl(var(--primary-foreground));
-  }
+
 
   /* Button components using #5227FF - Works in both light and dark mode */
   .btn-primary {

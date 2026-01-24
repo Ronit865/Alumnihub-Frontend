@@ -51,7 +51,7 @@ export function Jobs() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [jobToDelete, setJobToDelete] = useState<string | null>(null);
   const { toast } = useToast();
-  
+
   // Applicants Dialog State
   const [isApplicantsDialogOpen, setIsApplicantsDialogOpen] = useState(false);
   const [selectedJobApplicants, setSelectedJobApplicants] = useState<Applicant[]>([]);
@@ -62,16 +62,16 @@ export function Jobs() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await jobService.getAllJobs();
-      
+
       if (response.success) {
-        const jobsData = Array.isArray(response.data) 
-          ? response.data 
-          : Array.isArray(response.message) 
-          ? response.message 
-          : [];
-        
+        const jobsData = Array.isArray(response.data)
+          ? response.data
+          : Array.isArray(response.message)
+            ? response.message
+            : [];
+
         setJobs(jobsData);
       } else {
         const errorMsg = response.message || 'Failed to fetch jobs';
@@ -103,7 +103,7 @@ export function Jobs() {
     try {
       setActionLoading(jobId);
       const response = await jobService.verifyJob(jobId);
-      
+
       if (response.success) {
         toast({
           title: "Job verified",
@@ -135,7 +135,7 @@ export function Jobs() {
     try {
       setActionLoading(jobToDelete);
       const response = await jobService.rejectJob(jobToDelete);
-  
+
       if (response.data.success) {
         toast({
           title: "Job rejected",
@@ -185,8 +185,8 @@ export function Jobs() {
         {/* Stats Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 animate-in fade-in slide-in-from-bottom-2 duration-500" style={{ animationDelay: '100ms' }}>
           {[0, 1, 2].map((i) => (
-            <div 
-              key={i} 
+            <div
+              key={i}
               className="rounded-2xl p-4 sm:p-5 bg-card/50 border border-border/50"
               style={{ animationDelay: `${i * 50}ms` }}
             >
@@ -209,8 +209,8 @@ export function Jobs() {
         {/* Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {[0, 1, 2, 3, 4, 5].map((i) => (
-            <div 
-              key={i} 
+            <div
+              key={i}
               className="rounded-2xl p-5 bg-card/50 border border-border/50 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500"
               style={{ animationDelay: `${300 + i * 50}ms` }}
             >
@@ -275,7 +275,7 @@ export function Jobs() {
             <Briefcase className="stats-card-icon" />
           </div>
         </div>
-        
+
         <div className="stats-card-orange">
           <div className="flex items-center justify-between">
             <div>
@@ -285,7 +285,7 @@ export function Jobs() {
             <Clock className="stats-card-icon" />
           </div>
         </div>
-        
+
         <div className="stats-card-teal col-span-2 lg:col-span-1">
           <div className="flex items-center justify-between">
             <div>
@@ -406,14 +406,14 @@ export function Jobs() {
 
       {/* Applicants Dialog - Redesigned */}
       <Dialog open={isApplicantsDialogOpen} onOpenChange={setIsApplicantsDialogOpen}>
-        <DialogContent 
-          className="sm:max-w-[700px] max-w-[95vw] bento-card gradient-surface border-card-border/50" 
+        <DialogContent
+          className="sm:max-w-[700px] max-w-[95vw] bento-card gradient-surface border-card-border/50"
           style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
         >
           <DialogHeader className="pb-4 border-b border-card-border/20">
             <div className="flex items-center gap-3">
               <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
-                <Briefcase className="h-6 w-6 text-primary" />
+                <Briefcase className="h-6 w-6 text-orange-500" />
               </div>
               <div>
                 <DialogTitle className="text-xl font-semibold text-foreground">
@@ -425,7 +425,7 @@ export function Jobs() {
               </div>
             </div>
           </DialogHeader>
-          
+
           <div className="mt-4">
             {loadingApplicants ? (
               <div className="flex items-center justify-center py-16">
@@ -449,16 +449,16 @@ export function Jobs() {
             ) : (
               <div className="space-y-3 max-h-[55vh] overflow-y-auto pr-2 custom-scrollbar">
                 {selectedJobApplicants.map((applicant, index) => (
-                  <div 
+                  <div
                     key={`applicant-${applicant._id || index}`}
                     className="flex items-center justify-between p-4 rounded-xl bg-accent/30 border border-card-border/30 hover:bg-accent/50 hover:border-primary/30 transition-all duration-200 group animate-fade-in"
                     style={{ animationDelay: `${index * 50}ms` }}
                   >
                     <div className="flex items-center gap-4">
                       <Avatar className="h-12 w-12 ring-2 ring-background shadow-sm">
-                        <AvatarImage 
-                          src={applicant.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${applicant.name || applicant.email}`} 
-                          alt={applicant.name || 'Applicant'} 
+                        <AvatarImage
+                          src={applicant.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${applicant.name || applicant.email}`}
+                          alt={applicant.name || 'Applicant'}
                         />
                         <AvatarFallback className="bg-gradient-to-br from-primary/20 to-accent/50 text-primary font-semibold">
                           {(applicant.name || applicant.email || 'A').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
@@ -514,11 +514,11 @@ interface JobCardProps {
 
 function JobCard({ job, onVerify, onDelete, onViewApplicants, actionLoading }: JobCardProps) {
   return (
-    <Card className="overflow-hidden border-border/30 bg-card flex flex-col h-full group hover:shadow-lg transition-all duration-300">
+    <Card className="overflow-hidden border-border/30 bg-card font-sans shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col h-full group">
       {/* Header */}
       <CardHeader className="pb-2 pt-5 px-5">
         <div className="flex justify-between items-start gap-3">
-          <CardTitle className="text-lg font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2 flex-1">
+          <CardTitle className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2 flex-1">
             {job.title}
           </CardTitle>
           {job.isVerified ? (
@@ -546,24 +546,24 @@ function JobCard({ job, onVerify, onDelete, onViewApplicants, actionLoading }: J
         <div className="space-y-3 text-sm flex-1 mb-4">
           {job.location && (
             <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-primary flex-shrink-0" />
+              <MapPin className="h-4 w-4 text-red-500 flex-shrink-0" />
               <span className="text-foreground font-medium">{job.location}</span>
             </div>
           )}
           {job.salary && (
             <div className="flex items-center gap-2">
-              <IndianRupee className="h-4 w-4 text-primary flex-shrink-0" />
+              <IndianRupee className="h-4 w-4 text-emerald-500 flex-shrink-0" />
               <span className="text-foreground font-medium">₹{job.salary.toLocaleString()}/yr</span>
             </div>
           )}
           {job.jobType && (
             <div className="flex items-center gap-2">
-              <Briefcase className="h-4 w-4 text-primary flex-shrink-0" />
+              <Briefcase className="h-4 w-4 text-orange-500 flex-shrink-0" />
               <span className="text-foreground font-medium">{job.jobType}</span>
             </div>
           )}
           <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-primary flex-shrink-0" />
+            <Calendar className="h-4 w-4 text-blue-500 flex-shrink-0" />
             <span className="text-foreground font-medium">{new Date(job.createdAt).toLocaleDateString()}</span>
           </div>
         </div>
@@ -572,7 +572,7 @@ function JobCard({ job, onVerify, onDelete, onViewApplicants, actionLoading }: J
         {job.applicants && job.applicants.length > 0 && (
           <div className="flex items-center justify-between text-sm mb-4">
             <div className="flex items-center gap-2 text-muted-foreground">
-              <Users className="h-4 w-4 text-primary flex-shrink-0" />
+              <Users className="h-4 w-4 text-purple-500 flex-shrink-0" />
               <span className="font-medium">{job.applicants.length} applicant{job.applicants.length !== 1 ? 's' : ''}</span>
             </div>
             {onViewApplicants && (
@@ -591,21 +591,21 @@ function JobCard({ job, onVerify, onDelete, onViewApplicants, actionLoading }: J
         {/* Action Button */}
         <div className="mt-auto pt-4 flex gap-2">
           {!job.isVerified && onVerify && (
-            <Button 
-              onClick={() => onVerify(job._id)} 
+            <Button
+              onClick={() => onVerify(job._id)}
               disabled={actionLoading === job._id}
               size="sm"
-              className="flex-1 gap-1.5 rounded-xl font-medium transition-all duration-200 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 hover:border-emerald-500/50"
+              className="flex-1 gap-1.5 rounded-full font-medium transition-all duration-200 bg-green-500/10 text-green-600 hover:bg-green-500/25 hover:text-green-700 border border-green-500/20 hover:border-green-500/40 focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-green-500/15 dark:text-green-400 dark:hover:bg-green-500/30 dark:hover:text-green-300"
             >
               <Check className="h-4 w-4" />
               Verify
             </Button>
           )}
-          <Button 
-            onClick={() => onDelete(job._id)} 
+          <Button
+            onClick={() => onDelete(job._id)}
             disabled={actionLoading === job._id}
             size="sm"
-            className="flex-1 gap-1.5 rounded-xl font-medium transition-all duration-200 bg-rose-500/20 text-rose-400 border border-rose-500/30 hover:bg-rose-500/30 hover:border-rose-500/50"
+            className="flex-1 gap-1.5 rounded-full font-medium transition-all duration-200 bg-red-500/10 text-red-600 hover:bg-red-500/25 hover:text-red-700 border border-red-500/20 hover:border-red-500/40 focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-red-500/15 dark:text-red-400 dark:hover:bg-red-500/30 dark:hover:text-red-300"
           >
             <Trash2 className="h-4 w-4" />
             Reject

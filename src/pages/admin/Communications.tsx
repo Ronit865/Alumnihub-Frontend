@@ -396,7 +396,7 @@ export function Communications() {
           <Skeleton className="h-8 w-48 bg-muted/60" />
           <Skeleton className="h-4 w-80 bg-muted/60" />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[0, 1, 2, 3].map((i) => (
             <div key={i} className="rounded-2xl p-4 bg-card/50 border border-border/50">
               <div className="flex items-center justify-between">
@@ -436,7 +436,7 @@ export function Communications() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 animate-slide-up">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 animate-slide-up">
         <div className="stats-card-pink">
           <div className="flex items-center justify-between">
             <div>
@@ -536,7 +536,7 @@ export function Communications() {
 
               <div className="mt-4 pt-4 border-t border-blue-500/20">
                 <Button
-                  className="w-full gap-2 rounded-xl font-medium transition-all duration-200 bg-sky-500/20 text-sky-400 border border-sky-500/30 hover:bg-sky-500/30 hover:border-sky-500/50"
+                  className="w-full gap-2 rounded-full font-medium transition-all duration-200 bg-blue-500/10 text-blue-600 hover:bg-blue-500/25 hover:text-blue-700 border border-blue-500/20 hover:border-blue-500/40 focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-blue-500/15 dark:text-blue-400 dark:hover:bg-blue-500/30 dark:hover:text-blue-300"
                   onClick={() => handleSendCampaignEmail('event')}
                   disabled={recentEvents.length === 0 || sendingCampaign !== null}
                 >
@@ -575,7 +575,7 @@ export function Communications() {
 
               <div className="mt-4 pt-4 border-t border-green-500/20">
                 <Button
-                  className="w-full gap-2 rounded-xl font-medium transition-all duration-200 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 hover:border-emerald-500/50"
+                  className="w-full gap-2 rounded-full font-medium transition-all duration-200 bg-green-500/10 text-green-600 hover:bg-green-500/25 hover:text-green-700 border border-green-500/20 hover:border-green-500/40 focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-green-500/15 dark:text-green-400 dark:hover:bg-green-500/30 dark:hover:text-green-300"
                   onClick={() => handleSendCampaignEmail('job')}
                   disabled={recentJobs.length === 0 || sendingCampaign !== null}
                 >
@@ -614,7 +614,7 @@ export function Communications() {
 
               <div className="mt-4 pt-4 border-t border-purple-500/20">
                 <Button
-                  className="w-full gap-2 rounded-xl font-medium transition-all duration-200 bg-violet-500/20 text-violet-400 border border-violet-500/30 hover:bg-violet-500/30 hover:border-violet-500/50"
+                  className="w-full gap-2 rounded-full font-medium transition-all duration-200 bg-purple-500/10 text-purple-600 hover:bg-purple-500/25 hover:text-purple-700 border border-purple-500/20 hover:border-purple-500/40 focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-purple-500/15 dark:text-purple-400 dark:hover:bg-purple-500/30 dark:hover:text-purple-300"
                   onClick={() => handleSendCampaignEmail('donation')}
                   disabled={recentDonations.length === 0 || sendingCampaign !== null}
                 >
@@ -688,7 +688,7 @@ export function Communications() {
               )}
             </div>
             <Button
-              className="w-full gap-2 rounded-xl font-medium transition-all duration-200 bg-primary/20 text-primary border border-primary/30 hover:bg-primary/30 hover:border-primary/50"
+              className="w-full gap-2 rounded-full font-medium transition-all duration-200 bg-green-500/10 text-green-600 hover:bg-green-500/25 hover:text-green-700 border border-green-500/20 hover:border-green-500/40 focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-green-500/15 dark:text-green-400 dark:hover:bg-green-500/30 dark:hover:text-green-300"
               onClick={handleSendEmail}
               disabled={isSending}
             >

@@ -76,6 +76,7 @@ import {
   GraduationCap,
   BookOpen,
   Activity,
+  Phone,
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { Transform } from "stream";
@@ -472,7 +473,7 @@ export function Alumni() {
         {/* Add Alumni Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="gap-2 h-9 px-4 rounded-xl font-medium transition-all duration-200 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 hover:border-emerald-500/50">
+            <Button className="gap-2 h-9 px-4 rounded-full font-medium transition-all duration-200 bg-green-500/10 text-green-600 hover:bg-green-500/25 hover:text-green-700 border border-green-500/20 hover:border-green-500/40 focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-green-500/15 dark:text-green-400 dark:hover:bg-green-500/30 dark:hover:text-green-300">
               <Plus className="h-4 w-4" />
               Add Alumni
             </Button>
@@ -778,9 +779,9 @@ export function Alumni() {
         <CardHeader className="p-4 sm:p-6">
           <div className="flex flex-col gap-3 sm:gap-4">
             <div>
-              <CardTitle className="text-base sm:text-lg">Alumni Directory</CardTitle>
+              <CardTitle className="text-base sm:text-lg">Users Directory</CardTitle>
               <CardDescription className="text-xs sm:text-sm">
-                Manage and verify alumni profiles ({filteredAlumni.length} of{" "}
+                Manage and view all registered users. ({filteredAlumni.length} of{" "}
                 {totalUsers} alumni)
               </CardDescription>
             </div>
@@ -825,7 +826,8 @@ export function Alumni() {
           </div>
         </CardHeader>
         <CardContent className="p-0 sm:p-6 sm:pt-0">
-          <div className="overflow-x-auto">
+          {/* Desktop Table */}
+          <div className="hidden sm:block overflow-x-auto">
             <Table className="min-w-[600px]">
               <TableHeader>
                 <TableRow>
@@ -881,7 +883,7 @@ export function Alumni() {
                       </TableCell>
                       <TableCell className="hidden sm:table-cell p-2 sm:p-4">
                         <div className="flex items-center gap-2">
-                          <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+                          <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-blue-500" />
                           <span className="font-medium text-xs sm:text-sm">
                             {alumni.graduationYear || "N/A"}
                           </span>
@@ -889,7 +891,7 @@ export function Alumni() {
                       </TableCell>
                       <TableCell className="hidden md:table-cell p-2 sm:p-4">
                         <div className="flex items-center gap-2">
-                          <Building className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+                          <Building className="h-3 w-3 sm:h-4 sm:w-4 text-orange-500" />
                           <span className="font-medium text-xs sm:text-sm">
                             {alumni.course || "N/A"}
                           </span>
@@ -910,7 +912,7 @@ export function Alumni() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="bg-popover">
                             <DropdownMenuLabel className="text-xs sm:text-sm">Actions</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => handleEditUser(alumni)} className="text-xs sm:text-sm">
+                            <DropdownMenuItem onClick={() => handleEditUser(alumni)} className="text-xs sm:text-sm text-blue-600 focus:text-blue-600">
                               <Edit className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                               Edit
                             </DropdownMenuItem>
@@ -930,6 +932,82 @@ export function Alumni() {
                 )}
               </TableBody>
             </Table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="block sm:hidden space-y-4 p-4">
+            {filteredAlumni.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground text-sm">
+                No users found
+              </div>
+            ) : (
+              filteredAlumni.map((alumni, index) => (
+                <div
+                  key={alumni._id}
+                  className="bg-card border border-border/50 rounded-xl p-4 space-y-3 animate-fade-in"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={alumni.avatar} alt={alumni.name} />
+                        <AvatarFallback className="bg-primary/10 text-primary text-sm">
+                          {alumni.name
+                            ?.split(" ")
+                            .map((n) => n[0])
+                            .join("") || "UN"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium text-foreground text-sm">
+                          {alumni.name || "Unknown"}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {alumni.email}
+                        </p>
+                      </div>
+                    </div>
+                    {getRoleBadge(alumni.role || "")}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Calendar className="h-3 w-3 text-blue-500" />
+                      <span>{alumni.graduationYear || "Year N/A"}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Building className="h-3 w-3 text-orange-500" />
+                      <span className="truncate">{alumni.course || "Course N/A"}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-muted-foreground col-span-2">
+                      <Phone className="h-3 w-3 text-green-500" />
+                      <span>{alumni.phone || "No phone"}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-2 pt-2 border-t border-border/30">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEditUser(alumni)}
+                      className="h-8 text-xs text-blue-600 hover:text-blue-700 bg-blue-500/10 hover:bg-blue-500/20 border-blue-200 hover:border-blue-300"
+                    >
+                      <Edit className="h-3 w-3 mr-1.5" />
+                      Edit
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleDeleteUser(alumni)}
+                      className="h-8 text-xs bg-red-500/10 text-red-600 border border-red-500/20 hover:bg-red-500/20"
+                    >
+                      <Trash2 className="h-3 w-3 mr-1.5" />
+                      Remove
+                    </Button>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>

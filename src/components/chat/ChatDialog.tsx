@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { Send, MoreVertical, Loader2, Trash2, ArrowLeft, Search, MessageCircle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -50,13 +50,13 @@ interface Conversation {
   };
 }
 
-export function ChatDialog({ 
-  open, 
-  onOpenChange, 
-  userId, 
+export function ChatDialog({
+  open,
+  onOpenChange,
+  userId,
   conversationId: initialConversationId,
   participantName,
-  participantAvatar 
+  participantAvatar
 }: ChatDialogProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -69,12 +69,35 @@ export function ChatDialog({
   const [showConversationList, setShowConversationList] = useState(!initialConversationId && !userId);
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
+  // Robust scroll to bottom
+  const scrollToBottom = (behavior: ScrollBehavior = 'auto') => {
+    // Attempt 1: Standard scrollIntoView on the end marker (most reliable)
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior });
+      messagesEndRef.current.scrollIntoView({ behavior, block: 'end' });
     }
   };
+
+  // Scroll to bottom whenever messages change
+  useLayoutEffect(() => {
+    if (messages.length > 0) {
+      // Immediate scroll
+      scrollToBottom('auto');
+
+      // Retry after a frame to ensure layout is settled
+      requestAnimationFrame(() => {
+        scrollToBottom('auto');
+      });
+
+      // Safety fallback for image loading or complex renders
+      const timeoutId = setTimeout(() => {
+        scrollToBottom('auto');
+      }, 100);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [messages, conversationId]);
 
   // Fetch current user
   useEffect(() => {
@@ -111,7 +134,7 @@ export function ChatDialog({
     }
   }, [open, userId, initialConversationId]);
 
-  // Auto-refresh messages every 5 seconds when conversation is open
+  // Auto-refresh messages every 2 seconds when conversation is open
   useEffect(() => {
     if (!open || !conversationId) return;
 
@@ -120,24 +143,26 @@ export function ChatDialog({
         const response = await messageService.getConversationMessages(conversationId, { limit: 50 });
         const messagesData = response?.data?.messages || response?.data || [];
         const newMessages = Array.isArray(messagesData) ? messagesData : [];
-        
-        // Only update if there are new messages
-        if (newMessages.length > messages.length) {
+
+        // Only update if there are new messages (by ID comparison or length)
+        // Simple length check + last ID check is efficient enough for polling
+        if (newMessages.length > messages.length ||
+          (newMessages.length > 0 && messages.length > 0 && newMessages[newMessages.length - 1]._id !== messages[messages.length - 1]._id)) {
           setMessages(newMessages);
           await messageService.markMessagesAsRead(conversationId);
-          setTimeout(() => scrollToBottom('smooth'), 100);
+          // Scroll will happen via the useEffect dependency on 'messages'
         }
       } catch (error) {
         console.error('Error refreshing messages:', error);
       }
-    }, 2000); // Poll every 2 seconds
+    }, 2000);
 
     return () => clearInterval(interval);
-  }, [open, conversationId, messages.length]);
+  }, [open, conversationId, messages]);
 
   const fetchConversations = async () => {
     try {
-      setLoading(true);
+      if (conversations.length === 0) setLoading(true); // Only show loader if no cache
       const response = await messageService.getUserConversations();
       const conversationsData = response?.data || [];
       setConversations(Array.isArray(conversationsData) ? conversationsData : []);
@@ -155,9 +180,10 @@ export function ChatDialog({
       const conv = response?.data;
       if (conv) {
         setConversationId(conv._id);
+        const otherParticipant = conv.participants?.find((p: any) => p._id !== currentUser?._id);
         setParticipant({
-          name: conv.participants?.find((p: any) => p._id !== currentUser?._id)?.name || participantName,
-          avatar: conv.participants?.find((p: any) => p._id !== currentUser?._id)?.avatar || participantAvatar
+          name: otherParticipant?.name || participantName,
+          avatar: otherParticipant?.avatar || participantAvatar
         });
         await fetchMessagesForConversation(conv._id);
       }
@@ -174,12 +200,16 @@ export function ChatDialog({
 
   const fetchMessagesForConversation = async (convId: string) => {
     try {
+      // Don't modify loading state if we already have messages for this conversation (optimistic switch)
+      // But here we are switching conversations, so we usually want a loader or clear previous.
+      // To feel "fast", we can clear immediately.
       setLoading(true);
       const response = await messageService.getConversationMessages(convId, { limit: 50 });
       const messagesData = response?.data?.messages || response?.data || [];
-      setMessages(Array.isArray(messagesData) ? messagesData : []);
-      setTimeout(() => scrollToBottom('auto'), 100);
+      const newMessages = Array.isArray(messagesData) ? messagesData : [];
+      setMessages(newMessages);
       await messageService.markMessagesAsRead(convId);
+      // Scroll handled by useEffect
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -236,7 +266,7 @@ export function ChatDialog({
     // Immediately update UI
     setMessages(prev => [...prev, optimisticMessage]);
     setNewMessage("");
-    setTimeout(() => scrollToBottom('smooth'), 50);
+    // Scroll handled by useEffect
 
     // Send to API in background
     try {
@@ -260,12 +290,12 @@ export function ChatDialog({
   const handleDeleteMessage = async (messageId: string) => {
     // Immediately remove message from UI for instant feedback
     setMessages(prev => prev.filter(m => m._id !== messageId));
-    
+
     toast({
       title: "Success",
       description: "Message deleted successfully"
     });
-    
+
     // Call API in background
     try {
       await messageService.deleteMessage(messageId);
@@ -288,9 +318,9 @@ export function ChatDialog({
 
   const getMessageTime = (date: string) => {
     try {
-      return new Date(date).toLocaleTimeString('en-US', { 
-        hour: '2-digit', 
-        minute: '2-digit' 
+      return new Date(date).toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit'
       });
     } catch {
       return date;
@@ -400,7 +430,7 @@ export function ChatDialog({
             </DialogHeader>
 
             {/* Messages */}
-            <ScrollArea className="flex-1 px-3 sm:px-6 py-3 sm:py-4">
+            <ScrollArea ref={scrollRef} className="flex-1 px-3 sm:px-6 py-3 sm:py-4">
               {loading ? (
                 <div className="flex items-center justify-center h-full">
                   <Loader2 className="w-6 h-6 animate-spin text-primary" />
@@ -414,7 +444,7 @@ export function ChatDialog({
                   {messages.map((message) => {
                     const isMe = message.sender._id === currentUser?._id;
                     const canDelete = isMe && canDeleteMessage(message.createdAt);
-                    
+
                     return (
                       <div
                         key={message._id}
@@ -422,17 +452,15 @@ export function ChatDialog({
                       >
                         <div className={`flex items-end gap-1 max-w-[85%] sm:max-w-[70%] group ${isMe ? "flex-row" : "flex-row-reverse"}`}>
                           <div className="relative">
-                            <div className={`rounded-2xl px-3 sm:px-4 py-2 ${
-                              isMe 
-                                ? "bg-primary text-primary-foreground" 
-                                : "bg-muted"
-                            }`}>
-                              <p className="text-sm break-words">{message.content}</p>
-                              <p className={`text-[10px] sm:text-xs mt-1 ${
-                                isMe 
-                                  ? "text-primary-foreground/70" 
-                                  : "text-muted-foreground"
+                            <div className={`rounded-2xl px-3 sm:px-4 py-2 ${isMe
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted"
                               }`}>
+                              <p className="text-sm break-words">{message.content}</p>
+                              <p className={`text-[10px] sm:text-xs mt-1 ${isMe
+                                ? "text-primary-foreground/70"
+                                : "text-muted-foreground"
+                                }`}>
                                 {getMessageTime(message.createdAt)}
                               </p>
                             </div>
@@ -488,7 +516,7 @@ export function ChatDialog({
                   disabled={!conversationId}
                   className="flex-1 h-9 sm:h-10 text-sm"
                 />
-                <Button 
+                <Button
                   onClick={handleSendMessage}
                   disabled={!newMessage.trim() || !conversationId}
                   size="icon"

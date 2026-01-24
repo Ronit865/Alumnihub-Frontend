@@ -351,7 +351,7 @@ export function Reports() {
                                                         {item.user.banStatus === "active" ? (
                                                             <Button
                                                                 size="sm"
-                                                                className="gap-1 h-8 px-3 rounded-lg font-medium bg-rose-500/20 text-rose-400 border border-rose-500/30 hover:bg-rose-500/30 hover:border-rose-500/50"
+                                                                className="gap-1 h-8 px-3 rounded-full font-medium bg-red-500/10 text-red-600 hover:bg-red-500/25 hover:text-red-700 border border-red-500/20 hover:border-red-500/40 focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-red-500/15 dark:text-red-400 dark:hover:bg-red-500/30 dark:hover:text-red-300"
                                                                 onClick={() => handleBanUser(item)}
                                                             >
                                                                 <Ban className="h-3.5 w-3.5" />
@@ -360,7 +360,7 @@ export function Reports() {
                                                         ) : (
                                                             <Button
                                                                 size="sm"
-                                                                className="gap-1 h-8 px-3 rounded-lg font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 hover:border-emerald-500/50"
+                                                                className="gap-1 h-8 px-3 rounded-full font-medium bg-green-500/10 text-green-600 hover:bg-green-500/25 hover:text-green-700 border border-green-500/20 hover:border-green-500/40 focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-green-500/15 dark:text-green-400 dark:hover:bg-green-500/30 dark:hover:text-green-300"
                                                                 onClick={() => unbanMutation.mutate(item._id)}
                                                                 disabled={unbanMutation.isPending}
                                                             >
@@ -375,7 +375,7 @@ export function Reports() {
                                     </TableBody>
                                 </Table>
                             </div>
-                            
+
                             {/* Mobile Card View */}
                             <div className="md:hidden space-y-3 p-3">
                                 {reportedUsers.length === 0 ? (
@@ -420,7 +420,7 @@ export function Reports() {
                                                 {item.user.banStatus === "active" ? (
                                                     <Button
                                                         size="sm"
-                                                        className="gap-1 h-8 px-3 rounded-lg font-medium bg-rose-500/20 text-rose-400 border border-rose-500/30 hover:bg-rose-500/30"
+                                                        className="gap-1 h-8 px-3 rounded-full font-medium bg-red-500/10 text-red-600 hover:bg-red-500/25 hover:text-red-700 border border-red-500/20 hover:border-red-500/40 focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-red-500/15 dark:text-red-400 dark:hover:bg-red-500/30 dark:hover:text-red-300"
                                                         onClick={() => handleBanUser(item)}
                                                     >
                                                         <Ban className="h-3.5 w-3.5" />
@@ -429,7 +429,7 @@ export function Reports() {
                                                 ) : (
                                                     <Button
                                                         size="sm"
-                                                        className="gap-1 h-8 px-3 rounded-lg font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30"
+                                                        className="gap-1 h-8 px-3 rounded-full font-medium bg-green-500/10 text-green-600 hover:bg-green-500/25 hover:text-green-700 border border-green-500/20 hover:border-green-500/40 focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-green-500/15 dark:text-green-400 dark:hover:bg-green-500/30 dark:hover:text-green-300"
                                                         onClick={() => unbanMutation.mutate(item._id)}
                                                         disabled={unbanMutation.isPending}
                                                     >
@@ -529,7 +529,7 @@ export function Reports() {
                                                         {report.status === "pending" && (
                                                             <Button
                                                                 size="sm"
-                                                                className="gap-1 h-8 px-3 rounded-lg font-medium bg-zinc-500/20 text-zinc-400 border border-zinc-500/30 hover:bg-zinc-500/30"
+                                                                className="gap-1 h-8 px-3 rounded-full font-medium bg-zinc-500/10 text-zinc-600 hover:bg-zinc-500/25 hover:text-zinc-700 border border-zinc-500/20 hover:border-zinc-500/40 focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-zinc-500/15 dark:text-zinc-400 dark:hover:bg-zinc-500/30 dark:hover:text-zinc-300"
                                                                 onClick={() => dismissMutation.mutate(report._id)}
                                                                 disabled={dismissMutation.isPending}
                                                             >
@@ -544,7 +544,7 @@ export function Reports() {
                                     </TableBody>
                                 </Table>
                             </div>
-                            
+
                             {/* Mobile/Tablet Card View */}
                             <div className="lg:hidden space-y-3 p-3">
                                 {filteredReports.length === 0 ? (
@@ -578,7 +578,7 @@ export function Reports() {
                                                 {report.status === "pending" && (
                                                     <Button
                                                         size="sm"
-                                                        className="gap-1 h-8 px-3 rounded-lg font-medium bg-zinc-500/20 text-zinc-400 border border-zinc-500/30 hover:bg-zinc-500/30"
+                                                        className="gap-1 h-8 px-3 rounded-full font-medium bg-zinc-500/10 text-zinc-600 hover:bg-zinc-500/25 hover:text-zinc-700 border border-zinc-500/20 hover:border-zinc-500/40 focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-zinc-500/15 dark:text-zinc-400 dark:hover:bg-zinc-500/30 dark:hover:text-zinc-300"
                                                         onClick={() => dismissMutation.mutate(report._id)}
                                                         disabled={dismissMutation.isPending}
                                                     >

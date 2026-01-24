@@ -34,22 +34,22 @@ import { useAuth } from "@/context/AuthContext";
 
 // Base navigation for all users
 const baseNavigation = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
-  { title: "Alumni Directory", url: "/alumni", icon: Users },
-  { title: "Events", url: "/events", icon: Calendar },
-  { title: "Jobs", url: "/jobs", icon: Briefcase },
-  { title: "Donations", url: "/donations", icon: Heart },
-  { title: "Community Chat", url: "/communications", icon: MessageSquare },
+  { title: "Dashboard", url: "/", icon: LayoutDashboard, color: "text-sky-500", activeColor: "bg-sky-500/10 text-sky-600 dark:text-sky-400" },
+  { title: "Alumni Directory", url: "/alumni", icon: Users, color: "text-purple-500", activeColor: "bg-purple-500/10 text-purple-600 dark:text-purple-400" },
+  { title: "Events", url: "/events", icon: Calendar, color: "text-blue-500", activeColor: "bg-blue-500/10 text-blue-600 dark:text-blue-400" },
+  { title: "Jobs", url: "/jobs", icon: Briefcase, color: "text-orange-500", activeColor: "bg-orange-500/10 text-orange-600 dark:text-orange-400" },
+  { title: "Donations", url: "/donations", icon: Heart, color: "text-emerald-500", activeColor: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" },
+  { title: "Community Chat", url: "/communications", icon: MessageSquare, color: "text-indigo-500", activeColor: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400" },
 ];
 
 const adminNavigation = [
-  { title: "Admin Dashboard", url: "/admin", icon: LayoutDashboard },
-  { title: "Manage Users", url: "/admin/alumni", icon: Users },
-  { title: "Manage Events", url: "/admin/events", icon: Calendar },
-  { title: "Manage Jobs", url: "/admin/jobs", icon: Briefcase },
-  { title: "Manage Donations", url: "/admin/donations", icon: Heart },
-  { title: "Communications", url: "/admin/communications", icon: Mail },
-  { title: "Reports", url: "/admin/reports", icon: Flag },
+  { title: "Admin Dashboard", url: "/admin", icon: LayoutDashboard, color: "text-sky-500", activeColor: "bg-sky-500/10 text-sky-600 dark:text-sky-400" },
+  { title: "Manage Users", url: "/admin/alumni", icon: Users, color: "text-purple-500", activeColor: "bg-purple-500/10 text-purple-600 dark:text-purple-400" },
+  { title: "Manage Events", url: "/admin/events", icon: Calendar, color: "text-blue-500", activeColor: "bg-blue-500/10 text-blue-600 dark:text-blue-400" },
+  { title: "Manage Jobs", url: "/admin/jobs", icon: Briefcase, color: "text-orange-500", activeColor: "bg-orange-500/10 text-orange-600 dark:text-orange-400" },
+  { title: "Manage Donations", url: "/admin/donations", icon: Heart, color: "text-emerald-500", activeColor: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" },
+  { title: "Communications", url: "/admin/communications", icon: Mail, color: "text-indigo-500", activeColor: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400" },
+  { title: "Reports", url: "/admin/reports", icon: Flag, color: "text-amber-500", activeColor: "bg-amber-500/10 text-amber-600 dark:text-amber-400" },
 ];
 
 export function AppSidebar() {
@@ -109,12 +109,12 @@ export function AppSidebar() {
     return location.pathname === path;
   };
 
-  const getNavClasses = (path: string) => {
+  const getNavClasses = (item: any) => {
     const mobileClasses = isMobile ? "h-12 px-4 text-base" : "h-9 sm:h-11 px-2 sm:px-3 text-sm sm:text-base";
     const baseClasses = `sidebar-nav-item w-full justify-start gap-3 ${mobileClasses} font-medium`;
-    const active = isActive(path);
+    const active = isActive(item.url);
     return active
-      ? `${baseClasses} active bg-primary text-primary-foreground`
+      ? `${baseClasses} active bg-sky-500/15 text-sky-600 dark:text-sky-400 font-semibold`
       : `${baseClasses} text-muted-foreground hover:text-foreground hover:bg-accent`;
   };
 
@@ -170,16 +170,22 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className={isMobile ? "space-y-1" : "space-y-0.5 sm:space-y-1"}>
-              {(isAdminMode ? adminNavigation : baseNavigation).map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <Link to={item.url} className={getNavClasses(item.url)}>
-                      <item.icon className={isMobile ? "w-5 h-5 shrink-0" : "w-4 h-4 sm:w-5 sm:h-5 shrink-0"} />
-                      {open && <span className="truncate">{item.title}</span>}
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {(isAdminMode ? adminNavigation : baseNavigation).map((item) => {
+                const active = isActive(item.url);
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <Link to={item.url} className={getNavClasses(item)}>
+                        <item.icon
+                          className={`${isMobile ? "w-5 h-5 shrink-0" : "w-4 h-4 sm:w-5 sm:h-5 shrink-0"
+                            } ${active ? "text-sky-600 dark:text-sky-400" : item.color}`}
+                        />
+                        {open && <span className="truncate">{item.title}</span>}
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -189,7 +195,7 @@ export function AppSidebar() {
           <SidebarMenu className={isMobile ? "space-y-1" : "space-y-0.5 sm:space-y-1"}>
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
-                <Link to={isAdminMode ? "/admin/settings" : "/settings"} className={getNavClasses(isAdminMode ? "/admin/settings" : "/settings")}>
+                <Link to={isAdminMode ? "/admin/settings" : "/settings"} className={getNavClasses({ url: isAdminMode ? "/admin/settings" : "/settings", activeColor: "bg-slate-500/10 text-slate-600 dark:text-slate-400" })}>
                   <Settings className={isMobile ? "w-5 h-5 shrink-0" : "w-4 h-4 sm:w-5 sm:h-5 shrink-0"} />
                   {open && <span className="truncate">Settings</span>}
                 </Link>

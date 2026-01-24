@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { UserPlus, UserCheck, UserX, Mail } from "lucide-react";
-import { StatusButton } from "@/components/ui/status-button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -94,7 +93,7 @@ export default function Connections() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
-  
+
   const handleMessage = (userId: string) => {
     setSelectedUserId(userId);
     setChatDialogOpen(true);
@@ -118,8 +117,8 @@ export default function Connections() {
       </div>
       <div className="space-y-3 sm:space-y-4">
         {[0, 1, 2].map((i) => (
-          <div 
-            key={i} 
+          <div
+            key={i}
             className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 border border-border/50 rounded-lg animate-in fade-in slide-in-from-right-2 duration-300"
             style={{ animationDelay: `${i * 60}ms` }}
           >
@@ -170,175 +169,175 @@ export default function Connections() {
             </TabsTrigger>
           </TabsList>
 
-        {/* Pending Requests */}
-        <TabsContent value="requests" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <UserPlus className="w-5 h-5 text-primary" />
-                Connection Requests
-              </CardTitle>
-              <CardDescription>
-                {pendingRequests.length === 0 
-                  ? "No pending requests" 
-                  : `${pendingRequests.length} ${pendingRequests.length === 1 ? 'person wants' : 'people want'} to connect with you`
-                }
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {pendingRequests.length === 0 ? (
-                <div className="text-center py-12">
-                  <UserPlus className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-                  <p className="text-muted-foreground">No pending connection requests</p>
-                  <Button
-                    variant="outline"
-                    className="mt-4 border-purple-500/50 text-purple-600 hover:bg-purple-500 hover:text-white"
-                    onClick={() => navigate('/alumni')}
-                  >
-                    Browse Alumni
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {pendingRequests.map((request) => (
-                    <div
-                      key={request._id}
-                      className="flex items-center gap-4 p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+          {/* Pending Requests */}
+          <TabsContent value="requests" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <UserPlus className="w-5 h-5 text-primary" />
+                  Connection Requests
+                </CardTitle>
+                <CardDescription>
+                  {pendingRequests.length === 0
+                    ? "No pending requests"
+                    : `${pendingRequests.length} ${pendingRequests.length === 1 ? 'person wants' : 'people want'} to connect with you`
+                  }
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {pendingRequests.length === 0 ? (
+                  <div className="text-center py-12">
+                    <UserPlus className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
+                    <p className="text-muted-foreground">No pending connection requests</p>
+                    <Button
+                      variant="outline"
+                      className="mt-4 border-purple-500/50 text-purple-600 hover:bg-purple-500 hover:text-white"
+                      onClick={() => navigate('/alumni')}
                     >
-                      <div className="relative cursor-pointer" onClick={() => handleAvatarClick(request.requester?._id)}>
-                        <Avatar className="w-12 h-12 hover:ring-4 ring-primary/20 transition-all">
-                          <AvatarImage src={request.requester?.avatar} />
-                          <AvatarFallback className="bg-primary/10 text-primary font-medium">
-                            {getUserInitials(request.requester?.name || 'User')}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-background rounded-full"></div>
-                      </div>
+                      Browse Alumni
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {pendingRequests.map((request) => (
+                      <div
+                        key={request._id}
+                        className="flex items-center gap-4 p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                      >
+                        <div className="relative cursor-pointer" onClick={() => handleAvatarClick(request.requester?._id)}>
+                          <Avatar className="w-12 h-12 hover:ring-4 ring-primary/20 transition-all">
+                            <AvatarImage src={request.requester?.avatar} />
+                            <AvatarFallback className="bg-primary/10 text-primary font-medium">
+                              {getUserInitials(request.requester?.name || 'User')}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-background rounded-full"></div>
+                        </div>
 
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold">{request.requester?.name || 'Anonymous'}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {request.requester?.currentPosition || 'Alumni'}
-                          {request.requester?.graduationYear && ` • Class of ${request.requester.graduationYear}`}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">{request.requester?.email}</p>
-                      </div>
-
-                      <div className="flex gap-2">
-                        <StatusButton
-                          isActive={false}
-                          onClick={() => handleAccept(request._id)}
-                          isLoading={actionLoading[request._id]}
-                          loadingLabel="..."
-                          inactiveLabel="Accept"
-                          inactiveIcon={<UserCheck className="h-4 w-4" />}
-                          variant="joined"
-                          className="font-medium bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
-                        />
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleReject(request._id)}
-                          disabled={actionLoading[request._id]}
-                          className="gap-2 border-red-500/50 text-red-600 hover:bg-red-500 hover:text-white"
-                        >
-                          <UserX className="w-4 h-4" />
-                          Decline
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* My Connections */}
-        <TabsContent value="connections" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <UserCheck className="w-5 h-5 text-primary" />
-                My Connections
-              </CardTitle>
-              <CardDescription>
-                {myConnections.length === 0 
-                  ? "No connections yet" 
-                  : `${myConnections.length} ${myConnections.length === 1 ? 'connection' : 'connections'}`
-                }
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {myConnections.length === 0 ? (
-                <div className="text-center py-12">
-                  <UserCheck className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-                  <p className="text-muted-foreground">No connections yet</p>
-                  <Button
-                    variant="outline"
-                    className="mt-4 border-purple-500/50 text-purple-600 hover:bg-purple-500 hover:text-white"
-                    onClick={() => navigate('/alumni')}
-                  >
-                    Browse Alumni
-                  </Button>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {myConnections.map((connection) => (
-                    <div
-                      key={connection._id}
-                      className="flex items-center gap-4 p-4 border rounded-lg hover:bg-accent/50 transition-colors"
-                    >
-                      <div className="relative cursor-pointer" onClick={() => handleAvatarClick(connection.user?._id)}>
-                        <Avatar className="w-12 h-12 hover:ring-4 ring-primary/20 transition-all">
-                          <AvatarImage src={connection.user?.avatar} />
-                          <AvatarFallback className="bg-primary/10 text-primary font-medium">
-                            {getUserInitials(connection.user?.name || 'User')}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-background rounded-full"></div>
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold truncate">{connection.user?.name || 'Anonymous'}</h4>
-                        <p className="text-sm text-muted-foreground truncate">
-                          {connection.user?.currentPosition || 'Alumni'}
-                        </p>
-                        {connection.user?.graduationYear && (
-                          <p className="text-xs text-muted-foreground">
-                            Class of {connection.user.graduationYear}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold">{request.requester?.name || 'Anonymous'}</h4>
+                          <p className="text-sm text-muted-foreground">
+                            {request.requester?.currentPosition || 'Alumni'}
+                            {request.requester?.graduationYear && ` • Class of ${request.requester.graduationYear}`}
                           </p>
-                        )}
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 px-2 mt-2 gap-2 text-cyan-600 hover:bg-gradient-to-r hover:from-cyan-500 hover:to-cyan-600 hover:text-white"
-                          onClick={() => handleMessage(connection.user._id)}
-                        >
-                          <Mail className="w-3 h-3" />
-                          Message
-                        </Button>
+                          <p className="text-xs text-muted-foreground mt-1">{request.requester?.email}</p>
+                        </div>
+
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleAccept(request._id)}
+                            disabled={actionLoading[request._id]}
+                            className="gap-2 rounded-full bg-green-500/10 text-green-600 hover:bg-green-500/25 hover:text-green-700 border border-green-500/20 hover:border-green-500/40 font-semibold focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-green-500/15 dark:text-green-400 dark:hover:bg-green-500/30 dark:hover:text-green-300"
+                          >
+                            <UserCheck className="w-4 h-4" />
+                            {actionLoading[request._id] ? "..." : "Accept"}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleReject(request._id)}
+                            disabled={actionLoading[request._id]}
+                            className="gap-2 rounded-full bg-red-500/10 text-red-600 hover:bg-red-500/25 hover:text-red-700 border border-red-500/20 hover:border-red-500/40 font-semibold focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-red-500/15 dark:text-red-400 dark:hover:bg-red-500/30 dark:hover:text-red-300"
+                          >
+                            <UserX className="w-4 h-4" />
+                            Decline
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* My Connections */}
+          <TabsContent value="connections" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <UserCheck className="w-5 h-5 text-primary" />
+                  My Connections
+                </CardTitle>
+                <CardDescription>
+                  {myConnections.length === 0
+                    ? "No connections yet"
+                    : `${myConnections.length} ${myConnections.length === 1 ? 'connection' : 'connections'}`
+                  }
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {myConnections.length === 0 ? (
+                  <div className="text-center py-12">
+                    <UserCheck className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
+                    <p className="text-muted-foreground">No connections yet</p>
+                    <Button
+                      variant="outline"
+                      className="mt-4 border-purple-500/50 text-purple-600 hover:bg-purple-500 hover:text-white"
+                      onClick={() => navigate('/alumni')}
+                    >
+                      Browse Alumni
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {myConnections.map((connection) => (
+                      <div
+                        key={connection._id}
+                        className="flex items-center gap-4 p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                      >
+                        <div className="relative cursor-pointer" onClick={() => handleAvatarClick(connection.user?._id)}>
+                          <Avatar className="w-12 h-12 hover:ring-4 ring-primary/20 transition-all">
+                            <AvatarImage src={connection.user?.avatar} />
+                            <AvatarFallback className="bg-primary/10 text-primary font-medium">
+                              {getUserInitials(connection.user?.name || 'User')}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-background rounded-full"></div>
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold truncate">{connection.user?.name || 'Anonymous'}</h4>
+                          <p className="text-sm text-muted-foreground truncate">
+                            {connection.user?.currentPosition || 'Alumni'}
+                          </p>
+                          {connection.user?.graduationYear && (
+                            <p className="text-xs text-muted-foreground">
+                              Class of {connection.user.graduationYear}
+                            </p>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 px-4 mt-2 gap-2 rounded-full bg-blue-500/10 text-blue-600 hover:bg-blue-500/25 hover:text-blue-700 border border-blue-500/20 hover:border-blue-500/40 font-semibold focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-blue-500/15 dark:text-blue-400 dark:hover:bg-blue-500/30 dark:hover:text-blue-300"
+                            onClick={() => handleMessage(connection.user._id)}
+                          >
+                            <Mail className="w-3 h-3" />
+                            Message
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       )}
-      
+
       {/* Chat Dialog */}
-      <ChatDialog 
-        open={chatDialogOpen} 
+      <ChatDialog
+        open={chatDialogOpen}
         onOpenChange={setChatDialogOpen}
         userId={selectedUserId || undefined}
       />
-      
+
       {/* User Profile Dialog */}
-      <UserProfileDialog 
-        open={profileDialogOpen} 
+      <UserProfileDialog
+        open={profileDialogOpen}
         onOpenChange={setProfileDialogOpen}
         userId={selectedProfileId}
         onMessageClick={(userId) => {
