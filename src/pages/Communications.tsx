@@ -245,142 +245,141 @@ export default function Communications() {
   };
 
   return (
-    <div className="space-y-4 animate-fade-in">
+    <div className="space-y-3 sm:space-y-4 animate-fade-in px-1 sm:px-0">
       {/* Header */}
       <div className="flex justify-between items-center mb-1">
         <div>
-          <h1 className="text-3xl font-bold gradient-text mb-1">Community Chat</h1>
-          <p className="text-muted-foreground text-sm">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold gradient-text mb-0.5 sm:mb-1">Community Chat</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm">
             Stay connected with the alumni community
           </p>
         </div>
       </div>
 
-      <Tabs defaultValue="community" className="space-y-4">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <TabsList className="grid w-full sm:w-auto sm:max-w-md grid-cols-2">
-            <TabsTrigger value="community" className="gap-2 text-xs sm:text-sm">
-              <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden xs:inline">Community</span>
-              <span className="xs:hidden">Chat</span>
+      <Tabs defaultValue="community" className="space-y-3 sm:space-y-4">
+        <div className="flex flex-col gap-2 sm:gap-3">
+          {/* Tabs - Full width on mobile */}
+          <TabsList className="grid w-full grid-cols-2 h-9 sm:h-10">
+            <TabsTrigger value="community" className="gap-1.5 sm:gap-2 text-xs sm:text-sm h-full">
+              <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              Community
             </TabsTrigger>
-            <TabsTrigger value="notifications" className="gap-2 relative text-xs sm:text-sm">
-              <Bell className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden xs:inline">Notifications</span>
-              <span className="xs:hidden">Alerts</span>
+            <TabsTrigger value="notifications" className="gap-1.5 sm:gap-2 relative text-xs sm:text-sm h-full">
+              <Bell className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              Alerts
               {unreadCount > 0 && (
-                <Badge className="ml-1 px-1.5 min-w-[20px] h-5 text-xs" variant="destructive">
+                <Badge className="ml-1 px-1 min-w-[18px] h-4 text-[10px] sm:text-xs" variant="destructive">
                   {unreadCount > 99 ? '99+' : unreadCount}
                 </Badge>
               )}
             </TabsTrigger>
           </TabsList>
 
-          {/* Sort Options - Colorful Pill Style */}
-          <div className="flex items-center gap-1 w-full sm:w-auto justify-start sm:justify-end overflow-x-auto pb-1 sm:pb-0">
+          {/* Sort Options - Scrollable on mobile */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none touch-manipulation">
             <Button
               variant="ghost"
               size="sm"
-              className={`gap-1 sm:gap-1.5 h-8 sm:h-9 px-2.5 sm:px-3 rounded-full font-semibold transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0 text-xs sm:text-sm whitespace-nowrap ${sortBy === 'hot'
-                ? 'bg-orange-500/15 text-orange-600 border border-orange-500/30 dark:bg-orange-500/20 dark:text-orange-400'
-                : 'hover:bg-orange-500/10 hover:text-orange-600 border border-transparent hover:border-orange-500/20 dark:hover:bg-orange-500/15 dark:hover:text-orange-400'
+              className={`gap-1 h-7 sm:h-8 px-2 sm:px-3 rounded-full font-semibold transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0 text-[11px] sm:text-xs whitespace-nowrap flex-shrink-0 ${sortBy === 'hot'
+                ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
+                : 'hover:bg-orange-500/15 hover:text-orange-400 border border-transparent hover:border-orange-500/20'
                 }`}
               onClick={() => setSortBy('hot')}
             >
-              <Flame className="w-3 h-3 sm:w-4 sm:h-4" />
+              <Flame className="w-3 h-3" />
               Hot
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className={`gap-1 sm:gap-1.5 h-8 sm:h-9 px-2.5 sm:px-3 rounded-full font-semibold transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0 text-xs sm:text-sm whitespace-nowrap ${sortBy === 'new'
-                ? 'bg-blue-500/15 text-blue-600 border border-blue-500/30 dark:bg-blue-500/20 dark:text-blue-400'
-                : 'hover:bg-blue-500/10 hover:text-blue-600 border border-transparent hover:border-blue-500/20 dark:hover:bg-blue-500/15 dark:hover:text-blue-400'
+              className={`gap-1 h-7 sm:h-8 px-2 sm:px-3 rounded-full font-semibold transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0 text-[11px] sm:text-xs whitespace-nowrap flex-shrink-0 ${sortBy === 'new'
+                ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                : 'hover:bg-blue-500/15 hover:text-blue-400 border border-transparent hover:border-blue-500/20'
                 }`}
               onClick={() => setSortBy('new')}
             >
-              <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
+              <Clock className="w-3 h-3" />
               New
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className={`gap-1 sm:gap-1.5 h-8 sm:h-9 px-2.5 sm:px-3 rounded-full font-semibold transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0 text-xs sm:text-sm whitespace-nowrap ${sortBy === 'top'
-                ? 'bg-purple-500/15 text-purple-600 border border-purple-500/30 dark:bg-purple-500/20 dark:text-purple-400'
-                : 'hover:bg-purple-500/10 hover:text-purple-600 border border-transparent hover:border-purple-500/20 dark:hover:bg-purple-500/15 dark:hover:text-purple-400'
+              className={`gap-1 h-7 sm:h-8 px-2 sm:px-3 rounded-full font-semibold transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0 text-[11px] sm:text-xs whitespace-nowrap flex-shrink-0 ${sortBy === 'top'
+                ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+                : 'hover:bg-purple-500/15 hover:text-purple-400 border border-transparent hover:border-purple-500/20'
                 }`}
               onClick={() => setSortBy('top')}
             >
-              <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4" />
+              <TrendingUp className="w-3 h-3" />
               Top
             </Button>
           </div>
         </div>
 
-        <TabsContent value="community" className="space-y-4">
+        <TabsContent value="community" className="space-y-3 sm:space-y-4">
           {/* Post Composer */}
           <PostComposer onPostCreated={handlePostCreated} />
 
-          {/* Community Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
-            <Card className="border-l-4 border-l-orange-500">
-              <CardContent className="p-2.5 sm:p-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-[10px] sm:text-xs font-medium text-muted-foreground">Total Posts</p>
-                    <p className="text-lg sm:text-2xl font-bold mt-0.5">{stats.totalPosts.toLocaleString()}</p>
+          {/* Community Stats - Compact on mobile */}
+          <div className="grid grid-cols-4 gap-1.5 sm:gap-2 md:gap-3">
+            <Card className="border-l-2 sm:border-l-4 border-l-orange-500">
+              <CardContent className="p-1.5 sm:p-2.5">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-0">
+                  <div className="min-w-0">
+                    <p className="text-[8px] sm:text-[10px] font-medium text-muted-foreground truncate">Posts</p>
+                    <p className="text-sm sm:text-lg md:text-xl font-bold">{stats.totalPosts.toLocaleString()}</p>
                   </div>
-                  <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" />
+                  <MessageSquare className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-orange-500 hidden sm:block" />
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-l-4 border-l-green-500">
-              <CardContent className="p-2.5 sm:p-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-[10px] sm:text-xs font-medium text-muted-foreground">Active Users</p>
-                    <p className="text-lg sm:text-2xl font-bold mt-0.5">{stats.activeUsers.toLocaleString()}</p>
+            <Card className="border-l-2 sm:border-l-4 border-l-green-500">
+              <CardContent className="p-1.5 sm:p-2.5">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-0">
+                  <div className="min-w-0">
+                    <p className="text-[8px] sm:text-[10px] font-medium text-muted-foreground truncate">Users</p>
+                    <p className="text-sm sm:text-lg md:text-xl font-bold">{stats.activeUsers.toLocaleString()}</p>
                   </div>
-                  <Users className="w-5 h-5 sm:w-6 sm:h-6 text-green-500" />
+                  <Users className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-green-500 hidden sm:block" />
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-l-4 border-l-blue-500">
-              <CardContent className="p-2.5 sm:p-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-[10px] sm:text-xs font-medium text-muted-foreground">Comments</p>
-                    <p className="text-lg sm:text-2xl font-bold mt-0.5">{stats.comments.toLocaleString()}</p>
+            <Card className="border-l-2 sm:border-l-4 border-l-blue-500">
+              <CardContent className="p-1.5 sm:p-2.5">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-0">
+                  <div className="min-w-0">
+                    <p className="text-[8px] sm:text-[10px] font-medium text-muted-foreground truncate">Replies</p>
+                    <p className="text-sm sm:text-lg md:text-xl font-bold">{stats.comments.toLocaleString()}</p>
                   </div>
-                  <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500" />
+                  <MessageSquare className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-blue-500 hidden sm:block" />
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-l-4 border-l-purple-500">
-              <CardContent className="p-2.5 sm:p-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-[10px] sm:text-xs font-medium text-muted-foreground">Upvotes</p>
-                    <p className="text-lg sm:text-2xl font-bold mt-0.5">{stats.upvotes.toLocaleString()}</p>
+            <Card className="border-l-2 sm:border-l-4 border-l-purple-500">
+              <CardContent className="p-1.5 sm:p-2.5">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-0">
+                  <div className="min-w-0">
+                    <p className="text-[8px] sm:text-[10px] font-medium text-muted-foreground truncate">Votes</p>
+                    <p className="text-sm sm:text-lg md:text-xl font-bold">{stats.upvotes.toLocaleString()}</p>
                   </div>
-                  <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-purple-500" />
+                  <TrendingUp className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-purple-500 hidden sm:block" />
                 </div>
               </CardContent>
             </Card>
           </div>
 
           {/* Messages Feed */}
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             {loading ? (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">Loading posts...</p>
+              <div className="text-center py-6 sm:py-8">
+                <p className="text-muted-foreground text-sm">Loading posts...</p>
               </div>
             ) : posts.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">No posts yet. Be the first to share something!</p>
+              <div className="text-center py-6 sm:py-8">
+                <p className="text-muted-foreground text-sm">No posts yet. Be the first to share something!</p>
               </div>
             ) : (
               posts.map((post) => (

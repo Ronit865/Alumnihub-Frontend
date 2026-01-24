@@ -538,12 +538,12 @@ export function Events() {
         {/* Event Footer */}
         <div className="mt-auto pt-4">
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
-            className="w-full border-card-border/50 hover:bg-accent h-8 text-xs"
+            className="w-full h-8 text-xs gap-1.5 rounded-lg font-medium transition-all duration-200 bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/30 hover:border-cyan-500/50 hover:text-cyan-300"
             onClick={() => handleViewParticipants(event._id, event.title)}
           >
-            <Users className="h-3 w-3 mr-1" />
+            <Users className="h-3.5 w-3.5" />
             View Participants
           </Button>
         </div>
