@@ -147,16 +147,27 @@
         window.addEventListener('load', function() {
           navigator.serviceWorker.register('/service-worker.js')
             .then(function(registration) {
-              console.log('ServiceWorker registration successful:', registration.scope);
+              // Force update check on load
+              registration.update();
               
               // Check for updates periodically
               setInterval(() => {
                 registration.update();
-              }, 60000); // Check every minute
+              }, 30000); // Check every 30 seconds
+              
+              // Auto-refresh on new version
+              registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                if (newWorker) {
+                  newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'activated') {
+                      window.location.reload();
+                    }
+                  });
+                }
+              });
             })
-            .catch(function(err) {
-              console.log('ServiceWorker registration failed:', err);
-            });
+            .catch(function() {});
         });
       }
     </script>
