@@ -50,10 +50,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const initializeAuth = async () => {
       const token = localStorage.getItem('accessToken');
       const storedUserType = localStorage.getItem('userType') as 'user' | 'admin' | null;
-      
+
       if (token && storedUserType) {
         setUserType(storedUserType);
-        
+
         // Load cached data immediately
         if (storedUserType === 'admin') {
           const cachedAdmin = localStorage.getItem('cachedAdminData');
@@ -84,10 +84,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
           }
         }
-        
+
         setIsInitialized(true);
         setIsLoading(false);
-        
+
         // Fetch fresh data in background
         try {
           await fetchCurrentUser();
@@ -106,7 +106,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchCurrentUser = async () => {
     try {
       const storedUserType = localStorage.getItem('userType') as 'user' | 'admin' | null;
-      
+
       if (!storedUserType) {
         return;
       }
@@ -114,7 +114,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       let response;
       if (storedUserType === 'admin') {
         response = await adminService.getCurrentAdmin();
-        
+
         // Try different possible structures
         let adminData = null;
         if (response?.data?.data) {
@@ -124,7 +124,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } else if (response) {
           adminData = response;
         }
-        
+
         if (adminData && adminData.name && adminData.email) {
           setAdmin(adminData);
           setUser(null);
@@ -135,7 +135,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       } else {
         response = await userService.getCurrentUser();
-        
+
         // Try different possible structures
         let userData = null;
         if (response?.data?.data) {
@@ -145,7 +145,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } else if (response) {
           userData = response;
         }
-        
+
         if (userData && userData.name && userData.email) {
           setUser(userData);
           setAdmin(null);
@@ -155,7 +155,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         }
       }
-      
+
       setUserType(storedUserType);
     } catch (error: any) {
       // Keep cached data on error
@@ -166,7 +166,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateUserData = (userData: User | Admin) => {
     const storedUserType = localStorage.getItem('userType');
-    
+
     if (storedUserType === 'admin') {
       setAdmin(userData as Admin);
       localStorage.setItem('cachedAdminData', JSON.stringify(userData));
@@ -186,12 +186,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const responseUserType = userData.userType || (userData.user?.role === 'admin' ? 'admin' : 'user');
     const responseUser = userData.user;
     const responseAdmin = userData.admin;
-    
+
     localStorage.setItem('userType', responseUserType);
     setUserType(responseUserType as 'user' | 'admin');
-    
+
     if (userData.accessToken) {
       localStorage.setItem('accessToken', userData.accessToken);
+    }
+    if (userData.refreshToken) {
+      localStorage.setItem('refreshToken', userData.refreshToken);
     }
 
     if (responseUserType === 'admin') {
@@ -211,7 +214,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem('userId', userData_._id);
       }
     }
-    
+
     setIsLoading(false);
     setIsInitialized(true);
   };
@@ -222,6 +225,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUserType(null);
     setIsInitialized(false);
     localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
     localStorage.removeItem('userType');
     localStorage.removeItem('cachedUserData');
     localStorage.removeItem('cachedAdminData');
