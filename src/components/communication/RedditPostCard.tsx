@@ -196,11 +196,6 @@ export function RedditPostCard({ post, onUpdate }: RedditPostProps) {
   const isAuthor = post.author?._id === localStorage.getItem('userId');
   const canDelete = isAuthor && canDeletePost();
 
-  // Debug logging
-  console.log('Post author ID:', post.author?._id);
-  console.log('Current user ID:', localStorage.getItem('userId'));
-  console.log('Is author:', isAuthor);
-  console.log('Can delete:', canDelete);
 
   return (
     <Card

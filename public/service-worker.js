@@ -1,6 +1,5 @@
-const CACHE_NAME = 'allynet-v1';
+const CACHE_NAME = 'allynet-v3';
 const urlsToCache = [
-  '/',
   '/ANlogo.png',
   '/favicon.ico',
   '/placeholder.svg'
@@ -10,13 +9,8 @@ const urlsToCache = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('Opened cache');
-        return cache.addAll(urlsToCache);
-      })
-      .catch((error) => {
-        console.log('Cache installation failed:', error);
-      })
+      .then((cache) => cache.addAll(urlsToCache))
+      .catch(() => {})
   );
   self.skipWaiting();
 });
@@ -28,7 +22,6 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
-            console.log('Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
