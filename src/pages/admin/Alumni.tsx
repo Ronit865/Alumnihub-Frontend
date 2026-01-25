@@ -791,7 +791,6 @@ export function Alumni() {
                 <Input
                   placeholder="Search alumni..."
                   value={searchTerm}
-
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 w-full sm:w-48 md:w-64"
                 />
