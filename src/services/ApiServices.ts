@@ -20,9 +20,10 @@ export const authService = {
   login: async (credentials: { email: string; password: string }): Promise<ApiResponse> => {
     const response = await api.post('/login', credentials);
 
-    // Store tokens
+    // Store tokens with timestamp for session tracking
     if (response.data?.accessToken) {
       localStorage.setItem('accessToken', response.data.accessToken);
+      localStorage.setItem('tokenTimestamp', Date.now().toString());
     }
     if (response.data?.refreshToken) {
       localStorage.setItem('refreshToken', response.data.refreshToken);

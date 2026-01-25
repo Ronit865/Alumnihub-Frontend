@@ -48,7 +48,7 @@ export function AppHeader() {
           setUnreadCount(response.data.unreadCount || 0);
         }
       } catch (error) {
-        console.error("Failed to fetch notifications:", error);
+        // Failed to fetch notifications
       }
     };
 
@@ -70,7 +70,7 @@ export function AppHeader() {
         }).length;
         setUnreadChatsCount(unreadCount);
       } catch (error) {
-        console.error("Failed to fetch conversations:", error);
+        // Failed to fetch conversations
       }
     };
 
@@ -110,7 +110,7 @@ export function AppHeader() {
         navigate(notification.link);
       }
     } catch (error) {
-      console.error("Failed to mark notification as read:", error);
+      // Failed to mark notification as read
     }
   };
 
@@ -125,7 +125,6 @@ export function AppHeader() {
         description: "All notifications marked as read",
       });
     } catch (error) {
-      console.error("Failed to mark all as read:", error);
       toast({
         title: "Error",
         description: "Failed to mark notifications as read",
@@ -180,7 +179,6 @@ export function AppHeader() {
       });
       navigate('/auth/login');
     } catch (error) {
-      console.error('Logout error:', error);
       toast({
         title: "Logout failed",
         description: "An error occurred during logout",

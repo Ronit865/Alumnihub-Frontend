@@ -167,7 +167,7 @@ export default function Communications() {
         setStats(response.data);
       }
     } catch (error) {
-      console.error("Failed to fetch stats:", error);
+      // Failed to fetch stats
     }
   };
 
@@ -187,7 +187,6 @@ export default function Communications() {
         setUnreadCount(response.data.unreadCount || 0);
       }
     } catch (error: any) {
-      console.error("Failed to fetch notifications:", error);
     } finally {
       setNotificationsLoading(false);
     }
@@ -199,7 +198,6 @@ export default function Communications() {
       await notificationService.markAsRead(notificationId);
       fetchNotifications();
     } catch (error: any) {
-      console.error("Failed to mark as read:", error);
     }
   };
 

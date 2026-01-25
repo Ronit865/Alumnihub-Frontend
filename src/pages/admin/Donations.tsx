@@ -161,7 +161,6 @@ export function Donations() {
                     description: apiError.message || "Failed to load campaigns",
                     variant: "destructive",
                 });
-                console.error("Admin - Error fetching campaigns:", err);
             } finally {
                 setLoading(false);
             }
@@ -181,7 +180,7 @@ export function Donations() {
                 if (statsResponse.success) {
                     setDonationStats(statsResponse.data);
                 } else {
-                    console.error("Failed to fetch donation stats:", statsResponse.message);
+                    // Failed to fetch donation stats
                 }
 
                 // Fetch recent donors
@@ -190,10 +189,9 @@ export function Donations() {
                     // Take only the first 5 recent donors
                     setRecentDonors((donorsResponse.data || []).slice(0, 5));
                 } else {
-                    console.error("Failed to fetch recent donors:", donorsResponse.message);
+                    // Failed to fetch recent donors
                 }
             } catch (error: any) {
-                console.error("Error fetching stats and donors:", error);
             } finally {
                 setLoadingStats(false);
             }

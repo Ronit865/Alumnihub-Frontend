@@ -78,7 +78,6 @@ export const Login = () => {
         }
       }
     } catch (error: any) {
-      console.error('Login error:', error);
       const apiError = handleApiError(error);
 
       setLoginError("Invalid credentials"); // Set inline error

@@ -66,7 +66,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 localStorage.setItem('userId', adminData._id);
               }
             } catch (e) {
-              console.warn('Failed to parse cached admin data');
+              // Failed to parse cached data
             }
           }
         } else {
@@ -80,7 +80,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 localStorage.setItem('userId', userData._id);
               }
             } catch (e) {
-              console.warn('Failed to parse cached user data');
+              // Failed to parse cached data
             }
           }
         }
@@ -92,7 +92,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
           await fetchCurrentUser();
         } catch (error) {
-          console.error('Background fetch failed:', error);
+          // Background fetch failed - use cached data
         }
       } else {
         setIsLoading(false);
@@ -159,7 +159,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUserType(storedUserType);
     } catch (error: any) {
       // Keep cached data on error
-      console.warn('Keeping cached data due to fetch error');
     } finally {
       setIsLoading(false);
     }

@@ -183,7 +183,6 @@ export function Communications() {
         throw new Error(response?.message || "Failed to send campaign emails");
       }
     } catch (error: any) {
-      console.error(`Failed to send ${campaignType} emails:`, error);
       toast.error(error.message || `Failed to send ${campaignType} emails`);
     } finally {
       setSendingCampaign(null);
@@ -230,7 +229,6 @@ export function Communications() {
         throw new Error(response?.message || "Failed to send event emails");
       }
     } catch (error: any) {
-      console.error('Failed to send event emails:', error);
       toast.error(error.message || "Failed to send event emails");
     } finally {
       setSendingCampaign(null);
@@ -280,7 +278,6 @@ export function Communications() {
         throw new Error(response?.message || "Failed to send job emails");
       }
     } catch (error: any) {
-      console.error('Failed to send job emails:', error);
       toast.error(error.message || "Failed to send job emails");
     } finally {
       setSendingCampaign(null);
@@ -300,7 +297,6 @@ export function Communications() {
         setEmailHistory(response.data.emails || []);
       }
     } catch (error) {
-      console.error('Failed to fetch email history:', error);
       // Don't show error toast for background fetch
     } finally {
       setEmailHistoryLoading(false);
@@ -332,7 +328,6 @@ export function Communications() {
           });
         }
       } catch (error) {
-        console.error('Failed to fetch stats:', error);
       } finally {
         setLoading(false);
       }
@@ -380,7 +375,6 @@ export function Communications() {
           setRecentDonations(donations.slice(0, 5));
         }
       } catch (error) {
-        console.error('Failed to fetch campaign data:', error);
       }
     };
 
