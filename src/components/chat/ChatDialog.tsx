@@ -107,7 +107,7 @@ export function ChatDialog({
         const userData = response?.data?.data || response?.data || response;
         setCurrentUser(userData);
       } catch (error) {
-        console.error('Error fetching current user:', error);
+        // Error fetching current user
       }
     };
     fetchCurrentUser();
@@ -153,7 +153,7 @@ export function ChatDialog({
           // Scroll will happen via the useEffect dependency on 'messages'
         }
       } catch (error) {
-        console.error('Error refreshing messages:', error);
+        // Error refreshing messages
       }
     }, 2000);
 
@@ -167,7 +167,6 @@ export function ChatDialog({
       const conversationsData = response?.data || [];
       setConversations(Array.isArray(conversationsData) ? conversationsData : []);
     } catch (error) {
-      console.error('Error fetching conversations:', error);
     } finally {
       setLoading(false);
     }
@@ -300,8 +299,7 @@ export function ChatDialog({
     try {
       await messageService.deleteMessage(messageId);
     } catch (error: any) {
-      // Silently handle or log error
-      console.error("Delete message error:", error);
+      // Error deleting message - refresh to restore
       // Optionally refresh messages if failed
       if (conversationId) {
         fetchMessagesForConversation(conversationId);

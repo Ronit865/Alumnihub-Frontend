@@ -92,8 +92,7 @@ export function RedditPostCard({ post, onUpdate }: RedditPostProps) {
     try {
       await communicationService.deletePost(post._id);
     } catch (error: any) {
-      // Silently handle or show minimal error
-      console.error("Delete post error:", error);
+      // Delete post error - refresh to restore
       if (onUpdate) {
         onUpdate(); // Refresh to restore if failed
       }

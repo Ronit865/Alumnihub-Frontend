@@ -74,7 +74,6 @@ export default function Events() {
                 toast.error("Failed to fetch events");
             }
         } catch (error: any) {
-            console.error("Error fetching events:", error);
             setError(error.message || "Failed to fetch events");
             toast.error("Failed to fetch events");
         } finally {
@@ -91,7 +90,7 @@ export default function Events() {
                 await checkRegisteredEvents(response.data);
             }
         } catch (error) {
-            console.error("Background refresh failed:", error);
+            // Background refresh failed
         }
     };
 
@@ -119,7 +118,7 @@ export default function Events() {
                 setRegisteredEvents(registered);
             }
         } catch (error) {
-            console.error("Error checking registered events:", error);
+            // Error checking registered events
         }
     };
 
@@ -128,7 +127,6 @@ export default function Events() {
             const userResponse = await userService.getCurrentUser();
             return userResponse.data?._id;
         } catch (error) {
-            console.error("Error getting current user:", error);
             return undefined;
         }
     };
@@ -163,7 +161,6 @@ export default function Events() {
                 toast.error(response.message || "Failed to join event");
             }
         } catch (error: any) {
-            console.error("Error joining event:", error);
             toast.error(error.message || "Failed to join event");
         } finally {
             setJoiningEvent(null);
@@ -205,7 +202,6 @@ export default function Events() {
                 toast.error(response.message || "Failed to leave event");
             }
         } catch (error: any) {
-            console.error("Error leaving event:", error);
             toast.error(error.message || "Failed to leave event");
         } finally {
             setJoiningEvent(null);

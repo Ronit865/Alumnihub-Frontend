@@ -52,7 +52,6 @@ export function CommentCard({ comment, postId, onUpdate, depth = 0 }: CommentCar
         setRepliesLoaded(true);
       }
     } catch (error) {
-      console.error("Failed to fetch replies:", error);
     } finally {
       setLoadingReplies(false);
     }
@@ -167,9 +166,8 @@ export function CommentCard({ comment, postId, onUpdate, depth = 0 }: CommentCar
     try {
       await communicationService.deleteComment(comment._id);
     } catch (error: any) {
-      // Silently handle or show minimal error
-      console.error("Delete comment error:", error);
-      onUpdate(); // Refresh to restore if failed
+      // Error deleting comment - refresh to restore
+      onUpdate();
     }
   };
 

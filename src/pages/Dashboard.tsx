@@ -158,7 +158,7 @@ export default function Dashboard() {
         const verifiedJobs = jobs.filter((job: any) => job.isVerified);
         setRecentJobs(verifiedJobs.slice(0, 5));
       } catch (error) {
-        console.error("Error fetching jobs:", error);
+        // Error fetching jobs
       }
 
       // Fetch donation stats
@@ -176,7 +176,7 @@ export default function Dashboard() {
               : `₹${amount.toLocaleString()}`;
         }
       } catch (error) {
-        console.error("Error fetching donations:", error);
+        // Error fetching donations
       }
 
       // Fetch connections count
@@ -237,7 +237,6 @@ export default function Dashboard() {
       }, CACHE_TTL.MEDIUM);
 
     } catch (error: any) {
-      console.error("Error fetching dashboard data:", error);
       toast.error("Failed to load dashboard data");
     } finally {
       setLoading(false);

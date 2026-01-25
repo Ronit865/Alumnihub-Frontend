@@ -59,14 +59,22 @@ api.interceptors.response.use(
           }
 
           const refreshResponse = await axios.post(
-            `${api.defaults.baseURL}/login/refresh-token`,
+            `${api.defaults.baseURL}/refresh-token`,
             { refreshToken },
             { withCredentials: true }
           );
 
-          if (refreshResponse.data?.success && refreshResponse.data?.data?.accessToken) {
-            const newAccessToken = refreshResponse.data.data.accessToken;
+          // Check for new tokens in response
+          const responseData = refreshResponse.data?.data || refreshResponse.data;
+          
+          if (refreshResponse.data?.success && responseData?.accessToken) {
+            const newAccessToken = responseData.accessToken;
             localStorage.setItem('accessToken', newAccessToken);
+            
+            // Also store new refresh token if provided (token rotation)
+            if (responseData.refreshToken) {
+              localStorage.setItem('refreshToken', responseData.refreshToken);
+            }
 
             originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 

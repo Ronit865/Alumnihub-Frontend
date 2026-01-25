@@ -86,7 +86,6 @@ export function Dashboard() {
 
           setDepartmentData(chartData);
         } catch (alumniError) {
-          console.warn('Failed to fetch alumni data:', alumniError);
           setTotalAlumni(0);
           setDepartmentData([]);
         }
@@ -104,7 +103,6 @@ export function Dashboard() {
             .slice(0, 5);
           setUpcomingEvents(upcoming);
         } catch (eventsError) {
-          console.warn('Failed to fetch events data:', eventsError);
           setTotalEvents(0);
           setUpcomingEvents([]);
         }
@@ -114,7 +112,6 @@ export function Dashboard() {
           const stats = donationStatsResponse?.data || {};
           setDonationStats(stats);
         } catch (donationError) {
-          console.warn('Failed to fetch donation stats:', donationError);
           setDonationStats(null);
         }
 
@@ -133,7 +130,6 @@ export function Dashboard() {
             : [];
           setPendingJobs(pending);
         } catch (jobsError) {
-          console.warn('Failed to fetch jobs data:', jobsError);
           setTotalJobs(0);
           setVerifiedJobs(0);
           setPendingJobs([]);
@@ -144,7 +140,6 @@ export function Dashboard() {
           donors = Array.isArray(donorsResponse?.data) ? donorsResponse.data : [];
           setRecentDonors(donors.slice(0, 10));
         } catch (donorsError) {
-          console.warn('Failed to fetch recent donors:', donorsError);
           setRecentDonors([]);
         }
 
@@ -215,7 +210,6 @@ export function Dashboard() {
         setRecentActivities(activities.slice(0, 6));
 
       } catch (error: any) {
-        console.error('Dashboard data fetch error:', error);
         setError('Failed to load dashboard data. Please refresh the page.');
       } finally {
         setLoading(false);
