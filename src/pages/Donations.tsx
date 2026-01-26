@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { InfoTag } from '@/components/ui/InfoTag';
 import { donationService } from '@/services/ApiServices';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 import { Heart, Target, TrendingUp, Loader2, ChevronLeft, ChevronRight, CheckCircle } from 'lucide-react';
 import { cache, CACHE_KEYS, CACHE_TTL } from '@/lib/cache';
 
@@ -25,6 +25,7 @@ interface DonationCampaign {
 const ITEMS_PER_PAGE = 6;
 
 export default function Donations() {
+  const { toast } = useToast();
   const [campaigns, setCampaigns] = useState<DonationCampaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [contributeDialogOpen, setContributeDialogOpen] = useState(false);
@@ -51,10 +52,10 @@ export default function Donations() {
         setCampaigns(response.data);
         cache.set(CACHE_KEYS.USER_DONATIONS, response.data, CACHE_TTL.MEDIUM);
       } else {
-        toast.error(response.message || 'Failed to fetch donation campaigns');
+        toast({ title: "Error", description: response.message || 'Failed to fetch donation campaigns', variant: "destructive" });
       }
     } catch (error: any) {
-      toast.error(error.message || 'Failed to load donation campaigns');
+      toast({ title: "Error", description: error.message || 'Failed to load donation campaigns', variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -72,13 +73,13 @@ export default function Donations() {
 
   const submitContribution = async () => {
     if (!selectedCampaign || !contributionAmount) {
-      toast.error('Please enter a valid amount');
+      toast({ title: "Error", description: 'Please enter a valid amount', variant: "destructive" });
       return;
     }
 
     const amount = parseFloat(contributionAmount);
     if (isNaN(amount) || amount <= 0) {
-      toast.error('Please enter a valid amount');
+      toast({ title: "Error", description: 'Please enter a valid amount', variant: "destructive" });
       return;
     }
 
@@ -87,15 +88,15 @@ export default function Donations() {
       const response = await donationService.contributeToCampaign(selectedCampaign._id, amount);
 
       if (response.success) {
-        toast.success(`Successfully contributed ₹${amount}!`);
+        toast({ title: "Success", description: `Successfully contributed ₹${amount}!`, variant: "success" });
         setContributeDialogOpen(false);
         setContributionAmount('');
         fetchCampaigns();
       } else {
-        toast.error(response.message || 'Failed to contribute');
+        toast({ title: "Error", description: response.message || 'Failed to contribute', variant: "destructive" });
       }
     } catch (error: any) {
-      toast.error(error.message || 'Failed to process contribution');
+      toast({ title: "Error", description: error.message || 'Failed to process contribution', variant: "destructive" });
     } finally {
       setContributing(false);
     }

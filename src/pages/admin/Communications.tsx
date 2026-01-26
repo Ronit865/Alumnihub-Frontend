@@ -7,10 +7,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Mail, Send, Users, MessageSquare, Bell, TrendingUp, Eye, Calendar, Briefcase, Heart, Megaphone, Loader2 } from "lucide-react";
 import { emailService, adminService, notificationService, eventService, jobService, donationService } from "@/services/ApiServices";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 
 export function Communications() {
-  const [selectedCampaign, setSelectedCampaign] = useState(null);
+  const { toast } = useToast();
   const [emailForm, setEmailForm] = useState({
     subject: "",
     body: "",

@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { InfoTag } from "@/components/ui/InfoTag";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import { eventService } from "@/services/ApiServices";
 import { userService } from "@/services/ApiServices";
 import { cache, CACHE_KEYS, CACHE_TTL } from "@/lib/cache";
@@ -32,6 +32,7 @@ interface Event {
 const ITEMS_PER_PAGE = 6;
 
 export default function Events() {
+    const { toast } = useToast();
     const [searchQuery, setSearchQuery] = useState("");
     const [events, setEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
@@ -71,11 +72,11 @@ export default function Events() {
                 await checkRegisteredEvents(response.data);
             } else {
                 setError(response.message || "Failed to fetch events");
-                toast.error("Failed to fetch events");
+                toast({ title: "Error", description: "Failed to fetch events", variant: "destructive" });
             }
         } catch (error: any) {
             setError(error.message || "Failed to fetch events");
-            toast.error("Failed to fetch events");
+            toast({ title: "Error", description: "Failed to fetch events", variant: "destructive" });
         } finally {
             setLoading(false);
         }
@@ -137,15 +138,17 @@ export default function Events() {
 
             const userId = await getCurrentUserId();
             if (!userId) {
-                toast.error("Please login to join events");
+                toast({ title: "Error", description: "Please login to join events", variant: "destructive" });
                 return;
             }
 
             const response = await eventService.joinEvent(eventId);
 
             if (response.success) {
-                toast.success("Successfully joined the event!", {
+                toast({ 
+                    title: "Successfully joined the event!", 
                     description: "You will receive event updates via email.",
+                    variant: "success"
                 });
 
                 setRegisteredEvents(prev => new Set(prev).add(eventId));
@@ -158,10 +161,10 @@ export default function Events() {
                     )
                 );
             } else {
-                toast.error(response.message || "Failed to join event");
+                toast({ title: "Error", description: response.message || "Failed to join event", variant: "destructive" });
             }
         } catch (error: any) {
-            toast.error(error.message || "Failed to join event");
+            toast({ title: "Error", description: error.message || "Failed to join event", variant: "destructive" });
         } finally {
             setJoiningEvent(null);
         }
@@ -173,14 +176,14 @@ export default function Events() {
 
             const userId = await getCurrentUserId();
             if (!userId) {
-                toast.error("Unable to leave event");
+                toast({ title: "Error", description: "Unable to leave event", variant: "destructive" });
                 return;
             }
 
             const response = await eventService.leaveEvent(eventId);
 
             if (response.success) {
-                toast.success("Successfully left the event");
+                toast({ title: "Successfully left the event", variant: "success" });
 
                 setRegisteredEvents(prev => {
                     const newSet = new Set(prev);
@@ -199,10 +202,10 @@ export default function Events() {
                     )
                 );
             } else {
-                toast.error(response.message || "Failed to leave event");
+                toast({ title: "Error", description: response.message || "Failed to leave event", variant: "destructive" });
             }
         } catch (error: any) {
-            toast.error(error.message || "Failed to leave event");
+            toast({ title: "Error", description: error.message || "Failed to leave event", variant: "destructive" });
         } finally {
             setJoiningEvent(null);
         }

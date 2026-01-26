@@ -14,10 +14,11 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { jobService } from "@/services/ApiServices";
-import { toast } from "sonner"; // Changed to use sonner consistently
+import { useToast } from "@/hooks/use-toast";
 
 export default function PostJob() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
@@ -36,7 +37,7 @@ export default function PostJob() {
     
     // Basic validation
     if (!formData.title || !formData.company || !formData.location || !formData.description) {
-      toast.error("Please fill in all required fields");
+      toast({ title: "Error", description: "Please fill in all required fields", variant: "destructive" });
       return;
     }
 
@@ -63,13 +64,13 @@ export default function PostJob() {
       const response = await jobService.addJob(jobData);
 
       if (response.success) {
-        toast.success("Job posted successfully! Pending admin verification.");
+        toast({ title: "Success", description: "Job posted successfully! Pending admin verification.", variant: "success" });
         navigate("/jobs");
       } else {
-        toast.error(response.message || "Failed to post job");
+        toast({ title: "Error", description: response.message || "Failed to post job", variant: "destructive" });
       }
     } catch (error: any) {
-      toast.error(error.message || "Failed to post job. Please try again.");
+      toast({ title: "Error", description: error.message || "Failed to post job. Please try again.", variant: "destructive" });
     } finally {
       setLoading(false);
     }

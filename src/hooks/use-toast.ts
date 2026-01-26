@@ -176,9 +176,20 @@ function useToast() {
     };
   }, [state]);
 
+  // Create wrapper with helper methods for backwards compatibility
+  const toastWithHelpers = Object.assign(
+    (props: Toast) => toast(props),
+    {
+      success: (message: string, opts?: Partial<Toast>) => toast({ title: message, variant: "success" as const, ...opts }),
+      error: (message: string, opts?: Partial<Toast>) => toast({ title: message, variant: "destructive" as const, ...opts }),
+      info: (message: string, opts?: Partial<Toast>) => toast({ title: message, variant: "info" as const, ...opts }),
+      warning: (message: string, opts?: Partial<Toast>) => toast({ title: message, variant: "warning" as const, ...opts }),
+    }
+  );
+
   return {
     ...state,
-    toast,
+    toast: toastWithHelpers,
     dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
   };
 }

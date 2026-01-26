@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/select";
 import { VoteButtons } from "./VoteButtons";
 import { communicationService } from "@/services/ApiServices";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 
 interface RedditPostProps {
   post: any;
@@ -39,6 +39,7 @@ interface RedditPostProps {
 
 export function RedditPostCard({ post, onUpdate }: RedditPostProps) {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [isSaved, setIsSaved] = useState(post.savedBy?.includes(localStorage.getItem('userId')) || false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editContent, setEditContent] = useState(post.content || "");
@@ -66,7 +67,7 @@ export function RedditPostCard({ post, onUpdate }: RedditPostProps) {
     const newSavedState = !isSaved;
     setIsSaved(newSavedState);
 
-    toast.success(newSavedState ? "Post saved" : "Post unsaved");
+    toast({ title: newSavedState ? "Post saved" : "Post unsaved", variant: "success" });
 
     // Call API in background
     try {
@@ -74,7 +75,7 @@ export function RedditPostCard({ post, onUpdate }: RedditPostProps) {
     } catch (error: any) {
       // Revert on error
       setIsSaved(!newSavedState);
-      toast.error(error.message || "Failed to save post. Please try again.");
+      toast({ title: "Error", description: error.message || "Failed to save post. Please try again.", variant: "destructive" });
     }
   };
 
@@ -86,7 +87,7 @@ export function RedditPostCard({ post, onUpdate }: RedditPostProps) {
       onUpdate();
     }
 
-    toast.success("Post deleted successfully");
+    toast({ title: "Post deleted successfully", variant: "success" });
 
     // Call API in background
     try {
@@ -107,7 +108,7 @@ export function RedditPostCard({ post, onUpdate }: RedditPostProps) {
 
   const submitReport = async () => {
     if (!reportReason) {
-      toast.error("Please select a reason for reporting");
+      toast({ title: "Error", description: "Please select a reason for reporting", variant: "destructive" });
       return;
     }
 
@@ -117,13 +118,13 @@ export function RedditPostCard({ post, onUpdate }: RedditPostProps) {
         reason: reportReason,
         description: reportDescription
       });
-      toast.success("Post reported - We'll review this post");
+      toast({ title: "Post reported", description: "We'll review this post", variant: "success" });
       setReportDialogOpen(false);
     } catch (error: any) {
       if (error.response?.data?.message?.includes("already reported")) {
-        toast.error("You have already reported this post");
+        toast({ title: "Error", description: "You have already reported this post", variant: "destructive" });
       } else {
-        toast.error(error.message || "Failed to submit report");
+        toast({ title: "Error", description: error.message || "Failed to submit report", variant: "destructive" });
       }
     } finally {
       setIsReporting(false);
@@ -143,28 +144,28 @@ export function RedditPostCard({ post, onUpdate }: RedditPostProps) {
       } catch (error) {
         // User cancelled or share failed, fallback to clipboard
         await navigator.clipboard.writeText(postUrl);
-        toast.success("Link copied to clipboard");
+        toast({ title: "Link copied to clipboard", variant: "success" });
       }
     } else {
       await navigator.clipboard.writeText(postUrl);
-      toast.success("Link copied to clipboard");
+      toast({ title: "Link copied to clipboard", variant: "success" });
     }
   };
 
   const handleEdit = async () => {
     if (!editContent.trim()) {
-      toast.error("Post content cannot be empty");
+      toast({ title: "Error", description: "Post content cannot be empty", variant: "destructive" });
       return;
     }
 
     setIsEditing(true);
     try {
       await communicationService.updatePost(post._id, { content: editContent });
-      toast.success("Post updated successfully");
+      toast({ title: "Post updated successfully", variant: "success" });
       setEditDialogOpen(false);
       if (onUpdate) onUpdate();
     } catch (error: any) {
-      toast.error(error.message || "Failed to update post");
+      toast({ title: "Error", description: error.message || "Failed to update post", variant: "destructive" });
     } finally {
       setIsEditing(false);
     }

@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { adminService, eventService, userService, jobService, donationService, connectionService, communicationService } from "@/services/ApiServices";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import { cache, CACHE_KEYS, CACHE_TTL } from "@/lib/cache";
 
 interface DashboardStats {
@@ -74,6 +74,7 @@ export default function Dashboard() {
     totalJobs: 0,
     totalConnections: 0
   });
+  const { toast } = useToast();
   const [recentEvents, setRecentEvents] = useState<Event[]>([]);
   const [featuredAlumni, setFeaturedAlumni] = useState<Alumni[]>([]);
   const [recentJobs, setRecentJobs] = useState<Job[]>([]);
@@ -237,7 +238,7 @@ export default function Dashboard() {
       }, CACHE_TTL.MEDIUM);
 
     } catch (error: any) {
-      toast.error("Failed to load dashboard data");
+      toast({ title: "Error", description: "Failed to load dashboard data", variant: "destructive" });
     } finally {
       setLoading(false);
     }
