@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/context/AuthContext";
 import { adminService, handleApiError, handleApiSuccess } from "@/services/ApiServices";
 import { useState, useRef, useEffect } from "react";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Settings as SettingsIcon, 
   User, 
@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 
 export function Settings() {
+  const { toast } = useToast();
   const { admin, fetchCurrentUser, isLoading } = useAuth();
   const [isUpdating, setIsUpdating] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);

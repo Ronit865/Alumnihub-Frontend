@@ -52,7 +52,7 @@ import {
     Clock,
     User,
 } from "lucide-react";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 
 interface Report {
     _id: string;
@@ -97,6 +97,7 @@ interface ReportedUser {
 }
 
 export function Reports() {
+    const { toast } = useToast();
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
     const [banDialogOpen, setBanDialogOpen] = useState(false);
