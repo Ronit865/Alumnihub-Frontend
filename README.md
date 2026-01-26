@@ -1,4 +1,4 @@
-# AlumniHub - Alumni Network Management Platform
+# AllyNet - Alumni Network Management Platform
 
 A comprehensive full-stack web application designed to connect alumni, students, and administrators through an interactive platform for events, job postings, donations, and communications.
 
@@ -51,7 +51,7 @@ AlumniHub is a modern alumni engagement platform that facilitates networking bet
 
 ## 🛠 Tech Stack
 
-### Frontend (Alumnihub-Frontend)
+### Frontend (AllyNet-Frontend)
 
 - **Framework**: React 18 with TypeScript
 - **Build Tool**: Vite
@@ -65,7 +65,7 @@ AlumniHub is a modern alumni engagement platform that facilitates networking bet
 - **Charts**: Recharts
 - **Deployment**: Vercel
 
-### Backend (SIH-PROJECT)
+### Backend (AllyNet-Backend)
 
 - **Runtime**: Node.js with ES Modules
 - **Framework**: Express.js
@@ -102,7 +102,7 @@ AllyNet Original/
 │   ├── public/                  # Static assets
 │   └── package.json
 │
-└── SIH-PROJECT/                 # Node.js Express Backend
+└── AllyNet-Backend/                 # Node.js Express Backend
     ├── src/
     │   ├── controllers/         # Request handlers
     │   ├── models/              # Mongoose schemas
@@ -130,7 +130,7 @@ AllyNet Original/
 
 1. Navigate to the backend directory:
 ```bash
-cd "SIH-PROJECT"
+cd "AllyNet-Backend"
 ```
 
 2. Install dependencies:
@@ -138,7 +138,7 @@ cd "SIH-PROJECT"
 npm install
 ```
 
-3. Create a `.env` file in the root of `SIH-PROJECT`:
+3. Create a `.env` file in the root of `AllyNet-Backend`:
 ```env
 PORT=5000
 MONGODB_URI=your_mongodb_connection_string
@@ -164,7 +164,7 @@ The backend will run on `http://localhost:5000`
 
 1. Navigate to the frontend directory:
 ```bash
-cd "Alumnihub-Frontend"
+cd "AllyNet-Frontend"
 ```
 
 2. Install dependencies:
@@ -174,7 +174,7 @@ npm install
 bun install
 ```
 
-3. Create a `.env` file in the root of `Alumnihub-Frontend`:
+3. Create a `.env` file in the root of `AllyNet-Frontend`:
 ```env
 VITE_API_URL=http://localhost:5000/api
 ```
@@ -194,7 +194,7 @@ The frontend will run on `http://localhost:5173`
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `PORT` | Server port | `5000` |
+| `PORT` | Server port | `5000`  |
 | `MONGODB_URI` | MongoDB connection string | `mongodb://localhost:27017/alumnihub` |
 | `ACCESS_TOKEN_SECRET` | JWT access token secret | Random string |
 | `ACCESS_TOKEN_EXPIRY` | Access token expiration | `1d` |

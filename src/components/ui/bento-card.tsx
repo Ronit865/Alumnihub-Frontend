@@ -10,35 +10,39 @@ interface BentoCardProps {
   gradient?: boolean;
   icon?: React.ReactNode;
   iconBg?: string;
+  onClick?: () => void;
 }
 
 const sizeClasses = {
   sm: "col-span-1 row-span-1",
-  md: "col-span-2 row-span-1", 
+  md: "col-span-2 row-span-1",
   lg: "col-span-2 row-span-2",
   xl: "col-span-3 row-span-2"
 };
 
-export function BentoCard({ 
-  title, 
-  description, 
-  children, 
-  className, 
+export function BentoCard({
+  title,
+  description,
+  children,
+  className,
   size = "md",
   gradient = false,
   icon,
-  iconBg = "bg-primary/10"
+  iconBg = "bg-primary/10",
+  onClick
 }: BentoCardProps) {
   return (
-    <Card className={cn(
-      "group transition-all duration-300 hover:-translate-y-1",
-      "rounded-3xl border-border/30",
-      "bg-gradient-to-br from-card via-card to-muted/20",
-      "dark:from-card dark:via-card dark:to-muted/10",
-      sizeClasses[size],
-      gradient && "from-primary/5 via-primary/3 to-transparent border-primary/15 dark:from-primary/10 dark:via-primary/5",
-      className
-    )}>
+    <Card
+      onClick={onClick}
+      className={cn(
+        "group transition-all duration-300 hover:-translate-y-1",
+        "rounded-3xl border-border/30",
+        "bg-gradient-to-br from-card via-card to-muted/20",
+        "dark:from-card dark:via-card dark:to-muted/10",
+        sizeClasses[size],
+        gradient && "from-primary/5 via-primary/3 to-transparent border-primary/15 dark:from-primary/10 dark:via-primary/5",
+        className
+      )}>
       <CardHeader className="pb-2">
         <div className="flex items-center gap-2">
           {icon && (

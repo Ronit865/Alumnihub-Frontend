@@ -30,21 +30,21 @@ type ActionType = typeof actionTypes;
 
 type Action =
   | {
-      type: ActionType["ADD_TOAST"];
-      toast: ToasterToast;
-    }
+    type: ActionType["ADD_TOAST"];
+    toast: ToasterToast;
+  }
   | {
-      type: ActionType["UPDATE_TOAST"];
-      toast: Partial<ToasterToast>;
-    }
+    type: ActionType["UPDATE_TOAST"];
+    toast: Partial<ToasterToast>;
+  }
   | {
-      type: ActionType["DISMISS_TOAST"];
-      toastId?: ToasterToast["id"];
-    }
+    type: ActionType["DISMISS_TOAST"];
+    toastId?: ToasterToast["id"];
+  }
   | {
-      type: ActionType["REMOVE_TOAST"];
-      toastId?: ToasterToast["id"];
-    };
+    type: ActionType["REMOVE_TOAST"];
+    toastId?: ToasterToast["id"];
+  };
 
 interface State {
   toasts: ToasterToast[];
@@ -100,9 +100,9 @@ export const reducer = (state: State, action: Action): State => {
         toasts: state.toasts.map((t) =>
           t.id === toastId || toastId === undefined
             ? {
-                ...t,
-                open: false,
-              }
+              ...t,
+              open: false,
+            }
             : t,
         ),
       };
@@ -177,14 +177,15 @@ function useToast() {
   }, [state]);
 
   // Create wrapper with helper methods for backwards compatibility
-  const toastWithHelpers = Object.assign(
-    (props: Toast) => toast(props),
-    {
-      success: (message: string, opts?: Partial<Toast>) => toast({ title: message, variant: "success" as const, ...opts }),
-      error: (message: string, opts?: Partial<Toast>) => toast({ title: message, variant: "destructive" as const, ...opts }),
-      info: (message: string, opts?: Partial<Toast>) => toast({ title: message, variant: "info" as const, ...opts }),
-      warning: (message: string, opts?: Partial<Toast>) => toast({ title: message, variant: "warning" as const, ...opts }),
-    }
+  const toastWithHelpers = React.useMemo(
+    () =>
+      Object.assign((props: Toast) => toast(props), {
+        success: (message: string, opts?: Partial<Toast>) => toast({ title: message, variant: "success" as const, ...opts }),
+        error: (message: string, opts?: Partial<Toast>) => toast({ title: message, variant: "destructive" as const, ...opts }),
+        info: (message: string, opts?: Partial<Toast>) => toast({ title: message, variant: "info" as const, ...opts }),
+        warning: (message: string, opts?: Partial<Toast>) => toast({ title: message, variant: "warning" as const, ...opts }),
+      }),
+    []
   );
 
   return {

@@ -33,6 +33,9 @@ interface User {
   role?: string;
   avatar?: string;
   isVerified?: boolean;
+  company?: string;
+  position?: string;
+  location?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -56,11 +59,9 @@ export default function Alumni() {
     queryKey: ["public-alumni", userType],
     queryFn: async () => {
       try {
-        // Use appropriate service based on user type
         const response = userType === 'admin'
           ? await adminService.getAllUsers()
           : await userService.getAllUsers();
-
         return response;
       } catch (error: any) {
         const apiError = handleApiError(error);
@@ -82,55 +83,28 @@ export default function Alumni() {
     }
   }, [error]);
 
-  // Extract users from the API response - handle different response structures
+  // Extract users from the API response
   const getAllUsersFromResponse = (response: any): User[] => {
-    // Try different possible response structures
-    if (Array.isArray(response)) {
-      return response;
-    }
-
+    if (Array.isArray(response)) return response;
     if (response?.data) {
-      if (Array.isArray(response.data)) {
-        return response.data;
-      }
-      if (response.data?.users && Array.isArray(response.data.users)) {
-        return response.data.users;
-      }
-      if (response.data?.data && Array.isArray(response.data.data)) {
-        return response.data.data;
-      }
+      if (Array.isArray(response.data)) return response.data;
+      if (response.data?.users && Array.isArray(response.data.users)) return response.data.users;
+      if (response.data?.data && Array.isArray(response.data.data)) return response.data.data;
     }
-
-    if (response?.users && Array.isArray(response.users)) {
-      return response.users;
-    }
-
+    if (response?.users && Array.isArray(response.users)) return response.users;
     return [];
   };
 
-  // Get all users first
   const allUsers: User[] = getAllUsersFromResponse(alumniResponse);
-
-  // Get current user ID from localStorage
   const currentUserId = localStorage.getItem('userId');
 
-  // Filter for verified alumni only and exclude the current user
   const alumniData: User[] = allUsers.filter(user => {
-    if (!user || !user.name || !user.email) {
-      return false;
-    }
-
-    // Exclude the current user from the list
-    if (currentUserId && user._id === currentUserId) {
-      return false;
-    }
-
-    // Check for alumni role - be flexible with string comparison
+    if (!user || !user.name || !user.email) return false;
+    if (currentUserId && user._id === currentUserId) return false;
     const userRole = user.role?.toLowerCase();
     return userRole === "alumni" || userRole === "alumnus";
   });
 
-  // Get unique graduation years from the data
   const graduationYears = [...new Set(
     alumniData
       .map(person => {
@@ -142,15 +116,9 @@ export default function Alumni() {
       .filter(year => year !== null)
   )].sort().reverse();
 
-  // Get unique courses from the data
   const courses = [...new Set(
     alumniData
-      .map(person => {
-        const course = person.course;
-        if (!course) return null;
-        const courseStr = String(course);
-        return courseStr.trim() !== "" ? courseStr : null;
-      })
+      .map(person => person.course ? String(person.course).trim() : null)
       .filter(course => course !== null)
   )].sort();
 
@@ -158,14 +126,11 @@ export default function Alumni() {
     const matchesSearch = person.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       person.course?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       person.email?.toLowerCase().includes(searchQuery.toLowerCase());
-
     const matchesYear = selectedYear === "all" || String(person.graduationYear) === selectedYear;
     const matchesIndustry = selectedIndustry === "all" || person.course === selectedIndustry;
-
     return matchesSearch && matchesYear && matchesIndustry;
   });
 
-  // Fetch connection statuses for filtered alumni
   useEffect(() => {
     const fetchConnectionStatuses = async () => {
       for (const person of filteredAlumni) {
@@ -182,42 +147,24 @@ export default function Alumni() {
         }
       }
     };
-
-    if (filteredAlumni.length > 0) {
-      fetchConnectionStatuses();
-    }
+    if (filteredAlumni.length > 0) fetchConnectionStatuses();
   }, [filteredAlumni.length]);
 
-  // Handle connect button click
   const handleConnect = async (userId: string) => {
     try {
       setLoadingConnections(prev => ({ ...prev, [userId]: true }));
       const response = await connectionService.sendConnectionRequest(userId);
-
       if (response.success) {
-        toast({
-          title: "Connection request sent!",
-          description: "Your request has been sent successfully.",
-        });
-
-        // Update connection status
-        setConnectionStatuses(prev => ({
-          ...prev,
-          [userId]: { status: 'pending', isRequester: true }
-        }));
+        toast({ title: "Connection request sent!", description: "Your request has been sent successfully." });
+        setConnectionStatuses(prev => ({ ...prev, [userId]: { status: 'pending', isRequester: true } }));
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to send connection request",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: error.message || "Failed to send connection request", variant: "destructive" });
     } finally {
       setLoadingConnections(prev => ({ ...prev, [userId]: false }));
     }
   };
 
-  // Handle message button click - open chat dialog
   const [chatDialogOpen, setChatDialogOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
@@ -233,255 +180,160 @@ export default function Alumni() {
     setProfileDialogOpen(true);
   };
 
-  // Data-only skeleton component - static UI renders immediately
   const AlumniCardsSkeleton = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {[0, 1, 2, 3, 4, 5].map((i) => (
-        <div
-          key={i}
-          className="rounded-2xl bg-card border border-border/50 p-4 space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-300"
-          style={{ animationDelay: `${i * 40}ms` }}
-        >
-          <div className="flex gap-2.5">
-            <Skeleton className="h-12 w-12 sm:h-14 sm:w-14 rounded-lg flex-shrink-0" />
-            <div className="flex-1 space-y-2">
-              <Skeleton className="h-3.5 sm:h-4 w-24 sm:w-32" />
-              <Skeleton className="h-2.5 sm:h-3 w-20 sm:w-24" />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Skeleton className="h-2.5 sm:h-3 w-12" />
-            <Skeleton className="h-3.5 sm:h-4 w-28 sm:w-36" />
-          </div>
-          <div className="space-y-2">
-            <Skeleton className="h-2.5 sm:h-3 w-10" />
-            <Skeleton className="h-2.5 sm:h-3 w-36 sm:w-44" />
-          </div>
-          <div className="space-y-2">
-            <Skeleton className="h-2.5 sm:h-3 w-14" />
-            <Skeleton className="h-3 sm:h-3.5 w-20 sm:w-24" />
-          </div>
-          <Skeleton className="h-8 sm:h-9 w-full rounded-lg mt-2" />
-        </div>
+        <Skeleton key={i} className="h-[300px] rounded-3xl" />
       ))}
     </div>
   );
 
-  // Error state
   if (error && !alumniResponse) {
     return (
       <div className="flex flex-col items-center justify-center h-96 space-y-4">
         <p className="text-destructive">Failed to load alumni data</p>
-        <Button onClick={() => refetch()} variant="outline">
-          Try Again
-        </Button>
+        <Button onClick={() => refetch()} variant="outline">Try Again</Button>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6 animate-fade-in">
-      {/* Header */}
+    <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold gradient-text mb-1 sm:mb-2">Alumni Directory</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            Connect with {alumniData.length}+ verified alumni across various fields
-          </p>
+          <h1 className="text-3xl font-bold gradient-text mb-2">Alumni Directory</h1>
+          <p className="text-muted-foreground">Connect with {alumniData.length}+ verified alumni</p>
         </div>
-        <Button
-          onClick={() => navigate('/connections')}
-          className="gap-2 w-full sm:w-auto bg-card border-border hover:bg-muted"
-          variant="outline"
-        >
-          <Users className="w-4 h-4" />
-          My Connections
+        <Button onClick={() => navigate('/connections')} className="gap-2 bg-primary/10 text-primary hover:bg-primary/20 border-primary/20 hover:border-primary/30 font-semibold shadow-sm transition-all active:scale-95" variant="outline">
+          <Users className="w-4 h-4" /> My Connections
         </Button>
       </div>
 
-      {/* Search and Filters */}
-      <div className="flex flex-col gap-3 sm:gap-4">
+      <div className="flex flex-col gap-4">
         <div className="relative w-full">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
             placeholder="Search by name, course, or email..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-10 h-10 rounded-xl"
           />
         </div>
 
         <div className="flex gap-3">
           <Select value={selectedYear} onValueChange={setSelectedYear}>
-            <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder="Graduation Year" />
-            </SelectTrigger>
+            <SelectTrigger className="w-[160px] rounded-xl"><SelectValue placeholder="Graduation Year" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Years</SelectItem>
-              {graduationYears.map(year => (
-                <SelectItem key={year} value={year}>
-                  Class of {year}
-                </SelectItem>
-              ))}
+              {graduationYears.map(year => <SelectItem key={year} value={year}>Class of {year}</SelectItem>)}
             </SelectContent>
           </Select>
-
           <Select value={selectedIndustry} onValueChange={setSelectedIndustry}>
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="Course" />
-            </SelectTrigger>
+            <SelectTrigger className="w-[160px] rounded-xl"><SelectValue placeholder="Course" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Courses</SelectItem>
-              {courses.map(course => (
-                <SelectItem key={course} value={course}>
-                  {course}
-                </SelectItem>
-              ))}
+              {courses.map(course => <SelectItem key={course} value={course}>{course}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
       </div>
 
-      {/* Results Count */}
-      <div className="text-sm text-muted-foreground">
-        Showing {filteredAlumni.length} of {alumniData.length} verified alumni
-      </div>
+      <div className="text-sm text-muted-foreground">Showing {filteredAlumni.length} results</div>
 
-      {/* Alumni Grid - Show skeleton or data */}
       {isLoading ? (
         <AlumniCardsSkeleton />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
           {filteredAlumni.length === 0 ? (
             <div className="col-span-full text-center py-12">
-              <p className="text-muted-foreground text-lg">
-                {allUsers.length === 0
-                  ? "No users found in the system"
-                  : "No verified alumni found matching your criteria"
-                }
-              </p>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setSearchQuery("");
-                  setSelectedYear("all");
-                  setSelectedIndustry("all");
-                }}
-                className="mt-4"
-              >
-                Clear Filters
-              </Button>
+              <p className="text-muted-foreground">No verified alumni found</p>
+              <Button variant="link" onClick={() => { setSearchQuery(""); setSelectedYear("all"); setSelectedIndustry("all"); }}>Clear Filters</Button>
             </div>
           ) : (
             filteredAlumni.map((person) => (
-              <Card key={person._id} className="overflow-hidden border-border/30 bg-card flex flex-col h-full group hover:shadow-lg transition-all duration-300">
-                <CardHeader className="pb-2 pt-4 px-4">
-                  {/* Avatar and Name */}
-                  <div className="flex gap-2.5 mb-2">
-                    <div className="relative cursor-pointer flex-shrink-0" onClick={() => handleAvatarClick(person._id)}>
-                      <Avatar className="w-14 h-14 rounded-lg ring-2 ring-primary/20 group-hover:ring-4 transition-all">
-                        <AvatarImage src={person.avatar} alt={person.name} />
-                        <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-white font-bold text-sm rounded-lg">
-                          {person.name?.split(' ').map(n => n[0]).join('') || 'AL'}
-                        </AvatarFallback>
-                      </Avatar>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-1 font-sans">
-                        {person.name || 'Unknown'}
-                      </h3>
-                      <p className="text-xs text-muted-foreground">Graduated {person.graduationYear || 'N/A'}</p>
-                    </div>
-                  </div>
-                </CardHeader>
+              <Card key={person._id} className="group relative flex flex-col items-center bg-card hover:bg-muted/30 border border-border/40 shadow-sm hover:shadow-lg transition-all duration-300 rounded-[24px] p-5 h-full overflow-hidden">
 
-                <CardContent className="flex-1 flex flex-col px-4 pb-4 space-y-2">
-                  {/* Course */}
-                  <div className="flex items-start gap-2">
-                    <GraduationCap className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs text-muted-foreground mb-0.5">Course</p>
-                      <p className="text-sm font-semibold text-foreground line-clamp-1">{person.course || "-"}</p>
+                {/* Avatar Section */}
+                <div className="relative mb-3 cursor-pointer" onClick={() => handleAvatarClick(person._id)}>
+                  <Avatar className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl ring-4 ring-background shadow-sm transition-transform group-hover:scale-105 duration-300">
+                    <AvatarImage src={person.avatar} className="object-cover" />
+                    <AvatarFallback className="text-xl font-bold bg-gradient-to-br from-primary/10 to-primary/30 text-primary rounded-2xl">
+                      {person.name?.split(' ').slice(0, 2).map(n => n[0]).join('')}
+                    </AvatarFallback>
+                  </Avatar>
+                  {person.isVerified && (
+                    <div className="absolute -bottom-1 -right-1 bg-background p-1 rounded-full">
+                      <UserCheck className="w-4 h-4 text-green-500 fill-current" />
                     </div>
+                  )}
+                </div>
+
+                {/* Name & Badge */}
+                <div className="text-center mb-1 w-full px-1">
+                  <div className="flex items-center justify-center gap-1.5 w-full">
+                    <h3 className="text-lg font-bold text-foreground truncate max-w-[180px]" title={person.name}>
+                      {person.name}
+                    </h3>
                   </div>
 
-                  {/* Email */}
-                  <div className="flex items-start gap-2">
-                    <Mail className="w-4 h-4 text-purple-500 mt-0.5 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs text-muted-foreground mb-0.5">Email</p>
-                      <p className="text-xs font-medium text-foreground truncate hover:text-primary transition-colors cursor-pointer" title={person.email || "-"}>
-                        {person.email || "-"}
-                      </p>
-                    </div>
-                  </div>
+                  {/* Position / Headline */}
+                  <p className="text-xs sm:text-sm text-muted-foreground font-medium mt-1 line-clamp-2 h-9 sm:h-10 flex items-center justify-center text-center leading-tight">
+                    {person.position && person.company
+                      ? `${person.position} at ${person.company}`
+                      : person.position || person.course || "Alumnus"}
+                  </p>
+                </div>
 
-                  {/* Company */}
-                  <div className="flex items-start gap-2">
-                    <Building2 className="w-4 h-4 text-teal-500 mt-0.5 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs text-muted-foreground mb-0.5">Company</p>
-                      <p className="text-sm font-medium text-foreground line-clamp-1">{(person as any).company || "-"}</p>
-                    </div>
+                {/* Stats / Info Row */}
+                <div className="flex items-center justify-center w-full gap-3 my-3 text-xs font-semibold">
+                  <div className="flex items-center gap-1.5 bg-blue-500/10 text-blue-700 dark:text-blue-300 px-3 py-1.5 rounded-full">
+                    <GraduationCap className="w-3.5 h-3.5 text-blue-500" />
+                    <span>{person.graduationYear || 'N/A'}</span>
                   </div>
+                  {(person.location || person.email) && (
+                    <div className="flex items-center gap-1.5 bg-purple-500/10 text-purple-700 dark:text-purple-300 px-3 py-1.5 rounded-full max-w-[140px]">
+                      {person.location ? <MapPin className="w-3.5 h-3.5 text-purple-500" /> : <Mail className="w-3.5 h-3.5 text-purple-500" />}
+                      <span className="truncate">{person.location || 'Email'}</span>
+                    </div>
+                  )}
+                </div>
 
                 {/* Action Button */}
-                <div className="mt-auto pt-3">
-                  {connectionStatuses[person._id] && connectionStatuses[person._id].status === 'accepted' ? (
-                    <Button 
-                      size="sm" 
-                      className="w-full h-10 font-semibold gap-2 rounded-full bg-blue-500/10 text-blue-600 hover:bg-blue-500/25 hover:text-blue-700 border border-blue-500/20 hover:border-blue-500/40 dark:bg-blue-500/15 dark:text-blue-400 dark:hover:bg-blue-500/30 dark:hover:text-blue-300 transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
+                <div className="w-full mt-auto">
+                  {connectionStatuses[person._id]?.status === 'accepted' ? (
+                    <Button
                       onClick={() => handleMessage(person._id)}
-                      variant="ghost"
+                      className="w-full rounded-xl bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 dark:bg-blue-500/20 dark:text-blue-400 dark:hover:bg-blue-500/30 h-10 text-sm font-bold shadow-none border border-blue-200/50 dark:border-blue-500/20"
                     >
-                      <MessageCircle className="w-4 h-4" />
+                      <MessageCircle className="w-4 h-4 mr-2" />
                       Message
                     </Button>
-                  ) : connectionStatuses[person._id] && connectionStatuses[person._id].status === 'pending' ? (
-                    <Button 
-                      size="sm" 
-                      className="w-full h-10 font-semibold gap-2 rounded-full bg-orange-500/10 text-orange-600 hover:bg-orange-500/25 hover:text-orange-700 border border-orange-500/20 hover:border-orange-500/40 dark:bg-orange-500/15 dark:text-orange-400 dark:hover:bg-orange-500/30 dark:hover:text-orange-300 transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
-                      disabled
-                      variant="ghost"
-                    >
-                      <UserCheck className="w-4 h-4" />
-                      Request Sent
+                  ) : connectionStatuses[person._id]?.status === 'pending' ? (
+                    <Button disabled className="w-full rounded-xl bg-orange-500/10 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400 h-10 text-sm font-bold opacity-100 border border-orange-200/50 dark:border-orange-500/20">
+                      <UserCheck className="w-4 h-4 mr-2" />
+                      Requested
                     </Button>
                   ) : (
-                    <Button 
-                      size="sm" 
-                      className="w-full h-10 font-semibold gap-2 rounded-full bg-green-500/10 text-green-600 hover:bg-green-500/25 hover:text-green-700 border border-green-500/20 hover:border-green-500/40 dark:bg-green-500/15 dark:text-green-400 dark:hover:bg-green-500/30 dark:hover:text-green-300 transition-all duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
+                    <Button
                       onClick={() => handleConnect(person._id)}
                       disabled={loadingConnections[person._id]}
-                      variant="ghost"
+                      className="w-full rounded-xl bg-green-500/10 text-green-600 hover:bg-green-500/20 dark:bg-green-500/20 dark:text-green-400 dark:hover:bg-green-500/30 h-10 text-sm font-bold shadow-sm transition-all active:scale-95 border border-green-200/50 dark:border-green-500/20"
                     >
                       {loadingConnections[person._id] ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          Connecting...
-                        </>
+                        <Loader2 className="w-4 h-4 animate-spin" />
                       ) : (
                         <>
-                          <UserPlus className="w-4 h-4" />
-                          Connect
+                          <UserPlus className="w-4 h-4 mr-2" />
+                          Connect +
                         </>
                       )}
                     </Button>
                   )}
                 </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
-      )}
 
-      {/* Load More */}
-      {!isLoading && filteredAlumni.length > 0 && (
-        <div className="text-center pt-6">
-          <Button variant="outline" size="lg" onClick={() => refetch()}>
-            Refresh Data
-          </Button>
+              </Card>
+            ))
+          )}
         </div>
       )}
 

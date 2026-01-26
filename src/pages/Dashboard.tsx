@@ -1,4 +1,5 @@
 import { Calendar, Users, Briefcase, TrendingUp, Heart, MessageCircle, Loader2, Building2, DollarSign } from "lucide-react";
+import { CompanyLogo } from "@/components/CompanyLogo";
 import { BentoCard } from "@/components/ui/bento-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -117,57 +118,68 @@ export default function Dashboard() {
 
       setLoading(true);
 
-      // Fetch alumni data
-      const alumniResponse = await userService.getAllUsers();
+      // Fetch all data in parallel using Promise.allSettled to prevent one failure from blocking others
+      const [
+        alumniResult,
+        eventsResult,
+        jobsResult,
+        donationsResult,
+        connectionsResult,
+        postsResult
+      ] = await Promise.allSettled([
+        userService.getAllUsers(),
+        eventService.getEvents(),
+        jobService.getAllJobs(),
+        donationService.getDonationStats(),
+        connectionService.getConnections({ status: 'accepted' }),
+        communicationService.getAllPosts()
+      ]);
 
-      // Extract data from the response object properly
-      const allUsers = Array.isArray(alumniResponse?.data)
-        ? alumniResponse.data
-        : [];
-
-      // Filter verified alumni
-      const verifiedAlumni = allUsers.filter((user: Alumni) => {
-        return user.role?.toLowerCase() === "alumni";
-      });
-
-      // Fetch events data
-      const eventsResponse = await eventService.getEvents();
-
-      const allEvents = eventsResponse?.success && Array.isArray(eventsResponse.data)
-        ? eventsResponse.data
-        : [];
-
-      // Filter active events
-      const activeEvents = allEvents.filter((event: Event) => event.isactive);
-
-      // Get upcoming events (next 3)
-      const upcomingEvents = activeEvents
-        .filter((event: Event) => new Date(event.date) >= new Date())
-        .sort((a: Event, b: Event) => new Date(a.date).getTime() - new Date(b.date).getTime())
-        .slice(0, 3);
-
-      // Get featured alumni (random sample)
-      const featured = verifiedAlumni
-        .sort(() => 0.5 - Math.random())
-        .slice(0, 3);
-
-      // Fetch jobs data
-      let jobs: Job[] = [];
-      try {
-        const jobsResponse = await jobService.getAllJobs();
-        jobs = Array.isArray(jobsResponse?.data) ? jobsResponse.data : [];
-        const verifiedJobs = jobs.filter((job: any) => job.isVerified);
-        setRecentJobs(verifiedJobs.slice(0, 5));
-      } catch (error) {
-        // Error fetching jobs
+      // Process Alumni Data
+      let verifiedAlumni: Alumni[] = [];
+      let featured: Alumni[] = [];
+      if (alumniResult.status === 'fulfilled') {
+        const alumniResponse = alumniResult.value;
+        const allUsers = Array.isArray(alumniResponse?.data) ? alumniResponse.data : [];
+        verifiedAlumni = allUsers.filter((user: Alumni) => user.role?.toLowerCase() === "alumni");
+        featured = verifiedAlumni.sort(() => 0.5 - Math.random()).slice(0, 3);
       }
 
-      // Fetch donation stats
+      // Process Events Data
+      let allEvents: Event[] = [];
+      let activeEvents: Event[] = [];
+      let upcomingEvents: Event[] = [];
+      if (eventsResult.status === 'fulfilled') {
+        const eventsResponse = eventsResult.value;
+        allEvents = eventsResponse?.success && Array.isArray(eventsResponse.data) ? eventsResponse.data : [];
+        activeEvents = allEvents.filter((event: Event) => event.isactive);
+        upcomingEvents = activeEvents
+          .filter((event: Event) => new Date(event.date) >= new Date())
+          .sort((a: Event, b: Event) => new Date(a.date).getTime() - new Date(b.date).getTime())
+          .slice(0, 3);
+      }
+
+      // Process Jobs Data
+      let jobs: Job[] = [];
+      let recentJobsList: Job[] = [];
+      if (jobsResult.status === 'fulfilled') {
+        const jobsResponse = jobsResult.value;
+        jobs = Array.isArray(jobsResponse?.data) ? jobsResponse.data : [];
+        const verifiedJobs = jobs.filter((job: any) => job.isVerified);
+        recentJobsList = verifiedJobs.slice(0, 5);
+        setRecentJobs(recentJobsList);
+      } else {
+        setRecentJobs([]);
+      }
+
+      // Process Donation Data
       let donationAmount = "₹0";
-      try {
-        const donationResponse = await donationService.getDonationStats();
+      let donationStatsData = null;
+      if (donationsResult.status === 'fulfilled') {
+        const donationResponse = donationsResult.value;
         if (donationResponse?.data) {
           const stats = donationResponse.data;
+          donationStatsData = stats;
           setDonationStats(stats);
           const amount = stats.totalRaised || 0;
           donationAmount = amount >= 100000
@@ -176,29 +188,24 @@ export default function Dashboard() {
               ? `₹${(amount / 1000).toFixed(1)}k`
               : `₹${amount.toLocaleString()}`;
         }
-      } catch (error) {
-        // Error fetching donations
+      } else {
+        setDonationStats(null);
       }
 
-      // Fetch connections count
+      // Process Connections Data
       let connectionsCount = 0;
-      try {
-        const connectionsResponse = await connectionService.getConnections({ status: 'accepted' });
+      if (connectionsResult.status === 'fulfilled') {
+        const connectionsResponse = connectionsResult.value;
         if (connectionsResponse?.data) {
-          connectionsCount = Array.isArray(connectionsResponse.data)
-            ? connectionsResponse.data.length
-            : 0;
+          connectionsCount = Array.isArray(connectionsResponse.data) ? connectionsResponse.data.length : 0;
         }
-      } catch (error) {
-        // silently handle error
       }
 
-      // Fetch recent posts
-      try {
-        const postsResponse = await communicationService.getAllPosts();
-
-        // Handle different possible response structures
-        let allPosts = [];
+      // Process Posts Data
+      let recentPostsList: Post[] = [];
+      if (postsResult.status === 'fulfilled') {
+        const postsResponse = postsResult.value;
+        let allPosts: any[] = [];
         if (postsResponse?.data) {
           if (Array.isArray(postsResponse.data)) {
             allPosts = postsResponse.data;
@@ -208,9 +215,9 @@ export default function Dashboard() {
         } else if (Array.isArray(postsResponse)) {
           allPosts = postsResponse;
         }
-
-        setRecentPosts(allPosts.slice(0, 3));
-      } catch (error) {
+        recentPostsList = allPosts.slice(0, 3);
+        setRecentPosts(recentPostsList);
+      } else {
         setRecentPosts([]);
       }
 
@@ -227,18 +234,19 @@ export default function Dashboard() {
       setRecentEvents(upcomingEvents);
       setFeaturedAlumni(featured);
 
-      // Cache the dashboard data for faster subsequent loads
+      // Cache the dashboard data
       cache.set(CACHE_KEYS.DASHBOARD_DATA, {
         stats: newStats,
         recentEvents: upcomingEvents,
         featuredAlumni: featured,
-        recentJobs: jobs.filter((job: any) => job.isVerified).slice(0, 5),
-        recentPosts: recentPosts,
-        donationStats: donationStats
+        recentJobs: recentJobsList,
+        recentPosts: recentPostsList,
+        donationStats: donationStatsData
       }, CACHE_TTL.MEDIUM);
 
     } catch (error: any) {
-      toast({ title: "Error", description: "Failed to load dashboard data", variant: "destructive" });
+      console.error("Dashboard fetch error:", error);
+      toast({ title: "Error", description: "Failed to load complete dashboard data", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -369,7 +377,10 @@ export default function Dashboard() {
         <StatsGridSkeleton />
       ) : (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <div className="stats-card-orange">
+          <div
+            className="stats-card-orange cursor-pointer hover:shadow-md transition-all active:scale-95"
+            onClick={() => navigate('/alumni')}
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="stats-card-label">Total Alumni</p>
@@ -378,7 +389,10 @@ export default function Dashboard() {
               <Users className="stats-card-icon" />
             </div>
           </div>
-          <div className="stats-card-blue">
+          <div
+            className="stats-card-blue cursor-pointer hover:shadow-md transition-all active:scale-95"
+            onClick={() => navigate('/events')}
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="stats-card-label">Active Events</p>
@@ -387,7 +401,10 @@ export default function Dashboard() {
               <Calendar className="stats-card-icon" />
             </div>
           </div>
-          <div className="stats-card-teal">
+          <div
+            className="stats-card-teal cursor-pointer hover:shadow-md transition-all active:scale-95"
+            onClick={() => navigate('/events')}
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="stats-card-label">Total Events</p>
@@ -396,7 +413,10 @@ export default function Dashboard() {
               <Briefcase className="stats-card-icon" />
             </div>
           </div>
-          <div className="stats-card-pink">
+          <div
+            className="stats-card-pink cursor-pointer hover:shadow-md transition-all active:scale-95"
+            onClick={() => navigate('/donations')}
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="stats-card-label">Donations</p>
@@ -425,7 +445,8 @@ export default function Dashboard() {
                 iconBg="bg-gradient-to-br from-blue-500/20 to-blue-600/20"
                 size="lg"
                 gradient
-                className="h-full"
+                className="h-full cursor-pointer hover:border-blue-500/30 transition-colors"
+                onClick={() => navigate('/events')}
               >
                 <div className="space-y-4">
                   {recentEvents.length > 0 ? (
@@ -447,7 +468,7 @@ export default function Dashboard() {
                   )}
                   <Button
                     className="w-full mt-4 rounded-full bg-blue-500/10 text-blue-600 hover:bg-blue-500/25 hover:text-blue-700 border border-blue-500/20 hover:border-blue-500/40 font-semibold focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-blue-500/15 dark:text-blue-400 dark:hover:bg-blue-500/30 dark:hover:text-blue-300"
-                    onClick={() => navigate('/events')}
+                    onClick={(e) => { e.stopPropagation(); navigate('/events'); }}
                     variant="ghost"
                   >
                     View All Events
@@ -464,7 +485,8 @@ export default function Dashboard() {
                 icon={<Users className="w-5 h-5 text-purple-500" />}
                 iconBg="bg-gradient-to-br from-purple-500/20 to-purple-600/20"
                 size="md"
-                className="h-full"
+                className="h-full cursor-pointer hover:border-purple-500/30 transition-colors"
+                onClick={() => navigate('/alumni')}
               >
                 <div className="space-y-4">
                   {featuredAlumni.length > 0 ? (
@@ -502,7 +524,8 @@ export default function Dashboard() {
               icon={<Briefcase className="w-5 h-5 text-green-500" />}
               iconBg="bg-gradient-to-br from-green-500/20 to-green-600/20"
               size="md"
-              className="h-full"
+              className="h-full cursor-pointer hover:border-green-500/30 transition-colors"
+              onClick={() => navigate('/jobs')}
             >
               <div className="space-y-3">
                 {recentJobs.length > 0 ? (
@@ -517,7 +540,7 @@ export default function Dashboard() {
                 ) : (
                   <p className="text-muted-foreground text-center py-8">No jobs available</p>
                 )}
-                <Button onClick={() => navigate('/jobs')} size="sm" className="w-full mt-2 rounded-full bg-green-500/10 text-green-600 hover:bg-green-500/25 hover:text-green-700 border border-green-500/20 hover:border-green-500/40 font-semibold focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-green-500/15 dark:text-green-400 dark:hover:bg-green-500/30 dark:hover:text-green-300" variant="ghost">
+                <Button onClick={(e) => { e.stopPropagation(); navigate('/jobs'); }} size="sm" className="w-full mt-2 rounded-full bg-green-500/10 text-green-600 hover:bg-green-500/25 hover:text-green-700 border border-green-500/20 hover:border-green-500/40 font-semibold focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-green-500/15 dark:text-green-400 dark:hover:bg-green-500/30 dark:hover:text-green-300" variant="ghost">
                   View All Jobs
                 </Button>
               </div>
@@ -531,107 +554,89 @@ export default function Dashboard() {
               size="md"
               className="h-full"
             >
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex flex-col items-center p-3 rounded-lg hover:bg-muted/50 transition-colors text-center">
-                  <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center mb-2 shadow-sm">
-                    <img
-                      src="https://logo.clearbit.com/tcs.com"
-                      alt="TCS Logo"
-                      className="w-10 h-7 object-contain"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                        e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                      }}
-                    />
-                    <span className="text-blue-600 font-bold text-sm hidden">TCS</span>
+              <div className="grid grid-cols-2 gap-4 h-full grid-rows-3">
+                <div className="flex items-center gap-4 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                  <CompanyLogo
+                    companyName="TCS"
+                    domain="tcs.com"
+                    containerClassName="w-16 h-16 bg-white rounded-xl flex items-center justify-center shadow-sm border border-border/50"
+                    className="w-12 h-8 object-contain"
+                    fallbackClassName="text-blue-600 font-bold text-lg"
+                  />
+                  <div>
+                    <p className="font-semibold text-base mb-0.5">TCS</p>
+                    <p className="text-sm text-muted-foreground">250+ alumni</p>
                   </div>
-                  <p className="font-medium text-xs mb-1">TCS</p>
-                  <p className="text-xs text-muted-foreground">250+ alumni</p>
                 </div>
 
-                <div className="flex flex-col items-center p-3 rounded-lg hover:bg-muted/50 transition-colors text-center">
-                  <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center mb-2 shadow-sm">
-                    <img
-                      src="https://logo.clearbit.com/infosys.com"
-                      alt="Infosys Logo"
-                      className="w-10 h-7 object-contain"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                        e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                      }}
-                    />
-                    <span className="text-blue-600 font-bold text-sm hidden">INF</span>
+                <div className="flex items-center gap-4 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                  <CompanyLogo
+                    companyName="Infosys"
+                    domain="infosys.com"
+                    containerClassName="w-16 h-16 bg-white rounded-xl flex items-center justify-center shadow-sm border border-border/50"
+                    className="w-12 h-8 object-contain"
+                    fallbackClassName="text-blue-600 font-bold text-lg"
+                  />
+                  <div>
+                    <p className="font-semibold text-base mb-0.5">Infosys</p>
+                    <p className="text-sm text-muted-foreground">180+ alumni</p>
                   </div>
-                  <p className="font-medium text-xs mb-1">Infosys</p>
-                  <p className="text-xs text-muted-foreground">180+ alumni</p>
                 </div>
 
-                <div className="flex flex-col items-center p-3 rounded-lg hover:bg-muted/50 transition-colors text-center">
-                  <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center mb-2 shadow-sm">
-                    <img
-                      src="https://logo.clearbit.com/google.com"
-                      alt="Google Logo"
-                      className="w-9 h-9 object-contain"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                        e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                      }}
-                    />
-                    <span className="text-blue-600 font-bold text-sm hidden">G</span>
+                <div className="flex items-center gap-4 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                  <CompanyLogo
+                    companyName="Google"
+                    domain="google.com"
+                    containerClassName="w-16 h-16 bg-white rounded-xl flex items-center justify-center shadow-sm border border-border/50"
+                    className="w-12 h-8 object-contain"
+                    fallbackClassName="text-blue-600 font-bold text-lg"
+                  />
+                  <div>
+                    <p className="font-semibold text-base mb-0.5">Google</p>
+                    <p className="text-sm text-muted-foreground">45+ alumni</p>
                   </div>
-                  <p className="font-medium text-xs mb-1">Google</p>
-                  <p className="text-xs text-muted-foreground">45+ alumni</p>
                 </div>
 
-                <div className="flex flex-col items-center p-3 rounded-lg hover:bg-muted/50 transition-colors text-center">
-                  <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center mb-2 shadow-sm">
-                    <img
-                      src="https://logo.clearbit.com/microsoft.com"
-                      alt="Microsoft Logo"
-                      className="w-10 h-7 object-contain"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                        e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                      }}
-                    />
-                    <span className="text-blue-600 font-bold text-sm hidden">MS</span>
+                <div className="flex items-center gap-4 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                  <CompanyLogo
+                    companyName="Microsoft"
+                    domain="microsoft.com"
+                    containerClassName="w-16 h-16 bg-white rounded-xl flex items-center justify-center shadow-sm border border-border/50"
+                    className="w-12 h-8 object-contain"
+                    fallbackClassName="text-blue-600 font-bold text-lg"
+                  />
+                  <div>
+                    <p className="font-semibold text-base mb-0.5">Microsoft</p>
+                    <p className="text-sm text-muted-foreground">38+ alumni</p>
                   </div>
-                  <p className="font-medium text-xs mb-1">Microsoft</p>
-                  <p className="text-xs text-muted-foreground">38+ alumni</p>
                 </div>
 
-                <div className="flex flex-col items-center p-3 rounded-lg hover:bg-muted/50 transition-colors text-center">
-                  <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center mb-2 shadow-sm">
-                    <img
-                      src="https://logo.clearbit.com/ibm.com"
-                      alt="IBM Logo"
-                      className="w-10 h-7 object-contain"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                        e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                      }}
-                    />
-                    <span className="text-blue-800 font-bold text-sm hidden">IBM</span>
+                <div className="flex items-center gap-4 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                  <CompanyLogo
+                    companyName="IBM"
+                    domain="ibm.com"
+                    containerClassName="w-16 h-16 bg-white rounded-xl flex items-center justify-center shadow-sm border border-border/50"
+                    className="w-12 h-8 object-contain"
+                    fallbackClassName="text-blue-800 font-bold text-lg"
+                  />
+                  <div>
+                    <p className="font-semibold text-base mb-0.5">IBM</p>
+                    <p className="text-sm text-muted-foreground">95+ alumni</p>
                   </div>
-                  <p className="font-medium text-xs mb-1">IBM</p>
-                  <p className="text-xs text-muted-foreground">95+ alumni</p>
                 </div>
 
-                <div className="flex flex-col items-center p-3 rounded-lg hover:bg-muted/50 transition-colors text-center">
-                  <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center mb-2 shadow-sm">
-                    <img
-                      src="https://logo.clearbit.com/wipro.com"
-                      alt="Wipro Logo"
-                      className="w-10 h-7 object-contain"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                        e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                      }}
-                    />
-                    <span className="text-purple-600 font-bold text-sm hidden">WP</span>
+                <div className="flex items-center gap-4 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                  <CompanyLogo
+                    companyName="Wipro"
+                    domain="wipro.com"
+                    containerClassName="w-16 h-16 bg-white rounded-xl flex items-center justify-center shadow-sm border border-border/50"
+                    className="w-12 h-8 object-contain"
+                    fallbackClassName="text-purple-600 font-bold text-lg"
+                  />
+                  <div>
+                    <p className="font-semibold text-base mb-0.5">Wipro</p>
+                    <p className="text-sm text-muted-foreground">120+ alumni</p>
                   </div>
-                  <p className="font-medium text-xs mb-1">Wipro</p>
-                  <p className="text-xs text-muted-foreground">120+ alumni</p>
                 </div>
               </div>
             </BentoCard>
@@ -642,7 +647,8 @@ export default function Dashboard() {
               icon={<MessageCircle className="w-5 h-5 text-cyan-500" />}
               iconBg="bg-gradient-to-br from-cyan-500/20 to-cyan-600/20"
               size="md"
-              className="h-full"
+              className="h-full cursor-pointer hover:border-cyan-500/30 transition-colors"
+              onClick={() => navigate('/communications')}
             >
               <div className="space-y-4">
                 {recentPosts.length > 0 ? (
@@ -660,7 +666,7 @@ export default function Dashboard() {
                 ) : (
                   <p className="text-muted-foreground text-center py-8">No recent posts</p>
                 )}
-                <Button onClick={() => navigate('/communications')} size="sm" className="w-full rounded-full bg-cyan-500/10 text-cyan-600 hover:bg-cyan-500/25 hover:text-cyan-700 border border-cyan-500/20 hover:border-cyan-500/40 font-semibold focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-cyan-500/15 dark:text-cyan-400 dark:hover:bg-cyan-500/30 dark:hover:text-cyan-300" variant="ghost">
+                <Button onClick={(e) => { e.stopPropagation(); navigate('/communications'); }} size="sm" className="w-full rounded-full bg-cyan-500/10 text-cyan-600 hover:bg-cyan-500/25 hover:text-cyan-700 border border-cyan-500/20 hover:border-cyan-500/40 font-semibold focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-cyan-500/15 dark:text-cyan-400 dark:hover:bg-cyan-500/30 dark:hover:text-cyan-300" variant="ghost">
                   Join Conversation
                 </Button>
               </div>
@@ -672,7 +678,8 @@ export default function Dashboard() {
               icon={<Heart className="w-5 h-5 text-rose-500" />}
               iconBg="bg-gradient-to-br from-rose-500/20 to-pink-600/20"
               size="md"
-              className="h-full"
+              className="h-full cursor-pointer hover:border-rose-500/30 transition-colors"
+              onClick={() => navigate('/donations')}
             >
               <div className="space-y-4">
                 <div className="text-center">
@@ -718,7 +725,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                 )}
-                <Button onClick={() => navigate('/donations')} className="w-full rounded-full bg-rose-500/10 text-rose-600 hover:bg-rose-500/25 hover:text-rose-700 border border-rose-500/20 hover:border-rose-500/40 font-semibold focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-rose-500/15 dark:text-rose-400 dark:hover:bg-rose-500/30 dark:hover:text-rose-300" variant="ghost">Support a Cause</Button>
+                <Button onClick={(e) => { e.stopPropagation(); navigate('/donations'); }} className="w-full rounded-full bg-rose-500/10 text-rose-600 hover:bg-rose-500/25 hover:text-rose-700 border border-rose-500/20 hover:border-rose-500/40 font-semibold focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-rose-500/15 dark:text-rose-400 dark:hover:bg-rose-500/30 dark:hover:text-rose-300" variant="ghost">Support a Cause</Button>
               </div>
             </BentoCard>
           </div>

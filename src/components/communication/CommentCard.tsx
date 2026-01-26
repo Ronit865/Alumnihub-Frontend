@@ -46,7 +46,7 @@ export function CommentCard({ comment, postId, onUpdate, depth = 0 }: CommentCar
     try {
       setLoadingReplies(true);
       const response = await communicationService.getCommentReplies(comment._id);
-      
+
       if (response.success && response.data) {
         setReplies(response.data.replies || []);
         setRepliesLoaded(true);
@@ -85,14 +85,14 @@ export function CommentCard({ comment, postId, onUpdate, depth = 0 }: CommentCar
         });
         setReplyText("");
         setShowReplyBox(false);
-        
+
         // Refresh replies
         const repliesResponse = await communicationService.getCommentReplies(comment._id);
         if (repliesResponse.success && repliesResponse.data) {
           setReplies(repliesResponse.data.replies || []);
           setRepliesLoaded(true);
         }
-        
+
         onUpdate();
       }
     } catch (error: any) {
@@ -126,7 +126,7 @@ export function CommentCard({ comment, postId, onUpdate, depth = 0 }: CommentCar
     const originalContent = comment.content;
     comment.content = editText;
     setIsEditing(false);
-    
+
     toast({
       title: "Comment updated",
       description: "Your comment has been updated.",
@@ -156,12 +156,12 @@ export function CommentCard({ comment, postId, onUpdate, depth = 0 }: CommentCar
 
     // Immediately update UI for instant feedback
     onUpdate();
-    
+
     toast({
       title: "Comment deleted",
       description: "Your comment has been removed.",
     });
-    
+
     // Call API in background
     try {
       await communicationService.deleteComment(comment._id);
@@ -175,12 +175,12 @@ export function CommentCard({ comment, postId, onUpdate, depth = 0 }: CommentCar
     const date = new Date(timestamp);
     const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-    
+
     if (diffInSeconds < 60) return 'just now';
     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
     if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
     if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
-    
+
     return date.toLocaleDateString();
   };
 
@@ -202,8 +202,8 @@ export function CommentCard({ comment, postId, onUpdate, depth = 0 }: CommentCar
   const shouldShowReplyButton = depth < maxDepth;
 
   return (
-    <div className="group">
-      <div className="flex gap-2 py-2">
+    <div className="group animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="flex gap-3 py-1">
         {/* Vote Section - Vertical */}
         <div className="flex-shrink-0 pt-1">
           <VoteButtons
@@ -217,168 +217,170 @@ export function CommentCard({ comment, postId, onUpdate, depth = 0 }: CommentCar
           />
         </div>
 
-        <div className="flex-1 min-w-0 flex gap-2">
-          {/* Avatar */}
-          <div className="relative flex-shrink-0 mt-0.5">
-            <Avatar className="w-8 h-8">
-              <AvatarImage src={comment.author?.avatar} />
-              <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
-                {getUserInitials(comment.author?.name || 'User')}
-              </AvatarFallback>
-            </Avatar>
-            <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-background rounded-full"></div>
-          </div>
-
-          <div className="flex-1 min-w-0">
-            {/* Comment Header */}
-            <div className="flex items-center gap-1.5 mb-1">
-              <span className="text-sm font-medium text-foreground">
-                {comment.author?.name || 'Anonymous'}
-              </span>
-              {comment.author?.currentPosition && (
-                <>
-                  <span className="text-xs text-muted-foreground">·</span>
-                  <span className="text-xs text-muted-foreground">
-                    {comment.author.currentPosition}
-                  </span>
-                </>
-              )}
-              <span className="text-xs text-muted-foreground">·</span>
-              <span className="text-xs text-muted-foreground">
-                {formatTimestamp(comment.createdAt)}
-              </span>
+        <div className="flex-1 min-w-0">
+          <div className="flex gap-3">
+            {/* Avatar */}
+            <div className="relative flex-shrink-0 mt-0.5">
+              <Avatar className="w-8 h-8 border border-border/40">
+                <AvatarImage src={comment.author?.avatar} className="object-cover" />
+                <AvatarFallback className="bg-gradient-to-br from-primary/10 to-primary/20 text-primary text-xs font-semibold">
+                  {getUserInitials(comment.author?.name || 'User')}
+                </AvatarFallback>
+              </Avatar>
+              <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-background rounded-full shadow-sm"></div>
             </div>
 
-            {/* Comment Content */}
-            {isEditing ? (
-              <div className="space-y-2 mb-2">
-                <Textarea
-                  value={editText}
-                  onChange={(e) => setEditText(e.target.value)}
-                  className="min-h-[70px] bg-muted/50 border-border focus:border-primary text-sm"
-                />
-                <div className="flex gap-2">
-                  <Button size="sm" onClick={handleEdit} className="h-7 text-xs">
-                    Save
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    onClick={() => {
-                      setIsEditing(false);
-                      setEditText(comment.content);
-                    }}
-                    className="h-7 text-xs"
-                  >
-                    Cancel
-                  </Button>
-                </div>
+            <div className="flex-1 min-w-0 bg-muted/10 p-3 rounded-2xl rounded-tl-sm border border-border/20 hover:border-border/40 transition-colors">
+              {/* Comment Header */}
+              <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
+                <span className="text-sm font-semibold text-foreground/90 hover:text-primary transition-colors cursor-pointer">
+                  {comment.author?.name || 'Anonymous'}
+                </span>
+                {comment.author?.currentPosition && (
+                  <>
+                    <span className="text-xs text-muted-foreground hidden sm:inline">·</span>
+                    <span className="text-xs text-muted-foreground hidden sm:inline">
+                      {comment.author.currentPosition}
+                    </span>
+                  </>
+                )}
+                <span className="text-xs text-muted-foreground">·</span>
+                <span className="text-xs text-muted-foreground">
+                  {formatTimestamp(comment.createdAt)}
+                </span>
               </div>
-            ) : (
-              <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/90 mb-1.5">
-                {comment.content}
-              </p>
-            )}
 
-            {/* Comment Actions */}
-            <div className="flex items-center gap-1">
-              {shouldShowReplyButton && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowReplyBox(!showReplyBox)}
-                  className="h-6 px-2 text-xs font-medium hover:bg-accent"
-                >
-                  <CornerDownRight className="w-3 h-3 mr-1" />
-                  Reply
-                </Button>
-              )}
-
-              {isAuthor && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <MoreHorizontal className="w-3 h-3" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-28">
-                    <DropdownMenuItem onClick={() => setIsEditing(true)} className="text-xs">
-                      <Edit2 className="mr-2 h-3 w-3" />
-                      Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={handleDelete} 
-                      disabled={!canDelete}
-                      className="text-xs text-destructive focus:text-destructive cursor-pointer"
-                    >
-                      <Trash2 className="mr-2 h-3 w-3" />
-                      {canDelete ? 'Delete' : 'Delete (expired)'}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-            </div>
-
-            {/* Reply Box */}
-            {showReplyBox && (
-              <div className="mt-2 mb-2 bg-muted/20 rounded-md p-2.5 border border-border/40">
-                <Textarea
-                  placeholder="Write your reply..."
-                  value={replyText}
-                  onChange={(e) => setReplyText(e.target.value)}
-                  className="min-h-[60px] mb-2 bg-background text-sm"
-                  disabled={isSubmitting}
-                  autoFocus
-                />
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    onClick={handleReplySubmit}
-                    disabled={!replyText.trim() || isSubmitting}
-                    className="h-7 text-xs"
-                  >
-                    {isSubmitting ? "Posting..." : "Reply"}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setShowReplyBox(false);
-                      setReplyText("");
-                    }}
-                    className="h-7 text-xs"
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Nested Replies with vertical line */}
-            {repliesLoaded && replies.length > 0 && (
-              <div className="mt-2 pl-3 border-l-2 border-border/60">
-                {replies.map((reply) => (
-                  <CommentCard
-                    key={reply._id}
-                    comment={reply}
-                    postId={postId}
-                    onUpdate={() => {
-                      fetchReplies();
-                      onUpdate();
-                    }}
-                    depth={depth + 1}
+              {/* Comment Content */}
+              {isEditing ? (
+                <div className="space-y-3 my-2">
+                  <Textarea
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
+                    className="min-h-[80px] bg-background border-border/60 focus:border-primary text-sm rounded-xl"
                   />
-                ))}
-              </div>
-            )}
+                  <div className="flex gap-2">
+                    <Button size="sm" onClick={handleEdit} className="h-7 text-xs rounded-full px-3">
+                      Save
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setIsEditing(false);
+                        setEditText(comment.content);
+                      }}
+                      className="h-7 text-xs rounded-full px-3"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/80 font-normal mb-2">
+                  {comment.content}
+                </p>
+              )}
 
-            {/* Loading indicator */}
-            {loadingReplies && (
-              <div className="mt-2 text-xs text-muted-foreground">
-                Loading replies...
+              {/* Comment Actions */}
+              <div className="flex items-center gap-1 mt-1">
+                {shouldShowReplyButton && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowReplyBox(!showReplyBox)}
+                    className={`h-6 px-2 text-xs font-medium rounded-full ${showReplyBox ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-primary/5 hover:text-primary'}`}
+                  >
+                    <CornerDownRight className="w-3 h-3 mr-1.5" />
+                    Reply
+                  </Button>
+                )}
+
+                {isAuthor && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0 rounded-full text-muted-foreground hover:bg-muted opacity-0 group-hover:opacity-100 transition-opacity">
+                        <MoreHorizontal className="w-3 h-3" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-32 rounded-xl">
+                      <DropdownMenuItem onClick={() => setIsEditing(true)} className="text-xs">
+                        <Edit2 className="mr-2 h-3 w-3" />
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={handleDelete}
+                        disabled={!canDelete}
+                        className="text-xs text-destructive focus:text-destructive cursor-pointer"
+                      >
+                        <Trash2 className="mr-2 h-3 w-3" />
+                        {canDelete ? 'Delete' : 'Expired'}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
-            )}
+            </div>
           </div>
+
+          {/* Reply Box */}
+          {showReplyBox && (
+            <div className="mt-3 ml-11 bg-muted/20 rounded-2xl p-3 border border-border/40 animate-in slide-in-from-top-2 duration-200">
+              <Textarea
+                placeholder="Write your reply..."
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                className="min-h-[80px] mb-3 bg-background text-sm rounded-xl border-border/50 focus:border-primary/50"
+                disabled={isSubmitting}
+                autoFocus
+              />
+              <div className="flex gap-2 justify-end">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setShowReplyBox(false);
+                    setReplyText("");
+                  }}
+                  className="h-8 text-xs rounded-full px-3"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleReplySubmit}
+                  disabled={!replyText.trim() || isSubmitting}
+                  className="h-8 text-xs rounded-full px-4"
+                >
+                  {isSubmitting ? "Posting..." : "Reply"}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Nested Replies with vertical line */}
+          {repliesLoaded && replies.length > 0 && (
+            <div className="mt-3 ml-4 pl-4 border-l-2 border-primary/10 hover:border-primary/30 transition-colors space-y-4">
+              {replies.map((reply) => (
+                <CommentCard
+                  key={reply._id}
+                  comment={reply}
+                  postId={postId}
+                  onUpdate={() => {
+                    fetchReplies();
+                    onUpdate();
+                  }}
+                  depth={depth + 1}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Loading indicator */}
+          {loadingReplies && (
+            <div className="mt-2 ml-12 text-xs text-muted-foreground animate-pulse">
+              Loading replies...
+            </div>
+          )}
         </div>
       </div>
     </div>

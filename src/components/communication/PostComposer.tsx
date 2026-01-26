@@ -131,16 +131,16 @@ export function PostComposer({ onPostCreated }: PostComposerProps) {
   };
 
   return (
-    <Card className="bg-card border border-border">
-      <CardContent className="p-3 sm:p-4">
+    <Card className="overflow-hidden rounded-3xl border border-border/60 bg-gradient-to-br from-card to-muted/20 shadow-sm">
+      <CardContent className="p-4 sm:p-5">
         <div className="flex gap-3 sm:gap-4">
           <div className="relative flex-shrink-0">
-            <Avatar className="w-8 h-8 sm:w-10 sm:h-10">
-              <AvatarFallback className="bg-primary/10 text-primary font-medium text-xs sm:text-base">
+            <Avatar className="w-9 h-9 sm:w-11 sm:h-11 border-2 border-background ring-2 ring-border/50">
+              <AvatarFallback className="bg-gradient-to-br from-primary/10 to-primary/20 text-primary font-semibold text-xs sm:text-base">
                 AD
               </AvatarFallback>
             </Avatar>
-            <div className="absolute bottom-0 right-0 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-green-500 border-2 border-background rounded-full"></div>
+            <div className="absolute bottom-0 right-0 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-500 border-2 border-background rounded-full shadow-sm"></div>
           </div>
 
           <div className="flex-1 space-y-3 sm:space-y-4">
@@ -148,12 +148,12 @@ export function PostComposer({ onPostCreated }: PostComposerProps) {
             <div className="flex flex-wrap items-center gap-2 sm:gap-3">
               <span className="text-xs sm:text-sm font-medium text-muted-foreground">Post to:</span>
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="w-[140px] sm:w-40 h-8 text-xs sm:text-sm">
+                <SelectTrigger className="w-[140px] sm:w-40 h-8 text-xs sm:text-sm rounded-full border-border/60 bg-background/50 backdrop-blur-sm focus:ring-primary/20">
                   <SelectValue placeholder="Choose category" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="rounded-xl">
                   {categories.map((category) => (
-                    <SelectItem key={category} value={category}>
+                    <SelectItem key={category} value={category} className="rounded-lg cursor-pointer">
                       {category}
                     </SelectItem>
                   ))}
@@ -167,7 +167,7 @@ export function PostComposer({ onPostCreated }: PostComposerProps) {
                 placeholder="What's on your mind? Share something with the alumni community..."
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                className="min-h-[100px] sm:min-h-[120px] resize-none border-border focus:border-primary text-sm sm:text-base"
+                className="min-h-[100px] sm:min-h-[120px] resize-none border-border/60 bg-background/50 focus:bg-background focus:border-primary/50 text-sm sm:text-base rounded-2xl transition-all duration-200"
                 disabled={isSubmitting}
               />
 
@@ -179,11 +179,11 @@ export function PostComposer({ onPostCreated }: PostComposerProps) {
                       <img
                         src={preview}
                         alt={`Preview ${index + 1}`}
-                        className="w-full h-16 sm:h-20 object-cover rounded-md border"
+                        className="w-full h-16 sm:h-20 object-cover rounded-xl border border-border/50"
                       />
                       <button
                         onClick={() => removeImage(index)}
-                        className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shadow-sm"
+                        className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shadow-sm hover:scale-110"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -193,18 +193,18 @@ export function PostComposer({ onPostCreated }: PostComposerProps) {
               )}
 
               {/* Formatting Tools */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 pt-1">
                 <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-                  <Button variant="ghost" size="sm" className="p-1.5 sm:p-2 h-auto" disabled>
-                    <Bold className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <Button variant="ghost" size="sm" className="p-1.5 sm:p-2 h-8 w-8 rounded-full hover:bg-muted" disabled>
+                    <Bold className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground" />
                   </Button>
-                  <Button variant="ghost" size="sm" className="p-1.5 sm:p-2 h-auto" disabled>
-                    <Italic className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <Button variant="ghost" size="sm" className="p-1.5 sm:p-2 h-8 w-8 rounded-full hover:bg-muted" disabled>
+                    <Italic className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground" />
                   </Button>
-                  <Button variant="ghost" size="sm" className="p-1.5 sm:p-2 h-auto" disabled>
-                    <Code className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <Button variant="ghost" size="sm" className="p-1.5 sm:p-2 h-8 w-8 rounded-full hover:bg-muted" disabled>
+                    <Code className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground" />
                   </Button>
-                  <div className="w-px h-3 sm:h-4 bg-border mx-0.5 sm:mx-1" />
+                  <div className="w-px h-4 bg-border mx-1" />
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -217,29 +217,29 @@ export function PostComposer({ onPostCreated }: PostComposerProps) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="p-1.5 sm:p-2 h-auto"
+                    className="p-1.5 sm:p-2 h-8 w-8 rounded-full hover:bg-blue-500/10 hover:text-blue-500 transition-colors"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isSubmitting || images.length >= 5}
                   >
                     <ImageIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </Button>
-                  <Button variant="ghost" size="sm" className="p-1.5 sm:p-2 h-auto" disabled>
-                    <Link2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <Button variant="ghost" size="sm" className="p-1.5 sm:p-2 h-8 w-8 rounded-full hover:bg-muted" disabled>
+                    <Link2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground" />
                   </Button>
-                  <Button variant="ghost" size="sm" className="p-1.5 sm:p-2 h-auto" disabled>
-                    <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <Button variant="ghost" size="sm" className="p-1.5 sm:p-2 h-8 w-8 rounded-full hover:bg-muted" disabled>
+                    <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground" />
                   </Button>
                 </div>
 
                 <div className="flex items-center justify-end gap-3 w-full sm:w-auto">
-                  <span className="text-[10px] sm:text-xs text-muted-foreground whitespace-nowrap">
+                  <span className="text-[10px] sm:text-xs text-muted-foreground whitespace-nowrap font-medium">
                     {content.length}/5000
                   </span>
                   <Button
                     onClick={handleSubmit}
                     disabled={!content.trim() || !selectedCategory || isSubmitting}
                     size="sm"
-                    className="gap-2 px-6 h-9 text-sm rounded-full bg-green-500/10 text-green-600 hover:bg-green-500/25 hover:text-green-700 border border-green-500/20 hover:border-green-500/40 font-semibold focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-green-500/15 dark:text-green-400 dark:hover:bg-green-500/30 dark:hover:text-green-300"
+                    className="gap-2 px-6 h-9 text-sm rounded-full bg-primary hover:bg-primary/90 shadow-sm transition-all hover:shadow-md"
                   >
                     <Send className="w-4 h-4" />
                     {isSubmitting ? "Posting..." : "Post"}

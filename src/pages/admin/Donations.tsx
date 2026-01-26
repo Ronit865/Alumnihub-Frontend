@@ -523,7 +523,7 @@ export function Donations() {
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-bottom-2 duration-500" style={{ animationDelay: '100ms' }}>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 animate-in fade-in slide-in-from-bottom-2 duration-500" style={{ animationDelay: '100ms' }}>
                     {[0, 1, 2, 3].map((i) => (
                         <div
                             key={i}
@@ -541,38 +541,12 @@ export function Donations() {
                     ))}
                 </div>
 
-                {/* Featured Campaigns */}
-                <div className="animate-in fade-in slide-in-from-bottom-2 duration-500" style={{ animationDelay: '200ms' }}>
-                    <Skeleton className="h-6 w-48 mb-4 bg-muted/60" />
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {[0, 1, 2].map((i) => (
-                            <div
-                                key={i}
-                                className="rounded-2xl p-5 bg-card/50 border border-border/50 space-y-4"
-                                style={{ animationDelay: `${250 + i * 50}ms` }}
-                            >
-                                <div className="flex items-start justify-between">
-                                    <Skeleton className="h-5 w-40 bg-muted/60" />
-                                    <Skeleton className="h-6 w-16 rounded-full bg-muted/60" />
-                                </div>
-                                <div className="space-y-2">
-                                    <Skeleton className="h-3 w-full bg-muted/60" />
-                                    <Skeleton className="h-3 w-3/4 bg-muted/60" />
-                                </div>
-                                <Skeleton className="h-2 w-full rounded-full bg-muted/60" />
-                                <div className="flex justify-between">
-                                    <Skeleton className="h-4 w-24 bg-muted/60" />
-                                    <Skeleton className="h-4 w-16 bg-muted/60" />
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
+
 
                 {/* Campaigns Grid */}
-                <div className="animate-in fade-in slide-in-from-bottom-2 duration-500" style={{ animationDelay: '350ms' }}>
+                <div className="animate-in fade-in slide-in-from-bottom-2 duration-500" style={{ animationDelay: '200ms' }}>
                     <Skeleton className="h-6 w-40 mb-4 bg-muted/60" />
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {[0, 1, 2, 3, 4, 5].map((i) => (
                             <div
                                 key={i}

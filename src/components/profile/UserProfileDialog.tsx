@@ -35,7 +35,7 @@ export function UserProfileDialog({ open, onOpenChange, userId, onMessageClick }
 
   const fetchUserProfile = async () => {
     if (!userId) return;
-    
+
     try {
       setLoading(true);
       const response = await userService.getUserById(userId);
@@ -54,7 +54,7 @@ export function UserProfileDialog({ open, onOpenChange, userId, onMessageClick }
 
   const fetchConnectionStatus = async () => {
     if (!userId) return;
-    
+
     try {
       const response = await connectionService.getConnectionStatus(userId);
       if (response?.data) {
@@ -69,7 +69,7 @@ export function UserProfileDialog({ open, onOpenChange, userId, onMessageClick }
 
   const handleConnect = async () => {
     if (!userId) return;
-    
+
     try {
       setActionLoading(true);
       await connectionService.sendConnectionRequest(userId);
@@ -91,7 +91,7 @@ export function UserProfileDialog({ open, onOpenChange, userId, onMessageClick }
 
   const handleAcceptConnection = async () => {
     if (!connectionId) return;
-    
+
     try {
       setActionLoading(true);
       await connectionService.acceptConnectionRequest(connectionId);
@@ -161,29 +161,29 @@ export function UserProfileDialog({ open, onOpenChange, userId, onMessageClick }
                 {!isOwnProfile && (
                   <div className="flex gap-2 justify-center sm:justify-start">
                     {connectionStatus === 'none' && (
-                      <Button onClick={handleConnect} disabled={actionLoading} className="gap-2">
+                      <Button onClick={handleConnect} disabled={actionLoading} className="gap-2 bg-green-500/10 text-green-600 hover:bg-green-500/20 shadow-none border-0 font-semibold">
                         <UserPlus className="w-4 h-4" />
                         Connect
                       </Button>
                     )}
                     {connectionStatus === 'pending' && (
-                      <Button variant="outline" disabled className="gap-2">
+                      <Button variant="outline" disabled className="gap-2 bg-orange-500/10 text-orange-600 border-orange-200/50 font-semibold opacity-100">
                         {isRequester ? 'Request Sent' : 'Request Pending'}
                       </Button>
                     )}
                     {connectionStatus === 'pending' && !isRequester && (
-                      <Button onClick={handleAcceptConnection} disabled={actionLoading} className="gap-2">
+                      <Button onClick={handleAcceptConnection} disabled={actionLoading} className="gap-2 bg-primary/10 text-primary hover:bg-primary/20 shadow-none border-0 font-semibold">
                         <UserCheck className="w-4 h-4" />
                         Accept
                       </Button>
                     )}
                     {connectionStatus === 'accepted' && (
-                      <Badge variant="secondary" className="gap-2 px-3 py-1.5">
+                      <Badge variant="secondary" className="gap-2 px-3 py-1.5 bg-green-500/10 text-green-600 hover:bg-green-500/20 border-0">
                         <UserCheck className="w-4 h-4" />
                         Connected
                       </Badge>
                     )}
-                    <Button variant="outline" onClick={handleMessage} className="gap-2">
+                    <Button variant="outline" onClick={handleMessage} className="gap-2 bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 border-blue-200/50 font-semibold shadow-none">
                       <MessageCircle className="w-4 h-4" />
                       Message
                     </Button>
@@ -197,74 +197,88 @@ export function UserProfileDialog({ open, onOpenChange, userId, onMessageClick }
             {/* Details Section */}
             <div className="space-y-4">
               <h4 className="font-semibold text-lg">Information</h4>
-              
-              <div className="grid gap-4">
+
+              <div className="grid gap-4 sm:grid-cols-2">
                 {user.email && (
-                  <div className="flex items-center gap-3">
-                    <Mail className="w-5 h-5 text-muted-foreground" />
+                  <div className="flex items-center gap-3 p-3 rounded-2xl bg-muted/30 hover:bg-muted/50 transition-colors">
+                    <div className="bg-purple-500/10 text-purple-600 p-2.5 rounded-xl">
+                      <Mail className="w-5 h-5" />
+                    </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Email</p>
-                      <p className="font-medium">{user.email}</p>
+                      <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Email</p>
+                      <p className="font-medium text-sm truncate max-w-[200px]" title={user.email}>{user.email}</p>
                     </div>
                   </div>
                 )}
 
                 {user.course && (
-                  <div className="flex items-center gap-3">
-                    <GraduationCap className="w-5 h-5 text-muted-foreground" />
+                  <div className="flex items-center gap-3 p-3 rounded-2xl bg-muted/30 hover:bg-muted/50 transition-colors">
+                    <div className="bg-blue-500/10 text-blue-600 p-2.5 rounded-xl">
+                      <GraduationCap className="w-5 h-5" />
+                    </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Course</p>
-                      <p className="font-medium">{user.course}</p>
+                      <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Course</p>
+                      <p className="font-medium text-sm">{user.course}</p>
                     </div>
                   </div>
                 )}
 
                 {user.graduationYear && (
-                  <div className="flex items-center gap-3">
-                    <Calendar className="w-5 h-5 text-muted-foreground" />
+                  <div className="flex items-center gap-3 p-3 rounded-2xl bg-muted/30 hover:bg-muted/50 transition-colors">
+                    <div className="bg-teal-500/10 text-teal-600 p-2.5 rounded-xl">
+                      <Calendar className="w-5 h-5" />
+                    </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Graduation Year</p>
-                      <p className="font-medium">{user.graduationYear}</p>
+                      <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Graduation Year</p>
+                      <p className="font-medium text-sm">{user.graduationYear}</p>
                     </div>
                   </div>
                 )}
 
                 {user.currentPosition && (
-                  <div className="flex items-center gap-3">
-                    <Briefcase className="w-5 h-5 text-muted-foreground" />
+                  <div className="flex items-center gap-3 p-3 rounded-2xl bg-muted/30 hover:bg-muted/50 transition-colors">
+                    <div className="bg-orange-500/10 text-orange-600 p-2.5 rounded-xl">
+                      <Briefcase className="w-5 h-5" />
+                    </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Current Position</p>
-                      <p className="font-medium">{user.currentPosition}</p>
+                      <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Current Position</p>
+                      <p className="font-medium text-sm">{user.currentPosition}</p>
                     </div>
                   </div>
                 )}
 
                 {user.company && (
-                  <div className="flex items-center gap-3">
-                    <Building2 className="w-5 h-5 text-muted-foreground" />
+                  <div className="flex items-center gap-3 p-3 rounded-2xl bg-muted/30 hover:bg-muted/50 transition-colors">
+                    <div className="bg-pink-500/10 text-pink-600 p-2.5 rounded-xl">
+                      <Building2 className="w-5 h-5" />
+                    </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Company</p>
-                      <p className="font-medium">{user.company}</p>
+                      <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Company</p>
+                      <p className="font-medium text-sm">{user.company}</p>
                     </div>
                   </div>
                 )}
 
                 {user.location && (
-                  <div className="flex items-center gap-3">
-                    <MapPin className="w-5 h-5 text-muted-foreground" />
+                  <div className="flex items-center gap-3 p-3 rounded-2xl bg-muted/30 hover:bg-muted/50 transition-colors">
+                    <div className="bg-indigo-500/10 text-indigo-600 p-2.5 rounded-xl">
+                      <MapPin className="w-5 h-5" />
+                    </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Location</p>
-                      <p className="font-medium">{user.location}</p>
+                      <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Location</p>
+                      <p className="font-medium text-sm">{user.location}</p>
                     </div>
                   </div>
                 )}
 
                 {user.phone && (
-                  <div className="flex items-center gap-3">
-                    <Mail className="w-5 h-5 text-muted-foreground" />
+                  <div className="flex items-center gap-3 p-3 rounded-2xl bg-muted/30 hover:bg-muted/50 transition-colors">
+                    <div className="bg-green-500/10 text-green-600 p-2.5 rounded-xl">
+                      <Mail className="w-5 h-5" /> {/* Phone icon was missing, using Mail temporarily or replace if Phone icon available */}
+                    </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Phone</p>
-                      <p className="font-medium">{user.phone}</p>
+                      <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Phone</p>
+                      <p className="font-medium text-sm">{user.phone}</p>
                     </div>
                   </div>
                 )}
